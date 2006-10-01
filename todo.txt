@@ -1,0 +1,4 @@
+TODO:
+	* Enumerate DSNs
+	* Write ODBC connection layers
+	* Allow user to connect to remote servers.
