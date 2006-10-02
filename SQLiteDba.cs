@@ -87,22 +87,25 @@ namespace PlaneDisaster
 			int numCols;
 			string [] Tables;
 			
-			try {
-				dt = cn.GetSchema("Columns", new string [] {null, null, Table, null});
-				numCols = dt.Rows.Count;
-				Tables = new string[numCols];
-				for (int i = 0; i < numCols; i++) {
-					Tables[i] = (string) dt.Rows[i]["COLUMN_NAME"];
-				}
+			dt = cn.GetSchema("Columns", new string [] {null, null, Table, null});
+			numCols = dt.Rows.Count;
+			Tables = new string[numCols];
+			for (int i = 0; i < numCols; i++) {
+				Tables[i] = (string) dt.Rows[i]["COLUMN_NAME"];
 			}
 			
-			catch (Exception e)
-			{
-				System.Diagnostics.Debug.Write(e.Message);
-				System.Windows.Forms.MessageBox.Show(e.Message);
-				Tables = null;
-			}
 			return Tables;
+		}
+		
+		
+		/// <summary>
+		/// Gets a list of procedures in the database.
+		/// </summary>
+		/// <returns>
+		/// A list of procedure names as an array of strings.
+		/// </returns>
+		public override string [] GetProcedures() {
+			return null;
 		}
 			
 		
@@ -118,37 +121,6 @@ namespace PlaneDisaster
 			
 			da.Fill(ds, "qryTemp");
 			return ds;
-		}
-		
-
-		/// <summary>
-		/// Gets a list of tables in the database.
-		/// </summary>
-		/// <returns>
-		/// A list of table names as an array of strings.
-		/// </returns>
-		public override string [] GetTables() {
-			int numCols;
-			int i = 0;
-			string [] Tables;
-			
-			DataTable dt = null;
-			try {
-				dt = cn.GetSchema("tables");
-				numCols = dt.Rows.Count;
-				Tables = new string[numCols];
-				for (i = 0; i < numCols; i++) {
-					Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
-				}
-			}
-			
-			catch (Exception e)
-			{
-				System.Diagnostics.Debug.Write(e.Message);
-				System.Windows.Forms.MessageBox.Show(e.Message);
-				Tables = null;
-			}
-			return Tables;
 		}
 	}
 }

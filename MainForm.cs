@@ -40,15 +40,22 @@ namespace PlaneDisaster
 	/// <summary>
 	/// PlaneDisaster.NET main form.
 	/// </summary>
-	public partial class MainForm
+	public sealed partial class MainForm
 	{
 		
 		private dba dbcon = null;
+		private bool _Connected = false;
 		
 		#region Properties
 		
+		private bool Connected {
+			get { return _Connected; }
+			set { _Connected = value; }
+		}
+		
+		
 		/// <summary>The Results of the query in CSV format.</summary>
-		public string CSV {
+		private string CSV {
 			get { return this.txtResults.Text; }
 		}
 		
@@ -61,10 +68,16 @@ namespace PlaneDisaster
 		{
 			InitializeComponent();
 			
-			/* ListBox event handlers */
-			lstProcedures.DoubleClick += new System.EventHandler(this.lstTables_DblClick);
-			lstTables.DoubleClick += new System.EventHandler(this.lstTables_DblClick);
-			lstViews.DoubleClick += new System.EventHandler(this.lstTables_DblClick);
+			/* ListBox Double Click event handlers */
+			lstProcedures.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			lstTables.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			lstViews.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			
+			/* ListBox Right Click event handlers */
+			lstProcedures.MouseDown += new MouseEventHandler(this.ListBox_RightClickSelect);
+			lstTables.MouseDown += new MouseEventHandler(this.ListBox_RightClickSelect);
+			lstViews.MouseDown += new MouseEventHandler(this.ListBox_RightClickSelect);
+			
 			//TODO: figure out the event fired whe enter is pressed. Its not Enter
 		}
 
@@ -152,9 +165,14 @@ namespace PlaneDisaster
 
 		
 		#region ListBox Events
-
+	
+		void lst_DblClick(object sender, System.EventArgs e) {
+			ListBox lst = (ListBox) sender;
+			LoadTableResults(lst.Text);	
+		}
 		
-		void LstTablesSelectedIndexChanged(object sender, System.EventArgs e)
+		
+		void Lst_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
 			ListBox lst = (ListBox) sender;
 			try {
@@ -164,13 +182,25 @@ namespace PlaneDisaster
 				MessageBox.Show ("OleDbException: " + ex.Message + "\r\nCode: " + ex.ErrorCode);
 			}
 		}
-
 		
-		void lstTables_DblClick(object sender, System.EventArgs e) {
-			ListBox lst = (ListBox) sender;
-			LoadTableResults(lst.Text);	
+		
+		/// <summary>
+		/// If you want to be able to select an item in your listbox via right click,
+		/// add this function as an event handler to the listbox's mousedown event.
+		/// </summary>
+		/// <param name="sender">The listbox being right clicked.</param>
+		/// <param name="e">The MouseEventArgs object.</param>
+		void ListBox_RightClickSelect(object sender, MouseEventArgs  e) {
+			if (e.Button == MouseButtons.Right) {
+				ListBox lst = (ListBox) sender;
+				int Index = lst.IndexFromPoint(e.X, e.Y);
+			
+				if (Index >= 0 && Index < lst.Items.Count) {
+            	    lst.SelectedIndex = Index;
+            	}
+            	lst.Refresh();
+			}
 		}
-
 		
 		#endregion			
 
@@ -208,6 +238,33 @@ namespace PlaneDisaster
 			dlg.Dispose();
 		}
 		
+		
+		void menuDatabaseSchema_Click(object sender, System.EventArgs e)
+		{
+			this.gridResults.DataSource = ((OleDba)this.dbcon).GetSchema();
+		}
+		
+		
+		void menuDrop_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuDropProcedure") {
+				dbcon.DropProcedure('[' + (string) lstProcedures.SelectedItem + ']');
+				lstProcedures.DataSource = dbcon.GetProcedures();
+			} else if (mnu.Name == "menuDropTable") {
+				dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
+				lstTables.DataSource = dbcon.GetTables();
+			} else if (mnu.Name == "menuDropView") {
+				dbcon.DropTable('[' + (string) lstViews.SelectedItem + ']');
+				lstViews.DataSource = ((OleDba)dbcon).GetViews();
+			} else {
+				throw new ArgumentException
+					("sender for menuDrop_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
+		}
+		
+		
 		void menuNew_Click (object sender, System.EventArgs e)
 		{
 			StringBuilder FileFilter = new StringBuilder();
@@ -231,13 +288,11 @@ namespace PlaneDisaster
 				}
 			}
 			dlg.Dispose();
+			this.Connected = true;
+			InitContextMenues();
 		}
 
-		void menuDatabaseSchema_Click(object sender, System.EventArgs e)
-		{
-			this.gridResults.DataSource = ((OleDba)this.dbcon).GetSchema();
-		}
-
+		
 		private void menuOpen_Click (object sender, System.EventArgs e) {
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
@@ -257,6 +312,8 @@ namespace PlaneDisaster
 				}
 			}
 			dlg.Dispose();
+			this.Connected = true;
+			InitContextMenues();
 		}
 
 		
@@ -281,26 +338,6 @@ namespace PlaneDisaster
 					this.DisplayDataSource();
 				}
 			}
-		}
-		
-		private void menuOpenNpgsql_Click (object sender, System.EventArgs e) {
-			//TODO: fix the Npgsql lack of ADN.NET goodness.
-			/*
-			PostgresqlConnStrDialog dlg;
-			using (dlg = new PostgresqlConnStrDialog(PostgresqlConnStrDialog.DbDriver.Npgsql)) {
-				if (dlg.ShowDialog() == DialogResult.OK) {
-					dbcon = new NpgsqlDba();
-					try {
-						((NpgsqlDba) dbcon).ConnectDSN(dlg.ConnectionString);
-					} catch (Npgsql.NpgsqlException ex) {
-						if (ex.Code != "2800") { //Authentication error
-							throw ex;
-						}
-					}
-					this.DisplayDataSource();
-				}
-			}
-			*/
 		}
 		
 		
@@ -365,11 +402,36 @@ namespace PlaneDisaster
 		/// refresh the form.
 		/// </remarks>
 		private void DisplayDataSource() {
-			lstProcedures.DataSource = ((OleDba)dbcon).GetProcedures();
+			lstProcedures.DataSource = dbcon.GetProcedures();
 			lstTables.DataSource = dbcon.GetTables();
-			lstViews.DataSource = ((OleDba)dbcon).GetViews();
+			lstViews.DataSource = dbcon.GetViews();
 			this.txtResults.Text = "";
 			this.gridResults.DataSource = null;
+		}
+		
+		
+		private void InitContextMenues () {
+			ContextMenu ctxDropProcedure, ctxDropTable, ctxDropView;
+			MenuItem menuDropProcedure, menuDropTable, menuDropView;
+			
+			menuDropProcedure = new MenuItem("Drop");
+			menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
+			menuDropProcedure.Name = "menuDropProcedure";
+			ctxDropProcedure = new ContextMenu(new MenuItem[] {menuDropProcedure});
+			this.lstProcedures.ContextMenu = ctxDropProcedure;
+				
+			menuDropTable = new MenuItem("Drop");
+			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
+			menuDropTable.Name = "menuDropTable";
+			ctxDropTable = new ContextMenu(new MenuItem[] {menuDropTable});
+			this.lstTables.ContextMenu = ctxDropTable;
+			
+			menuDropView = new MenuItem("Drop");
+			menuDropView.Click += new System.EventHandler(menuDrop_Click);
+			menuDropView.Name = "menuDropView";
+			ctxDropView = new ContextMenu(new MenuItem[] {menuDropView});
+			
+			this.lstViews.ContextMenu = ctxDropView;
 		}
 		
 		

@@ -65,13 +65,6 @@ namespace PlaneDisaster
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.netDataProvidersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.NpgsqlOpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.oDBCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.oLEDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.microsoftSQLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.mySQLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.PostgresSQLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,7 +90,7 @@ namespace PlaneDisaster
 			this.lstTables.Name = "lstTables";
 			this.lstTables.Size = new System.Drawing.Size(160, 56);
 			this.lstTables.TabIndex = 5;
-			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.LstTablesSelectedIndexChanged);
+			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
 			// radText
 			// 
@@ -200,9 +193,6 @@ namespace PlaneDisaster
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.newToolStripMenuItem,
 									this.openToolStripMenuItem,
-									this.netDataProvidersToolStripMenuItem,
-									this.oDBCToolStripMenuItem,
-									this.oLEDBToolStripMenuItem,
 									this.toolStripSeparator1,
 									this.exitToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -212,78 +202,26 @@ namespace PlaneDisaster
 			// newToolStripMenuItem
 			// 
 			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.newToolStripMenuItem.Text = "&New";
 			this.newToolStripMenuItem.Click += new System.EventHandler(this.menuNew_Click);
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.menuOpen_Click);
-			// 
-			// netDataProvidersToolStripMenuItem
-			// 
-			this.netDataProvidersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-									this.NpgsqlOpenToolStripMenuItem});
-			this.netDataProvidersToolStripMenuItem.Name = "netDataProvidersToolStripMenuItem";
-			this.netDataProvidersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.netDataProvidersToolStripMenuItem.Text = ".&Net Data Providers";
-			// 
-			// NpgsqlOpenToolStripMenuItem
-			// 
-			this.NpgsqlOpenToolStripMenuItem.Name = "NpgsqlOpenToolStripMenuItem";
-			this.NpgsqlOpenToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
-			this.NpgsqlOpenToolStripMenuItem.Text = "&PostgreSQL";
-			this.NpgsqlOpenToolStripMenuItem.Click += new System.EventHandler(this.menuOpenNpgsql_Click);
-			// 
-			// oDBCToolStripMenuItem
-			// 
-			this.oDBCToolStripMenuItem.Name = "oDBCToolStripMenuItem";
-			this.oDBCToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.oDBCToolStripMenuItem.Text = "ODBC";
-			// 
-			// oLEDBToolStripMenuItem
-			// 
-			this.oLEDBToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-									this.microsoftSQLToolStripMenuItem,
-									this.mySQLToolStripMenuItem,
-									this.PostgresSQLToolStripMenuItem});
-			this.oLEDBToolStripMenuItem.Name = "oLEDBToolStripMenuItem";
-			this.oLEDBToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.oLEDBToolStripMenuItem.Text = "OLE DB";
-			// 
-			// microsoftSQLToolStripMenuItem
-			// 
-			this.microsoftSQLToolStripMenuItem.Name = "microsoftSQLToolStripMenuItem";
-			this.microsoftSQLToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-			this.microsoftSQLToolStripMenuItem.Text = "Microsoft SQL";
-			this.microsoftSQLToolStripMenuItem.Click += new System.EventHandler(this.menuOpenMsSql_Click);
-			// 
-			// mySQLToolStripMenuItem
-			// 
-			this.mySQLToolStripMenuItem.Name = "mySQLToolStripMenuItem";
-			this.mySQLToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-			this.mySQLToolStripMenuItem.Text = "MySQL";
-			this.mySQLToolStripMenuItem.Click += new System.EventHandler(this.menuOpenMySQL_Click);
-			// 
-			// PostgresSQLToolStripMenuItem
-			// 
-			this.PostgresSQLToolStripMenuItem.Name = "PostgresSQLToolStripMenuItem";
-			this.PostgresSQLToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
-			this.PostgresSQLToolStripMenuItem.Text = "&PostgresSQL";
-			this.PostgresSQLToolStripMenuItem.Click += new System.EventHandler(this.menuOpenPostgresql_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -348,7 +286,7 @@ namespace PlaneDisaster
 			this.lstViews.Name = "lstViews";
 			this.lstViews.Size = new System.Drawing.Size(160, 56);
 			this.lstViews.TabIndex = 14;
-			this.lstViews.SelectedIndexChanged += new System.EventHandler(this.LstTablesSelectedIndexChanged);
+			this.lstViews.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
 			// lblViews
 			// 
@@ -435,17 +373,10 @@ namespace PlaneDisaster
 		private System.Windows.Forms.ToolStripMenuItem microsoftAccessJetSQLToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem compactJetSQLmdbFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem utilitiesToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem NpgsqlOpenToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem netDataProvidersToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem PostgresSQLToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
 		private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem mySQLToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem microsoftSQLToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem oLEDBToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem oDBCToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.MenuStrip menuStrip1;

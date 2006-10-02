@@ -79,7 +79,7 @@ namespace PlaneDisaster
 				try {
 					cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
 					cmd.ExecuteNonQuery();
-				} catch (System.Data.OleDb.OleDbException) {}
+				} catch (DbException) {}
 			}
 			cmd.CommandText = String.Format("CREATE PROCEDURE {0} AS {1}", Name, SQL);
 			cmd.ExecuteNonQuery();
@@ -112,9 +112,42 @@ namespace PlaneDisaster
 				try {
 					cmd.CommandText = String.Format("DROP VIEW {0}", Name);
 					cmd.ExecuteNonQuery();
-				} catch (System.Data.OleDb.OleDbException) {}
+				} catch (DbException) {}
 			}
 			cmd.CommandText = String.Format("CREATE VIEW {0} AS {1}", Name, SQL);
+			cmd.ExecuteNonQuery();
+		}
+		
+		
+		/// <summary>
+		/// Drops the given procedure from the database.
+		/// </summary>
+		/// <param name="Name">The name of the View.</param>
+		public void DropProcedure(string Name) {
+			DbCommand cmd = cn.CreateCommand();
+			cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
+			cmd.ExecuteNonQuery();
+		}
+		
+		
+		/// <summary>
+		/// Drops the given table from the database.
+		/// </summary>
+		/// <param name="Name">The name of the Table.</param>
+		public void DropTable(string Name) {
+			DbCommand cmd = cn.CreateCommand();
+			cmd.CommandText = String.Format("DROP TABLE {0}", Name);
+			cmd.ExecuteNonQuery();
+		}
+		
+		
+		/// <summary>
+		/// Drops the given view from the database.
+		/// </summary>
+		/// <param name="Name">The name of the View.</param>
+		public void DropView(string Name) {
+			DbCommand cmd = cn.CreateCommand();
+			cmd.CommandText = String.Format("DROP VIEW {0}", Name);
 			cmd.ExecuteNonQuery();
 		}
 
@@ -221,6 +254,30 @@ namespace PlaneDisaster
 		/// <param name="Table">The Name of the table</param>
 		/// <returns>The column names as an array of strings.</returns>
 		public abstract string [] GetColumnNames (string Table);
+		
+		
+		/// <summary>
+		/// Gets a list of Procedures in the database.
+		/// </summary>
+		/// <returns>
+		/// A list of Procedures names as an array of strings.
+		/// </returns>
+		public virtual string [] GetProcedures() {
+			int numCols;
+			int i = 0;
+			string [] Tables;
+			
+			DataTable dt = null;			
+
+			dt = cn.GetSchema("procedures");
+			numCols = dt.Rows.Count;
+			Tables = new string[numCols];
+			for (i = 0; i < numCols; i++) {
+				Tables[i] = (string) dt.Rows[i]["PROCEDURE_NAME"];
+			}
+
+			return Tables;
+		}
 
 		
 		/// <summary>
@@ -252,29 +309,23 @@ namespace PlaneDisaster
 			string [] strFields;
 			StringBuilder  CSV = new StringBuilder();
 			
-			try {
-				rdr = cmd.ExecuteReader();
-				
-				numFields = rdr.FieldCount;
-				strFields = new string[numFields];
-				for (int i = 0; i < numFields; i++) {
-					strFields[i] = rdr.GetName(i);
-					CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+			rdr = cmd.ExecuteReader();
+			
+			numFields = rdr.FieldCount;
+			strFields = new string[numFields];
+			for (int i = 0; i < numFields; i++) {
+				strFields[i] = rdr.GetName(i);
+				CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+			}
+			CSV.AppendLine();
+			while (rdr.Read()) {
+				foreach (string strField in strFields) {
+					CSV.AppendFormat("{0}{1}", rdr[strField], strSeperator);
 				}
 				CSV.AppendLine();
-				while (rdr.Read()) {
-					foreach (string strField in strFields) {
-						CSV.AppendFormat("{0}{1}", rdr[strField], strSeperator);
-					}
-					CSV.AppendLine();
-				}
-				rdr.Close();
 			}
-			catch (DbException e)
-			{
-				dba.DbaException(e);
-			}
-			
+			rdr.Close();
+						
 			return CSV.ToString();
 		}
 		
@@ -331,14 +382,51 @@ namespace PlaneDisaster
 			return ret;
 		}
 		
-		
+
 		/// <summary>
 		/// Gets a list of tables in the database.
 		/// </summary>
 		/// <returns>
 		/// A list of table names as an array of strings.
 		/// </returns>
-		public abstract string [] GetTables();
+		public virtual string [] GetTables() {
+			int numCols;
+			int i = 0;
+			string [] Tables;
+			DataTable dt = null;
+			
+			dt = cn.GetSchema("tables");
+			numCols = dt.Rows.Count;
+			Tables = new string[numCols];
+			for (i = 0; i < numCols; i++) {
+				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+			}
+			return Tables;
+		}
+		
+		
+		/// <summary>
+		/// Gets a list of Views in the database.
+		/// </summary>
+		/// <returns>
+		/// A list of views names as an array of strings.
+		/// </returns>
+		public string [] GetViews() {
+			int numCols;
+			int i = 0;
+			string [] Tables;
+			
+			DataTable dt = null;			
+
+			dt = cn.GetSchema("views");
+			numCols = dt.Rows.Count;
+			Tables = new string[numCols];
+			for (i = 0; i < numCols; i++) {
+				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+			}
+
+			return Tables;
+		}
 	
 	
 		/// <summary>
@@ -449,25 +537,21 @@ namespace PlaneDisaster
 			int numFields;
 			string [] strFields;
 			StringBuilder CSV = new StringBuilder();
-			try{
-				numFields = dt.Columns.Count;
-				strFields = new string[numFields];
-				for (int i = 0; i < numFields; i++) {
-					strFields[i] = dt.Columns[i].ColumnName;
-					CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+			
+			numFields = dt.Columns.Count;
+			strFields = new string[numFields];
+			for (int i = 0; i < numFields; i++) {
+				strFields[i] = dt.Columns[i].ColumnName;
+				CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+			}
+			CSV.AppendLine();
+			foreach(DataRow row in dt.Rows) {
+				foreach (string strField in strFields) {
+					CSV.AppendFormat("{0}{1}", row[strField], strSeperator);
 				}
 				CSV.AppendLine();
-				foreach(DataRow row in dt.Rows) {
-					foreach (string strField in strFields) {
-						CSV.AppendFormat("{0}{1}", row[strField], strSeperator);
-					}
-					CSV.AppendLine();
-				}
 			}
-			catch (DbException e)
-			{
-				dba.DbaException(e);
-			}
+
 			return CSV.ToString();
 		}
 				
