@@ -141,7 +141,7 @@ namespace PlaneDisaster
 		/// <returns>
 		/// The source of the given procedure.
 		/// </returns>
-		public string GetProcedureSQL(string Procedure) {
+		public override string GetProcedureSQL(string Procedure) {
 			DataTable dt;
 			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
 				(System.Data.OleDb.OleDbSchemaGuid.Procedures, 
@@ -176,7 +176,7 @@ namespace PlaneDisaster
 		/// <returns>
 		/// The source of the given view.
 		/// </returns>
-		public string GetViewSQL(string View) {
+		public override string GetViewSQL(string View) {
 			DataTable dt;
 			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
 				(System.Data.OleDb.OleDbSchemaGuid.Views, 

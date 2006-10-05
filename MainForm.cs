@@ -263,7 +263,7 @@ namespace PlaneDisaster
 				dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
 				lstTables.DataSource = dbcon.GetTables();
 			} else if (mnu.Name == "menuDropView") {
-				dbcon.DropTable('[' + (string) lstViews.SelectedItem + ']');
+				dbcon.DropView('[' + (string) lstViews.SelectedItem + ']');
 				lstViews.DataSource = dbcon.GetViews();
 			} else {
 				throw new ArgumentException
@@ -282,7 +282,7 @@ namespace PlaneDisaster
 				//TODO: Implement script table for SQLite.
 				MessageBox.Show("TODO: Implelemt this");
 			} else if (mnu.Name == "menuScriptView") {
-				this.Query = ((OleDba)dbcon).GetViewSQL((string) lstViews.SelectedItem);
+				this.Query = dbcon.GetViewSQL((string) lstViews.SelectedItem);
 			} else {
 				throw new ArgumentException
 					("sender for menuScript_Click must be one of " +
@@ -329,6 +329,7 @@ namespace PlaneDisaster
 						break;
 						
 				}
+				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
 			this.Connected = true;
@@ -351,10 +352,9 @@ namespace PlaneDisaster
 					case 2:
 						this.OpenSQLite(dlg.FileName);
 						break;
-						
 				}
+				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
-			this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			dlg.Dispose();
 			this.Connected = true;
 			InitContextMenues();

@@ -281,6 +281,20 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Gets the SQL executed by a given procedure.
+		/// </summary>
+		/// <returns>
+		/// The source of the given procedure.
+		/// </returns>
+		public virtual string GetProcedureSQL(string Procedure) {
+			DataTable dt;
+			dt = cn.GetSchema
+				("Procedures", new string[] {null, null, Procedure, null});
+			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
+		}
+		
+		
+		/// <summary>
 		/// Gets database schema.
 		/// </summary>
 		/// <returns>
@@ -291,6 +305,19 @@ namespace PlaneDisaster
 		public virtual DataTable GetSchema() {
 			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
 			return cn.GetSchema();
+		}
+		
+		
+		/// <summary>
+		/// Gets database schema.
+		/// </summary>
+		/// <param name="Collection">The name of the collection to retrieve.</param>
+		/// <returns>
+		/// A datatable with schema information about the database
+		/// </returns>
+		public virtual DataTable GetSchema(string Collection) {
+			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
+			return cn.GetSchema(Collection);
 		}
 
 		
@@ -440,6 +467,20 @@ namespace PlaneDisaster
 			}
 
 			return Tables;
+		}
+		
+		
+		/// <summary>
+		/// Gets the SQL executed by a given VIEW.
+		/// </summary>
+		/// <returns>
+		/// The source of the given view.
+		/// </returns>
+		public virtual string GetViewSQL(string View) {
+			DataTable dt;
+			dt = cn.GetSchema
+				("Views", new string[] {null, null, View});
+			return (string) dt.Rows[0]["VIEW_DEFINITION"];
 		}
 	
 	
