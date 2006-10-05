@@ -1,7 +1,4 @@
 README
 
-This is a simple database reader.
- I wrote to expand my knowledge of C# and ADO.NET. 
-
-Design notes:
-(TODO add notes here)
+PlaneDisaster.NET is a .NET Database front end for JetSQL (Microsoft Access File Format) and sqLite. In addition to basic database browsing and querying, it can create new JetSQL and SQLite files as well as compact and repair JetSQL databases.
+ 

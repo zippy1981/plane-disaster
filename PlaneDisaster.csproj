@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl.txt" />
+    <Content Include="installer.nsi" />
   </ItemGroup>
   <Import Project="$(SharpDevelopBinPath)\SharpDevelop.Build.CSharp.targets" />
 </Project>
