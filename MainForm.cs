@@ -354,6 +354,7 @@ namespace PlaneDisaster
 						
 				}
 			}
+			this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			dlg.Dispose();
 			this.Connected = true;
 			InitContextMenues();
