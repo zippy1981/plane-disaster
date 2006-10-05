@@ -37,7 +37,7 @@ namespace PlaneDisaster
 	public abstract partial class ConnectionStringDialog
 	{
 		
-		string strProvider;
+		string _Provider;
 		
 		
 		/// <summary>
@@ -65,14 +65,14 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
-		/// The name of the OleDB Provider. Set by te constructor.
+		/// The name of the OleDB Provider. Set by the constructor.
 		/// </summary>
 		/// <remarks>
 		/// The contract of the abstract class requires its children to 
 		/// pass the name of the provider in the constructor.
 		/// </remarks>
 		protected string Provider {
-			get { return this.strProvider; }
+			get { return this._Provider; }
 		}
 		
 		
@@ -88,7 +88,7 @@ namespace PlaneDisaster
 		/// </summary>
 		public ConnectionStringDialog(string Provider)
 		{
-			strProvider = Provider;
+			_Provider = Provider;
 			InitializeComponent();
 		}
 		

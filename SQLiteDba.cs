@@ -37,13 +37,13 @@ namespace PlaneDisaster
 	public class SQLiteDba : dba
 	{
 		private SQLiteConnection _cn;
-		private string strConnStr;
+		private string _ConnStr;
 		
 		
 		/// <summary>The SQLite Connection string.</summary>
 		protected string ConnStr {
-			get { return this.strConnStr; }
-			set { this.strConnStr = value; }
+			get { return this._ConnStr; }
+			set { this._ConnStr = value; }
 		}
 		
 		

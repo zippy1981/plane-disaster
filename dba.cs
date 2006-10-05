@@ -200,9 +200,9 @@ namespace PlaneDisaster
 		/// Gets a column from a table and returns it as a string of arrays.
 		/// </summary>
 		/// <param name="Table">The name of the table or view.</param>
-		/// <param name="strCol">The name of the column.</param>
+		/// <param name="Col">The name of the column.</param>
 		/// <returns>The contents of the column as a string of arrays.</returns>
-		public string [] GetColumnAsStringArray (string Table, string strCol) {
+		public string [] GetColumnAsStringArray (string Table, string Col) {
 			string SQL;
 			DbCommand cmd;
 			DbDataReader rdr;
@@ -227,14 +227,14 @@ namespace PlaneDisaster
 				}
 				Rows = new string [numRows];	
 				
-				SQL = string.Concat("SELECT ", strCol, " FROM ", Table);
+				SQL = string.Concat("SELECT ", Col, " FROM ", Table);
 				cmd.CommandText = SQL;
 				cmd.Parameters.Clear();
-				cmd.Parameters.Add(strCol);
+				cmd.Parameters.Add(Col);
 				rdr = cmd.ExecuteReader();
 				
 				while (rdr.Read()) {
-					Rows[curRowNum] = (string) rdr[strCol];
+					Rows[curRowNum] = (string) rdr[Col];
 					curRowNum++;
 				}
 				rdr.Close();
@@ -278,6 +278,20 @@ namespace PlaneDisaster
 
 			return Tables;
 		}
+		
+		
+		/// <summary>
+		/// Gets database schema.
+		/// </summary>
+		/// <returns>
+		/// A datatable of what I believe to be useless information. I believe
+		/// you can use the first column to determins the schema types you can 
+		/// return.
+		/// </returns>
+		public virtual DataTable GetSchema() {
+			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
+			return cn.GetSchema();
+		}
 
 		
 		/// <summary>
@@ -295,32 +309,32 @@ namespace PlaneDisaster
 		/// <code>Seperator</code> seperated file.
 		/// </summary>
 		/// <param name="SQL">The SQL statement to execute.</param>
-		/// <param name="strSeperator">
+		/// <param name="Seperator">
 		/// The field seperator character(s).
 		/// </param>
 		/// <returns>A string containing the table with rows seperated by 
 		/// newlines and fields seperated by <code>Seperator</code>.
 		/// </returns>
-		public string GetSQLAsCSV (string SQL, string strSeperator) {
+		public string GetSQLAsCSV (string SQL, string Seperator) {
 			DbCommand cmd = cn.CreateCommand();
 			cmd.CommandText = SQL;
 			DbDataReader rdr;
 			int numFields;
-			string [] strFields;
+			string [] Fields;
 			StringBuilder  CSV = new StringBuilder();
 			
 			rdr = cmd.ExecuteReader();
 			
 			numFields = rdr.FieldCount;
-			strFields = new string[numFields];
+			Fields = new string[numFields];
 			for (int i = 0; i < numFields; i++) {
-				strFields[i] = rdr.GetName(i);
-				CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+				Fields[i] = rdr.GetName(i);
+				CSV.AppendFormat("{0}{1}", Fields[i], Seperator);
 			}
 			CSV.AppendLine();
 			while (rdr.Read()) {
-				foreach (string strField in strFields) {
-					CSV.AppendFormat("{0}{1}", rdr[strField], strSeperator);
+				foreach (string Field in Fields) {
+					CSV.AppendFormat("{0}{1}", rdr[Field], Seperator);
 				}
 				CSV.AppendLine();
 			}
@@ -348,14 +362,14 @@ namespace PlaneDisaster
 		/// <code>ConnectionString\nState</code>
 		/// </returns>
 		public string GetStatus() {
-			string strStatus;
+			string Status;
 			
-			strStatus = String.Concat(
+			Status = String.Concat(
 				cn.ConnectionString,
 				"\n",
 				cn.State.ToString()
 			);
-			return strStatus;
+			return Status;
 		}
 
 		
@@ -447,11 +461,11 @@ namespace PlaneDisaster
 		/// datatable as a file.
 		/// </summary>
 		/// <param name="SQL">The SQL query to execute.</param>
-		/// <param name="strFile">
+		/// <param name="File">
 		/// The name of the file to write the xml to.
 		/// </param>
-		public void SerializeQuery (string SQL, string strFile) {
-			this.GetSqlAsDataSet(SQL).WriteXml(strFile, XmlWriteMode.WriteSchema);
+		public void SerializeQuery (string SQL, string File) {
+			this.GetSqlAsDataSet(SQL).WriteXml(File, XmlWriteMode.WriteSchema);
 		}
 		
 		
@@ -478,10 +492,10 @@ namespace PlaneDisaster
 		/// <param name="Table">
 		/// The name of the table to serialize.
 		/// </param>
-		/// <param name="strFile"></param>
-		public void SerializeTable (string Table, string strFile) {
+		/// <param name="File"></param>
+		public void SerializeTable (string Table, string File) {
 			string SQL = "SELECT * FROM " + Table;
-		 	this.SerializeQuery(SQL, strFile);
+		 	this.SerializeQuery(SQL, File);
 		}
 		
 		#region Private Members
@@ -503,11 +517,11 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="e">The Exception I am dealing with.</param>
 		protected static void DbaException (DbException e) {
-			string strTitle;
+			string Title;
 		
-			strTitle = String.Format("DBA Exception (HRESULT: {0})", e.ErrorCode);
+			Title = String.Format("DBA Exception (HRESULT: {0})", e.ErrorCode);
 			System.Windows.Forms.MessageBox.Show
-				(e.ToString() , strTitle);
+				(e.ToString() , Title);
 		}
 		
 		
@@ -528,26 +542,26 @@ namespace PlaneDisaster
 		/// Converts a DataTable to a string in CSV format.
 		/// </summary>
 		/// <param name="dt">The datatable</param>
-		/// <param name="strSeperator">The column seperator.</param>
+		/// <param name="Seperator">The column seperator.</param>
 		/// <returns>
-		/// A string with the fields of the datatable seperated by strSeperator
+		/// A string with the fields of the datatable seperated by Seperator
 		/// and the rows seperated by newlines.
 		/// </returns>
-		public static string DataTable2CSV(DataTable dt, string strSeperator) {
+		public static string DataTable2CSV(DataTable dt, string Seperator) {
 			int numFields;
-			string [] strFields;
+			string [] Fields;
 			StringBuilder CSV = new StringBuilder();
 			
 			numFields = dt.Columns.Count;
-			strFields = new string[numFields];
+			Fields = new string[numFields];
 			for (int i = 0; i < numFields; i++) {
-				strFields[i] = dt.Columns[i].ColumnName;
-				CSV.AppendFormat("{0}{1}", strFields[i], strSeperator);
+				Fields[i] = dt.Columns[i].ColumnName;
+				CSV.AppendFormat("{0}{1}", Fields[i], Seperator);
 			}
 			CSV.AppendLine();
 			foreach(DataRow row in dt.Rows) {
-				foreach (string strField in strFields) {
-					CSV.AppendFormat("{0}{1}", row[strField], strSeperator);
+				foreach (string Field in Fields) {
+					CSV.AppendFormat("{0}{1}", row[Field], Seperator);
 				}
 				CSV.AppendLine();
 			}

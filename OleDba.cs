@@ -37,9 +37,9 @@ namespace PlaneDisaster
 	public class OleDba : dba
 	{
 		private OleDbConnection _cn;
-		private string strConnStr;
-		private string strMDB;
-		private string strPasswd;
+		private string _ConnStr;
+		private string MDB;
+		private string Passwd;
 		
 		
 		/// <summary>The OleDb database connection</summary>
@@ -55,8 +55,8 @@ namespace PlaneDisaster
 		
 		/// <summary>The OleDb Connection string</summary>
 		protected string ConnStr {
-			get { return this.strConnStr; }
-			set { this.strConnStr = value; }
+			get { return this._ConnStr; }
+			set { this._ConnStr = value; }
 		}
 		
 		
@@ -84,7 +84,7 @@ namespace PlaneDisaster
 		/// </summary>
 		public void ConnectMDB() {
 			ConnStr = String.Format
-				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};", strMDB);
+				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};", MDB);
 			this.Connect();
 		}
 		
@@ -92,9 +92,9 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Connect to the specified MDB file.
 		/// </summary>
-		/// <param name="strFile">MDB file to connect to.</param>
-		public void ConnectMDB(string strFile) {
-			strMDB = strFile;
+		/// <param name="File">MDB file to connect to.</param>
+		public void ConnectMDB(string File) {
+			MDB = File;
 			this.ConnectMDB();
 		}
 		
@@ -107,10 +107,10 @@ namespace PlaneDisaster
 		/// The password to connecto to the database as.
 		/// </param>
 		public void ConnectMDB(string File, string Passwd) {
-			strMDB = File;
-			strPasswd = Passwd;
+			MDB = File;
+			this.Passwd = Passwd;
 			ConnStr = String.Format
-					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", strMDB, strPasswd);
+					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", MDB, Passwd);
 			this.Connect();
 		}
 		
@@ -136,16 +136,17 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
-		/// Gets database schema.
+		/// Gets the SQL executed by a given procedure.
 		/// </summary>
 		/// <returns>
-		/// A datatable of what I believe to be useless information. I believe
-		/// you can use the first column to determins the schema types you can 
-		/// return.
+		/// The source of the given procedure.
 		/// </returns>
-		public DataTable GetSchema() {
-			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
-			return cn.GetSchema();
+		public string GetProcedureSQL(string Procedure) {
+			DataTable dt;
+			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
+				(System.Data.OleDb.OleDbSchemaGuid.Procedures, 
+				 new object[] {null, null, Procedure, null});
+			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
 		}
 			
 		
@@ -166,6 +167,21 @@ namespace PlaneDisaster
 			//}
 			//trans.Commit();
 			return ds;
+		}
+		
+		
+		/// <summary>
+		/// Gets the SQL executed by a given VIEW.
+		/// </summary>
+		/// <returns>
+		/// The source of the given view.
+		/// </returns>
+		public string GetViewSQL(string View) {
+			DataTable dt;
+			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
+				(System.Data.OleDb.OleDbSchemaGuid.Views, 
+				 new object[] {null, null, View});
+			return (string) dt.Rows[0]["VIEW_DEFINITION"];
 		}
 	}
 }

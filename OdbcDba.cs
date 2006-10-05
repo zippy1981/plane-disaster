@@ -37,7 +37,7 @@ namespace PlaneDisaster
 	public class OdbcDba : dba
 	{	
 		private OdbcConnection _cn;
-		private string strConnStr;
+		private string _ConnStr;
 
 		
 		/// <summary>The Odbc database connection</summary>
@@ -53,8 +53,8 @@ namespace PlaneDisaster
 		
 		/// <summary>The Odbc Connection string</summary>
 		protected string ConnStr {
-			get { return this.strConnStr; }
-			set { this.strConnStr = value; }
+			get { return this._ConnStr; }
+			set { this._ConnStr = value; }
 		}
 		
 		

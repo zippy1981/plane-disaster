@@ -57,6 +57,14 @@ namespace PlaneDisaster
 		/// <summary>The Results of the query in CSV format.</summary>
 		private string CSV {
 			get { return this.txtResults.Text; }
+			set { this.txtResults.Text = value; }
+		}
+		
+		
+		/// <summary>The contents of the Query Text Area.</summary>
+		private string Query {
+			get { return this.txtSQL.Text; }
+			set { this.txtSQL.Text = value; }
 		}
 		
 		#endregion
@@ -209,18 +217,18 @@ namespace PlaneDisaster
 		
 		private void menuAbout_Click (object sender, System.EventArgs e) {
 			//TODO: write an about box
-			string strMsg;
+			string Msg;
 			
-			strMsg = "PlaneDisaster.NET database viewer\nCopyright 2006 Justin Dearing\nzippy1981@gmail.com";
+			Msg = "PlaneDisaster.NET database viewer\nCopyright 2006 Justin Dearing\nzippy1981@gmail.com";
 			//TODO: Bitch about this problems on the SharpDevelop forum 
 			//Possible reason: http://community.sharpdevelop.net/forums/thread/6750.aspx
 			/*
 			Assembly exe = typeof(MainForm).Assembly;
 			ResourceManager rm = new ResourceManager
 				("PlaneDisaster.MainForm", exe);
-			strMsg = rm.GetString("AboutMsg");
+			Msg = rm.GetString("AboutMsg");
 			*/
-			MessageBox.Show(strMsg, "About PlaneDisaster.NET");
+			MessageBox.Show(Msg, "About PlaneDisaster.NET");
 		}
 		
 		
@@ -241,7 +249,7 @@ namespace PlaneDisaster
 		
 		void menuDatabaseSchema_Click(object sender, System.EventArgs e)
 		{
-			this.gridResults.DataSource = ((OleDba)this.dbcon).GetSchema();
+			this.gridResults.DataSource = dbcon.GetSchema();
 		}
 		
 		
@@ -256,10 +264,45 @@ namespace PlaneDisaster
 				lstTables.DataSource = dbcon.GetTables();
 			} else if (mnu.Name == "menuDropView") {
 				dbcon.DropTable('[' + (string) lstViews.SelectedItem + ']');
-				lstViews.DataSource = ((OleDba)dbcon).GetViews();
+				lstViews.DataSource = dbcon.GetViews();
 			} else {
 				throw new ArgumentException
 					("sender for menuDrop_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
+		}
+		
+		
+		void menuScript_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuScriptProcedure") {
+				this.Query = ((OleDba)dbcon).GetProcedureSQL((string) lstProcedures.SelectedItem);
+			} else if (mnu.Name == "menuScriptTable") {
+				//TODO: Implement script table for SQLite.
+				MessageBox.Show("TODO: Implelemt this");
+			} else if (mnu.Name == "menuScriptView") {
+				this.Query = ((OleDba)dbcon).GetViewSQL((string) lstViews.SelectedItem);
+			} else {
+				throw new ArgumentException
+					("sender for menuScript_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
+		}
+		
+		
+		void menuShow_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuShowProcedure") {
+				this.lst_DblClick(lstProcedures, e);
+			} else if (mnu.Name == "menuShowTable") {
+				this.lst_DblClick(lstTables, e);
+			} else if (mnu.Name == "menuShowView") {
+				this.lst_DblClick(lstViews, e);
+			} else {
+				throw new ArgumentException
+					("sender for menuShow_Click must be one of " +
 					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
@@ -411,27 +454,51 @@ namespace PlaneDisaster
 		
 		
 		private void InitContextMenues () {
-			ContextMenu ctxDropProcedure, ctxDropTable, ctxDropView;
+			ContextMenu ctxProcedure, ctxTable, ctxView;
 			MenuItem menuDropProcedure, menuDropTable, menuDropView;
+			MenuItem menuScriptProcedure, menuScriptView;
+			MenuItem menuShowProcedure, menuShowTable, menuShowView;
 			
 			menuDropProcedure = new MenuItem("Drop");
 			menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
 			menuDropProcedure.Name = "menuDropProcedure";
-			ctxDropProcedure = new ContextMenu(new MenuItem[] {menuDropProcedure});
-			this.lstProcedures.ContextMenu = ctxDropProcedure;
+			
+			menuScriptProcedure = new MenuItem("Script");
+			menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
+			menuScriptProcedure.Name = "menuScriptProcedure";
+			
+			menuShowProcedure = new MenuItem("Show");
+			menuShowProcedure.Click += new System.EventHandler(menuShow_Click);
+			menuShowProcedure.Name = "menuShowProcedure";
+			
+			ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
+			this.lstProcedures.ContextMenu = ctxProcedure;
 				
 			menuDropTable = new MenuItem("Drop");
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
 			menuDropTable.Name = "menuDropTable";
-			ctxDropTable = new ContextMenu(new MenuItem[] {menuDropTable});
-			this.lstTables.ContextMenu = ctxDropTable;
+			
+			menuShowTable = new MenuItem("Show");
+			menuShowTable.Click += new System.EventHandler(menuShow_Click);
+			menuShowTable.Name = "menuShowTable";
+			
+			ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuDropTable});
+			this.lstTables.ContextMenu = ctxTable;
 			
 			menuDropView = new MenuItem("Drop");
 			menuDropView.Click += new System.EventHandler(menuDrop_Click);
 			menuDropView.Name = "menuDropView";
-			ctxDropView = new ContextMenu(new MenuItem[] {menuDropView});
+
+			menuScriptView = new MenuItem("Script");
+			menuScriptView.Click += new System.EventHandler(menuScript_Click);
+			menuScriptView.Name = "menuScriptView";
 			
-			this.lstViews.ContextMenu = ctxDropView;
+			menuShowView = new MenuItem("Show");
+			menuShowView.Click += new System.EventHandler(menuShow_Click);
+			menuShowView.Name = "menuShowView";
+
+			ctxView = new ContextMenu(new MenuItem[] {menuShowView, menuScriptView, menuDropView});
+			this.lstViews.ContextMenu = ctxView;
 		}
 		
 		
