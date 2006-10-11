@@ -224,6 +224,12 @@ namespace PlaneDisaster
 		}
 		
 		
+		void menuClose_Click(object sender, System.EventArgs e)
+		{
+			DisconnectDataSource();
+		}
+		
+		
 		void menuCompactDatabase_Click (object sender, System.EventArgs e)
 		{
 			//TODO: make sure you are not compacting the currently open database. 
@@ -406,6 +412,32 @@ namespace PlaneDisaster
 
 
 		/// <summary>
+		/// Disconnects from the data source and updates the GUI appropiatly.
+		/// </summary>
+		private void DisconnectDataSource() {
+			lstColumns.DataSource = null;
+			lstProcedures.DataSource = null;
+			lstTables.DataSource = null;
+			lstViews.DataSource = null;
+			
+			lstColumns.ContextMenu = null;
+			lstProcedures.ContextMenu = null;
+			lstTables.ContextMenu = null;
+			lstViews.ContextMenu = null;
+			
+			txtResults.Text = "";
+			gridResults.DataSource = null;
+			
+			databaseSchemaToolStripMenuItem.Enabled = false;
+			dbcon.Disconnect();
+			Text = string.Format("PlaneDisaster.NET");
+			databaseSchemaToolStripMenuItem.Enabled = false;
+			this.closeToolStripMenuItem.Enabled = false;
+			
+		}
+
+
+		/// <summary>
 		/// Populates the listbox that hold the names of tables in the
 		/// database.
 		/// </summary>
@@ -423,6 +455,7 @@ namespace PlaneDisaster
 			gridResults.DataSource = null;
 			
 			databaseSchemaToolStripMenuItem.Enabled = true;
+			this.closeToolStripMenuItem.Enabled = true;
 		}
 		
 		
