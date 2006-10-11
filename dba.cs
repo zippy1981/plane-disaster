@@ -40,15 +40,15 @@ namespace PlaneDisaster
 	/// </summary>
 	public abstract class dba
 	{
-		private DbConnection _cn;
+		private DbConnection _Cn;
 		
 		/// <summary>The ADO.NET database connection</summary>
-		protected virtual DbConnection cn {
+		protected virtual DbConnection Cn {
 			get {
-				return this._cn;
+				return this._Cn;
 			}
 			set {
-				this._cn = value;
+				this._Cn = value;
 			}
 		}
 		
@@ -74,7 +74,7 @@ namespace PlaneDisaster
 		/// Set this to true to replace the current procedure.
 		/// </param>
 		public void CreateProcedure(string Name, string SQL, bool ReplaceQuery) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			if (ReplaceQuery) {
 				try {
 					cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
@@ -107,7 +107,7 @@ namespace PlaneDisaster
 		/// Set this to true to replace the current view.
 		/// </param>
 		public void CreateView(string Name, string SQL, bool ReplaceQuery) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			if (ReplaceQuery) {
 				try {
 					cmd.CommandText = String.Format("DROP VIEW {0}", Name);
@@ -124,7 +124,7 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="Name">The name of the View.</param>
 		public void DropProcedure(string Name) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
 			cmd.ExecuteNonQuery();
 		}
@@ -135,7 +135,7 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="Name">The name of the Table.</param>
 		public void DropTable(string Name) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			cmd.CommandText = String.Format("DROP TABLE {0}", Name);
 			cmd.ExecuteNonQuery();
 		}
@@ -146,7 +146,7 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="Name">The name of the View.</param>
 		public void DropView(string Name) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			cmd.CommandText = String.Format("DROP VIEW {0}", Name);
 			cmd.ExecuteNonQuery();
 		}
@@ -154,7 +154,7 @@ namespace PlaneDisaster
 		
 		/// <summary>Disconnect from the database.</summary>
 		public void Disconnect () {
-			this.cn.Close();
+			this.Cn.Close();
 		}
 		
 		
@@ -165,9 +165,7 @@ namespace PlaneDisaster
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
 		public DataSet ExecuteSql(string SQL) {
 			DataSet ret;
-			DbCommand cmd = cn.CreateCommand();
-			//cmd.Transaction = cn.BeginTransaction();
-			//TODO: perhaps move this trimming over to dba::ExecuteSQL.
+			DbCommand cmd = Cn.CreateCommand();
 			SQL = SQL.Trim();
 			SQL = SQL.TrimEnd(new char [] {';'});
 			string [] Statements = SqlScript2Statements(SQL);
@@ -179,7 +177,6 @@ namespace PlaneDisaster
 				}
 			}
 			ret = this.GetSqlAsDataSet(Statements[Statements.Length - 1]);
-			//cmd.Transaction.Commit();
 			return ret;
 		}
 		
@@ -210,8 +207,7 @@ namespace PlaneDisaster
 			string [] Rows;
 			int curRowNum = 0;	
 			
-			cmd = cn.CreateCommand();
-			//cmd.Transaction = this.cn.BeginTransaction();;
+			cmd = Cn.CreateCommand();
 
 			try {
 				SQL = string.Concat("SELECT COUNT(*) FROM ", Table);
@@ -238,11 +234,8 @@ namespace PlaneDisaster
 					curRowNum++;
 				}
 				rdr.Close();
-				//cmd.Transaction.Commit();
 			} catch {
-				Rows = new string [1] {""};
-				cmd.Transaction.Rollback();
-				
+				Rows = new string [1] {""};				
 			}
 			return Rows;
 		}
@@ -269,7 +262,7 @@ namespace PlaneDisaster
 			
 			DataTable dt = null;			
 
-			dt = cn.GetSchema("procedures");
+			dt = Cn.GetSchema("procedures");
 			numCols = dt.Rows.Count;
 			Tables = new string[numCols];
 			for (i = 0; i < numCols; i++) {
@@ -288,7 +281,7 @@ namespace PlaneDisaster
 		/// </returns>
 		public virtual string GetProcedureSQL(string Procedure) {
 			DataTable dt;
-			dt = cn.GetSchema
+			dt = Cn.GetSchema
 				("Procedures", new string[] {null, null, Procedure, null});
 			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
 		}
@@ -303,8 +296,7 @@ namespace PlaneDisaster
 		/// return.
 		/// </returns>
 		public virtual DataTable GetSchema() {
-			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
-			return cn.GetSchema();
+			return Cn.GetSchema();
 		}
 		
 		
@@ -317,7 +309,7 @@ namespace PlaneDisaster
 		/// </returns>
 		public virtual DataTable GetSchema(string Collection) {
 			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
-			return cn.GetSchema(Collection);
+			return Cn.GetSchema(Collection);
 		}
 
 		
@@ -343,7 +335,7 @@ namespace PlaneDisaster
 		/// newlines and fields seperated by <code>Seperator</code>.
 		/// </returns>
 		public string GetSQLAsCSV (string SQL, string Seperator) {
-			DbCommand cmd = cn.CreateCommand();
+			DbCommand cmd = Cn.CreateCommand();
 			cmd.CommandText = SQL;
 			DbDataReader rdr;
 			int numFields;
@@ -392,9 +384,9 @@ namespace PlaneDisaster
 			string Status;
 			
 			Status = String.Concat(
-				cn.ConnectionString,
+				Cn.ConnectionString,
 				"\n",
-				cn.State.ToString()
+				Cn.State.ToString()
 			);
 			return Status;
 		}
@@ -436,7 +428,7 @@ namespace PlaneDisaster
 			string [] Tables;
 			DataTable dt = null;
 			
-			dt = cn.GetSchema("tables");
+			dt = Cn.GetSchema("tables");
 			numCols = dt.Rows.Count;
 			Tables = new string[numCols];
 			for (i = 0; i < numCols; i++) {
@@ -459,7 +451,7 @@ namespace PlaneDisaster
 			
 			DataTable dt = null;			
 
-			dt = cn.GetSchema("views");
+			dt = Cn.GetSchema("views");
 			numCols = dt.Rows.Count;
 			Tables = new string[numCols];
 			for (i = 0; i < numCols; i++) {
@@ -478,7 +470,7 @@ namespace PlaneDisaster
 		/// </returns>
 		public virtual string GetViewSQL(string View) {
 			DataTable dt;
-			dt = cn.GetSchema
+			dt = Cn.GetSchema
 				("Views", new string[] {null, null, View});
 			return (string) dt.Rows[0]["VIEW_DEFINITION"];
 		}

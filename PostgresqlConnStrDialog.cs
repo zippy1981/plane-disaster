@@ -83,7 +83,7 @@ namespace PlaneDisaster
 			get {
 				return String.Format
 					("Server=localhost;Database={0};User ID={1};password={2}", 
-					Database, User, Passwd);
+					Database, User, Password);
 			}
 		}
 		
@@ -95,7 +95,7 @@ namespace PlaneDisaster
 			get {
 				return String.Format
 					("Provider={0};Data Source=localhost;location={1};User ID={2};password={3}", 
-					Provider, Database, User, Passwd);
+					Provider, Database, User, Password);
 			}
 		}
 		

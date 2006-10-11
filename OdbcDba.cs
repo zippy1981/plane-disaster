@@ -36,17 +36,17 @@ namespace PlaneDisaster
 	/// </summary>
 	public class OdbcDba : dba
 	{	
-		private OdbcConnection _cn;
+		private OdbcConnection _Cn;
 		private string _ConnStr;
 
 		
 		/// <summary>The Odbc database connection</summary>
-		protected override System.Data.Common.DbConnection cn {
+		protected override System.Data.Common.DbConnection Cn {
 			get {
-				return this._cn;
+				return this._Cn;
 			}
 			set {
-				this._cn = (OdbcConnection) value;
+				this._Cn = (OdbcConnection) value;
 			}
 		}
 		
@@ -62,8 +62,8 @@ namespace PlaneDisaster
 		/// Connect to the previously defined connection string.
 		/// </summary>
 		public void Connect (){
-			this.cn = new OdbcConnection(ConnStr);
-			cn.Open();
+			this.Cn = new OdbcConnection(ConnStr);
+			Cn.Open();
 		}
 		
 
@@ -88,7 +88,7 @@ namespace PlaneDisaster
 			string [] Tables;
 			
 			try {
-				dt = cn.GetSchema("Columns", new string [] {null, null, Table, null});
+				dt = Cn.GetSchema("Columns", new string [] {null, null, Table, null});
 				numCols = dt.Rows.Count;
 				Tables = new string[numCols];
 				for (int i = 0; i < numCols; i++) {
@@ -114,7 +114,7 @@ namespace PlaneDisaster
 		/// <returns>A DataGridView containing the result set.</returns>
 		public override DataSet GetSqlAsDataSet(string SQL) {
 			DataSet ds = new DataSet();
-			OdbcDataAdapter da = new OdbcDataAdapter(SQL, (OdbcConnection)this.cn);
+			OdbcDataAdapter da = new OdbcDataAdapter(SQL, (OdbcConnection)this.Cn);
 			
 			da.Fill(ds, "qryTemp");
 			return ds;

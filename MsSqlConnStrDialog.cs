@@ -40,7 +40,7 @@ namespace PlaneDisaster
 			get {
 				return String.Format
 					("Provider={0};Data Source=(local);Database={1};User Id={2};Password={3}", 
-					Provider, Database, User, Passwd);
+					Provider, Database, User, Password);
 			}
 		}
 		

@@ -59,8 +59,8 @@ namespace PlaneDisaster
 		/// <summary>
 		/// The password to connect to the database with.
 		/// </summary>
-		public string Passwd {
-			get { return txtPasswd.Text; }
+		public string Password {
+			get { return txtPassword.Text; }
 		}
 		
 		

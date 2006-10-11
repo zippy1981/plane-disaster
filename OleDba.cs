@@ -36,19 +36,19 @@ namespace PlaneDisaster
 	/// </summary>
 	public class OleDba : dba
 	{
-		private OleDbConnection _cn;
+		private OleDbConnection _Cn;
 		private string _ConnStr;
 		private string MDB;
-		private string Passwd;
+		private string Password;
 		
 		
 		/// <summary>The OleDb database connection</summary>
-		protected override System.Data.Common.DbConnection cn {
+		protected override System.Data.Common.DbConnection Cn {
 			get {
-				return this._cn;
+				return this._Cn;
 			}
 			set {
-				this._cn = (OleDbConnection) value;
+				this._Cn = (OleDbConnection) value;
 			}
 		}
 		
@@ -64,8 +64,8 @@ namespace PlaneDisaster
 		/// Connect to the previously defined connection string.
 		/// </summary>
 		public void Connect (){
-			this.cn = new OleDbConnection(ConnStr);
-			cn.Open();
+			this.Cn = new OleDbConnection(ConnStr);
+			Cn.Open();
 		}
 		
 
@@ -103,14 +103,14 @@ namespace PlaneDisaster
 		/// Connect to the specified MDB file with the specified passwd.
 		/// </summary>
 		/// <param name="File">MDB file to connect to.</param>
-		/// <param name="Passwd">
+		/// <param name="Password">
 		/// The password to connecto to the database as.
 		/// </param>
-		public void ConnectMDB(string File, string Passwd) {
+		public void ConnectMDB(string File, string Password) {
 			MDB = File;
-			this.Passwd = Passwd;
+			this.Password = Password;
 			ConnStr = String.Format
-					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", MDB, Passwd);
+					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", MDB, Password);
 			this.Connect();
 		}
 		
@@ -125,7 +125,7 @@ namespace PlaneDisaster
 			int numCols;
 			string [] Tables;
 			
-			dt = ((OleDbConnection)cn).GetOleDbSchemaTable(OleDbSchemaGuid.Columns, new object [] {null, null, Table, null});
+			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable(OleDbSchemaGuid.Columns, new object [] {null, null, Table, null});
 			numCols = dt.Rows.Count;
 			Tables = new string[numCols];
 			for (int i = 0; i < numCols; i++) {
@@ -143,7 +143,7 @@ namespace PlaneDisaster
 		/// </returns>
 		public override string GetProcedureSQL(string Procedure) {
 			DataTable dt;
-			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
+			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
 				(System.Data.OleDb.OleDbSchemaGuid.Procedures, 
 				 new object[] {null, null, Procedure, null});
 			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
@@ -158,14 +158,9 @@ namespace PlaneDisaster
 		/// <returns>A DataGridView containing the result set.</returns>
 		public override DataSet GetSqlAsDataSet(string SQL) {
 			DataSet ds = new DataSet();
-			OleDbDataAdapter da = new OleDbDataAdapter(SQL, (OleDbConnection) this.cn);
-			//OleDbTransaction trans = (OleDbTransaction) cn.BeginTransaction();
-			//try {
-				da.Fill(ds, "qryTemp");
-			//} catch (OleDbException) {
-				//I probally threw it a DDL query.
-			//}
-			//trans.Commit();
+			OleDbDataAdapter da = new OleDbDataAdapter(SQL, (OleDbConnection) this.Cn);
+			da.Fill(ds, "qryTemp");
+			
 			return ds;
 		}
 		
@@ -178,7 +173,7 @@ namespace PlaneDisaster
 		/// </returns>
 		public override string GetViewSQL(string View) {
 			DataTable dt;
-			dt = ((OleDbConnection)cn).GetOleDbSchemaTable
+			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
 				(System.Data.OleDb.OleDbSchemaGuid.Views, 
 				 new object[] {null, null, View});
 			return (string) dt.Rows[0]["VIEW_DEFINITION"];

@@ -216,18 +216,10 @@ namespace PlaneDisaster
 		#region Menu Events	
 		
 		private void menuAbout_Click (object sender, System.EventArgs e) {
-			//TODO: write an about box
+			//TODO: write a proper about box
 			string Msg;
 			
 			Msg = "PlaneDisaster.NET database viewer\nCopyright 2006 Justin Dearing\nzippy1981@gmail.com";
-			//TODO: Bitch about this problems on the SharpDevelop forum 
-			//Possible reason: http://community.sharpdevelop.net/forums/thread/6750.aspx
-			/*
-			Assembly exe = typeof(MainForm).Assembly;
-			ResourceManager rm = new ResourceManager
-				("PlaneDisaster.MainForm", exe);
-			Msg = rm.GetString("AboutMsg");
-			*/
 			MessageBox.Show(Msg, "About PlaneDisaster.NET");
 		}
 		
@@ -312,6 +304,7 @@ namespace PlaneDisaster
 		{
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new SaveFileDialog();
+			dlg.Title = "New Database";
 			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
@@ -340,16 +333,26 @@ namespace PlaneDisaster
 		private void menuOpen_Click (object sender, System.EventArgs e) {
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
+			FileFilter.Append("All supported database types|*.mdb;*.db;*.db3;*.sqlite");
+			FileFilter.Append("|Microsoft Access (*.mdb)|*.mdb");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
 			
 			if(dlg.ShowDialog() == DialogResult.OK) {
 				switch (dlg.FilterIndex) {
 					case 1:
-						this.OpenMDB(dlg.FileName);
+						string Extension = 
+							System.IO.Path.GetExtension(dlg.FileName).ToLower();
+						if (Extension == ".mdb") {
+							this.OpenMDB(dlg.FileName);
+						} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+							this.OpenSQLite(dlg.FileName);
+						} else {throw new ApplicationException("Unknown file type.");}
 						break;
 					case 2:
+						this.OpenMDB(dlg.FileName);
+						break;
+					case 3:
 						this.OpenSQLite(dlg.FileName);
 						break;
 				}
@@ -358,41 +361,6 @@ namespace PlaneDisaster
 			dlg.Dispose();
 			this.Connected = true;
 			InitContextMenues();
-		}
-
-		
-		private void menuOpenMsSql_Click (object sender, System.EventArgs e) {
-			MsSqlConnStrDialog dlg;
-			using (dlg = new MsSqlConnStrDialog()) {
-				if (dlg.ShowDialog() == DialogResult.OK) {
-					MessageBox.Show(dlg.ConnectionString);
-					((OleDba) dbcon).ConnectDSN(dlg.ConnectionString);
-					this.DisplayDataSource();
-				}
-			}
-		}
-		
-		
-		private void menuOpenMySQL_Click (object sender, System.EventArgs e) {
-			MySQLConnStrDialog dlg;
-			using (dlg = new MySQLConnStrDialog()) {
-				if (dlg.ShowDialog() == DialogResult.OK) {
-					MessageBox.Show(dlg.ConnectionString);
-					((OleDba) dbcon).ConnectDSN(dlg.ConnectionString);
-					this.DisplayDataSource();
-				}
-			}
-		}
-		
-		
-		private void menuOpenPostgresql_Click (object sender, System.EventArgs e) {
-			PostgresqlConnStrDialog dlg;
-			using (dlg = new PostgresqlConnStrDialog(PostgresqlConnStrDialog.DbDriver.OleDb)) {
-				if (dlg.ShowDialog() == DialogResult.OK) {
-					((OleDba) dbcon).ConnectDSN(dlg.ConnectionString);
-					this.DisplayDataSource();
-				}
-			}
 		}
 
 		
@@ -446,11 +414,15 @@ namespace PlaneDisaster
 		/// refresh the form.
 		/// </remarks>
 		private void DisplayDataSource() {
+			lstColumns.DataSource = null;
 			lstProcedures.DataSource = dbcon.GetProcedures();
 			lstTables.DataSource = dbcon.GetTables();
 			lstViews.DataSource = dbcon.GetViews();
-			this.txtResults.Text = "";
-			this.gridResults.DataSource = null;
+			
+			txtResults.Text = "";
+			gridResults.DataSource = null;
+			
+			databaseSchemaToolStripMenuItem.Enabled = true;
 		}
 		
 		
@@ -542,11 +514,11 @@ namespace PlaneDisaster
 			} catch (OleDbException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
 				if (ex.ErrorCode == -2147217843) {
-					InputDialog GetPasswd = new InputDialog();
-					Result = GetPasswd.ShowDialog("Enter the password for the database");
+					InputDialog GetPassword = new InputDialog();
+					Result = GetPassword.ShowDialog("Enter the password for the database");
 					if (Result == DialogResult.OK) {
 						try {
-							((OleDba) dbcon).ConnectMDB(FileName, GetPasswd.Input);
+							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
 						} catch (OleDbException exSecond) {
 							if (exSecond.ErrorCode == -2147217843) {
 								MessageBox.Show("Incorrect Password");
@@ -554,7 +526,7 @@ namespace PlaneDisaster
 								throw exSecond;
 							}
 							return;
-						} finally { GetPasswd.Dispose(); }
+						} finally { GetPassword.Dispose(); }
 					} 
 				}
 				else { 
@@ -570,12 +542,6 @@ namespace PlaneDisaster
 			
 			((SQLiteDba) dbcon).Connect(FileName);
 			this.DisplayDataSource();
-		}
-		
-		
-		void MainFormLoad(object sender, System.EventArgs e)
-		{
-			
 		}
 	}
 }

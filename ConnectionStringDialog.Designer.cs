@@ -36,7 +36,7 @@ namespace PlaneDisaster
 		private void InitializeComponent()
 		{
 			this.txtUser = new System.Windows.Forms.TextBox();
-			this.txtPasswd = new System.Windows.Forms.TextBox();
+			this.txtPassword = new System.Windows.Forms.TextBox();
 			this.txtDatabase = new System.Windows.Forms.TextBox();
 			this.lblDatabase = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
@@ -53,14 +53,14 @@ namespace PlaneDisaster
 			this.txtUser.Size = new System.Drawing.Size(200, 23);
 			this.txtUser.TabIndex = 2;
 			// 
-			// txtPasswd
+			// txtPassword
 			// 
-			this.txtPasswd.Location = new System.Drawing.Point(94, 68);
-			this.txtPasswd.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.txtPasswd.Name = "txtPasswd";
-			this.txtPasswd.Size = new System.Drawing.Size(200, 23);
-			this.txtPasswd.TabIndex = 3;
-			this.txtPasswd.UseSystemPasswordChar = true;
+			this.txtPassword.Location = new System.Drawing.Point(94, 68);
+			this.txtPassword.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+			this.txtPassword.Name = "txtPassword";
+			this.txtPassword.Size = new System.Drawing.Size(200, 23);
+			this.txtPassword.TabIndex = 3;
+			this.txtPassword.UseSystemPasswordChar = true;
 			// 
 			// txtDatabase
 			// 
@@ -130,7 +130,7 @@ namespace PlaneDisaster
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.lblDatabase);
 			this.Controls.Add(this.txtDatabase);
-			this.Controls.Add(this.txtPasswd);
+			this.Controls.Add(this.txtPassword);
 			this.Controls.Add(this.txtUser);
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.Name = "ConnectionStringDialog";
@@ -139,7 +139,7 @@ namespace PlaneDisaster
 			this.PerformLayout();
 		}
 		private System.Windows.Forms.TextBox txtUser;
-		private System.Windows.Forms.TextBox txtPasswd;
+		private System.Windows.Forms.TextBox txtPassword;
 		private System.Windows.Forms.TextBox txtDatabase;
 		private System.Windows.Forms.Button cmdCancel;
 		private System.Windows.Forms.Button cmdConnect;

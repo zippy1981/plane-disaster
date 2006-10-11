@@ -202,26 +202,26 @@ namespace PlaneDisaster
 			// newToolStripMenuItem
 			// 
 			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.newToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
 			this.newToolStripMenuItem.Text = "&New";
 			this.newToolStripMenuItem.Click += new System.EventHandler(this.menuNew_Click);
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.menuOpen_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(108, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -275,6 +275,7 @@ namespace PlaneDisaster
 			// 
 			// databaseSchemaToolStripMenuItem
 			// 
+			this.databaseSchemaToolStripMenuItem.Enabled = false;
 			this.databaseSchemaToolStripMenuItem.Name = "databaseSchemaToolStripMenuItem";
 			this.databaseSchemaToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
 			this.databaseSchemaToolStripMenuItem.Text = "Database &Schema";
@@ -354,7 +355,6 @@ namespace PlaneDisaster
 			this.Text = "Plane Disaster.NET";
 			this.SizeChanged += new System.EventHandler(this.MainFormResize);
 			this.Layout += new System.Windows.Forms.LayoutEventHandler(this.MainFormResize);
-			this.Load += new System.EventHandler(this.MainFormLoad);
 			((System.ComponentModel.ISupportInitialize)(this.gridResults)).EndInit();
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
