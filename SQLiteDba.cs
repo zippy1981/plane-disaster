@@ -127,8 +127,11 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Gets the SQL executed by a given TABLE.
 		/// </summary>
+		/// <remarks>
+		/// Posted by Rasha in http://sqlite.phxsoftware.com/forums/thread/2272.aspx 
+		/// </remarks>
 		/// <returns>
-		/// The source of the given table.
+		/// The DDL of the given table.
 		/// </returns>
 		public virtual string GetTableSQL(string Table) {
 			using (SQLiteCommand cmd = (SQLiteCommand)Cn.CreateCommand()) {
