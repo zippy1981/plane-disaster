@@ -275,12 +275,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuScriptProcedure") {
-				this.Query = ((OleDba)dbcon).GetProcedureSQL((string) lstProcedures.SelectedItem);
+				this.Query = dbcon.GetProcedureSQL(lstProcedures.Text);
 			} else if (mnu.Name == "menuScriptTable") {
-				//TODO: Implement script table for SQLite.
-				MessageBox.Show("TODO: Implelemt this");
+				this.Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
 			} else if (mnu.Name == "menuScriptView") {
-				this.Query = dbcon.GetViewSQL((string) lstViews.SelectedItem);
+				this.Query = dbcon.GetViewSQL(lstViews.Text);
 			} else {
 				throw new ArgumentException
 					("sender for menuScript_Click must be one of " +
@@ -462,7 +461,7 @@ namespace PlaneDisaster
 		private void InitContextMenues () {
 			ContextMenu ctxProcedure, ctxTable, ctxView;
 			MenuItem menuDropProcedure, menuDropTable, menuDropView;
-			MenuItem menuScriptProcedure, menuScriptView;
+			MenuItem menuScriptProcedure, menuScriptTable, menuScriptView;
 			MenuItem menuShowProcedure, menuShowTable, menuShowView;
 			
 			menuDropProcedure = new MenuItem("Drop");
@@ -484,11 +483,19 @@ namespace PlaneDisaster
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
 			menuDropTable.Name = "menuDropTable";
 			
+			menuScriptTable = new MenuItem("Script");
+			menuScriptTable.Click += new System.EventHandler(menuScript_Click);
+			menuScriptTable.Name = "menuScriptTable";
+			
 			menuShowTable = new MenuItem("Show");
 			menuShowTable.Click += new System.EventHandler(menuShow_Click);
 			menuShowTable.Name = "menuShowTable";
 			
-			ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuDropTable});
+			if (dbcon is SQLiteDba) {
+				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuScriptTable, menuDropTable});
+			} else {
+				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuDropTable});
+			}
 			this.lstTables.ContextMenu = ctxTable;
 			
 			menuDropView = new MenuItem("Drop");

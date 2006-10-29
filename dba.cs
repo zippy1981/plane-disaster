@@ -308,7 +308,6 @@ namespace PlaneDisaster
 		/// A datatable with schema information about the database
 		/// </returns>
 		public virtual DataTable GetSchema(string Collection) {
-			//TODO: See if there is a good call to GetOleDbSchemaTable() to get info like this
 			return Cn.GetSchema(Collection);
 		}
 

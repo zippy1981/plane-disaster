@@ -122,5 +122,22 @@ namespace PlaneDisaster
 			da.Fill(ds, "qryTemp");
 			return ds;
 		}
+		
+		
+		/// <summary>
+		/// Gets the SQL executed by a given TABLE.
+		/// </summary>
+		/// <returns>
+		/// The source of the given table.
+		/// </returns>
+		public virtual string GetTableSQL(string Table) {
+			using (SQLiteCommand cmd = (SQLiteCommand)Cn.CreateCommand()) {
+				cmd.CommandText =  "SELECT sql FROM sqlite_master " +
+					"WHERE name = @tablename";
+				cmd.Parameters.Add("@tablename", DbType.String);
+				cmd.Parameters["@tablename"].Value = Table;
+				return (string) cmd.ExecuteScalar();
+			}
+		}
 	}
 }
