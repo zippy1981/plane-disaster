@@ -18,6 +18,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <FileAlignment>4096</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <ApplicationIcon>PlaneDisaster.NET.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -66,21 +67,22 @@
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
     <Compile Include="MsSqlConnStrDialog.cs" />
-    <Compile Include="MainForm.cs" />
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="MainForm.resources">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
     <Compile Include="OleDba.cs" />
     <Compile Include="OdbcDba.cs" />
     <Compile Include="JetSqlUtil.cs" />
     <Compile Include="SQLiteDba.cs" />
+    <Compile Include="MainForm.cs" />
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl.txt" />
     <Content Include="installer.nsi" />
+    <Content Include="PlaneDisaster.NET.ico" />
   </ItemGroup>
   <Import Project="$(SharpDevelopBinPath)\SharpDevelop.Build.CSharp.targets" />
 </Project>
