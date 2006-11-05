@@ -52,8 +52,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="dba.cs" />
-    <Compile Include="InputDialog.cs" />
-    <EmbeddedResource Include="InputDialog.resources" />
     <None Include="todo.txt" />
     <None Include="README.txt" />
     <Compile Include="ConnectionStringDialog.cs" />
@@ -78,6 +76,7 @@
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Include="InputDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl.txt" />

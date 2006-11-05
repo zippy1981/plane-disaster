@@ -54,6 +54,14 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Gets the ConnectionString for the currently connected database.
+		/// </summary>
+		public string ConnectionString {
+			get { return Cn.ConnectionString; }
+		}
+		
+				
+		/// <summary>
 		/// Creates a procedure with a given name and sql statement if a procedure of the same name exists it 
 		/// replaces the procedure.
 		/// </summary>

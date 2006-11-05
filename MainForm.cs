@@ -26,14 +26,12 @@
 
  
 using System;
+using System.Data.Common;
 using System.Data.OleDb;
-using System.Drawing;
+using System.Data.SQLite;
 using System.IO;
-using System.Reflection;
-using System.Resources;
 using System.Text;
 using System.Windows.Forms;
-
 
 namespace PlaneDisaster
 {
@@ -86,6 +84,8 @@ namespace PlaneDisaster
 			lstTables.MouseDown += new MouseEventHandler(this.ListBox_RightClickSelect);
 			lstViews.MouseDown += new MouseEventHandler(this.ListBox_RightClickSelect);
 			
+			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
+			
 			//TODO: figure out the event fired whe enter is pressed. Its not Enter
 		}
 
@@ -100,7 +100,7 @@ namespace PlaneDisaster
 			Application.Run(new MainForm());
 		}
 
-		
+		#region Events
 		
 		#region Button Events
 		
@@ -131,6 +131,17 @@ namespace PlaneDisaster
 			MessageBox.Show (dbcon.GetStatus());
 		}
 
+		#endregion
+		
+		
+		#region DataGridView Events
+		
+		void EvtDataGridError(object sender, DataGridViewDataErrorEventArgs e) {
+			if ((e.Context & DataGridViewDataErrorContexts.Display) == DataGridViewDataErrorContexts.Display) {
+				//Its ok its just not a picture
+			} else { e.ThrowException = true;}
+		}
+		
 		#endregion
 		
 		
@@ -232,14 +243,18 @@ namespace PlaneDisaster
 		
 		void menuCompactDatabase_Click (object sender, System.EventArgs e)
 		{
-			//TODO: make sure you are not compacting the currently open database. 
-			StringBuilder FileFilter = new StringBuilder();
+			string CurrentFile = this.GetFileName();
+			string FileFilter = "Microsoft Access (*.mdb)|*.mdb";
 			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
-			dlg.Filter = FileFilter.ToString();
+			dlg.Filter = FileFilter;
 			
 			if (dlg.ShowDialog() == DialogResult.OK) {
-				JetSqlUtil.CompactMDB(dlg.FileName);
+				if (dlg.FileName == CurrentFile) {
+					this.DisconnectDataSource();
+					JetSqlUtil.CompactMDB(dlg.FileName);
+					this.OpenMDB(CurrentFile);
+				} else { 
+					JetSqlUtil.CompactMDB(dlg.FileName); }
 			}
 			dlg.Dispose();
 		}
@@ -269,39 +284,10 @@ namespace PlaneDisaster
 					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
+
 		
-		
-		void menuScript_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
-			
-			if (mnu.Name == "menuScriptProcedure") {
-				this.Query = dbcon.GetProcedureSQL(lstProcedures.Text);
-			} else if (mnu.Name == "menuScriptTable") {
-				this.Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
-			} else if (mnu.Name == "menuScriptView") {
-				this.Query = dbcon.GetViewSQL(lstViews.Text);
-			} else {
-				throw new ArgumentException
-					("sender for menuScript_Click must be one of " +
-					 "menuProcedures, menuTables, or menuViews.");
-			}
-		}
-		
-		
-		void menuShow_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
-			
-			if (mnu.Name == "menuShowProcedure") {
-				this.lst_DblClick(lstProcedures, e);
-			} else if (mnu.Name == "menuShowTable") {
-				this.lst_DblClick(lstTables, e);
-			} else if (mnu.Name == "menuShowView") {
-				this.lst_DblClick(lstViews, e);
-			} else {
-				throw new ArgumentException
-					("sender for menuShow_Click must be one of " +
-					 "menuProcedures, menuTables, or menuViews.");
-			}
+		void menuExit_Click (object sender, System.EventArgs e) {
+			this.Close();
 		}
 		
 		
@@ -368,23 +354,58 @@ namespace PlaneDisaster
 			InitContextMenues();
 		}
 
-		
-		private void menuExit_Click (object sender, System.EventArgs e) {
-			this.Close();
-		}
-
 
 		void menuRepairDatabase_Click (object sender, System.EventArgs e)
 		{
+			string CurrentFile = this.GetFileName();
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
 			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
 			dlg.Filter = FileFilter.ToString();
 			
 			if (dlg.ShowDialog() == DialogResult.OK) {
-				JetSqlUtil.RepairMDB(dlg.FileName);
+				if (dlg.FileName == CurrentFile) {
+					this.DisconnectDataSource();
+					JetSqlUtil.RepairMDB(dlg.FileName);
+					this.OpenMDB(CurrentFile);
+				} else { 
+					JetSqlUtil.RepairMDB(dlg.FileName); }
 			}
 			dlg.Dispose();
+		}
+		
+		
+		void menuScript_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuScriptProcedure") {
+				this.Query = dbcon.GetProcedureSQL(lstProcedures.Text);
+			} else if (mnu.Name == "menuScriptTable") {
+				this.Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
+			} else if (mnu.Name == "menuScriptView") {
+				this.Query = dbcon.GetViewSQL(lstViews.Text);
+			} else {
+				throw new ArgumentException
+					("sender for menuScript_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
+		}
+		
+		
+		void menuShow_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuShowProcedure") {
+				this.lst_DblClick(lstProcedures, e);
+			} else if (mnu.Name == "menuShowTable") {
+				this.lst_DblClick(lstTables, e);
+			} else if (mnu.Name == "menuShowView") {
+				this.lst_DblClick(lstViews, e);
+			} else {
+				throw new ArgumentException
+					("sender for menuShow_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
 		}
 
 		#endregion
@@ -409,6 +430,7 @@ namespace PlaneDisaster
 
 		#endregion
 
+		#endregion
 
 		/// <summary>
 		/// Disconnects from the data source and updates the GUI appropiatly.
@@ -429,13 +451,14 @@ namespace PlaneDisaster
 			
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			dbcon.Disconnect();
+			dbcon = null;
 			Text = string.Format("PlaneDisaster.NET");
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			this.closeToolStripMenuItem.Enabled = false;
 			
 		}
-
-
+		
+		
 		/// <summary>
 		/// Populates the listbox that hold the names of tables in the
 		/// database.
@@ -455,6 +478,24 @@ namespace PlaneDisaster
 			
 			databaseSchemaToolStripMenuItem.Enabled = true;
 			this.closeToolStripMenuItem.Enabled = true;
+		}
+		
+		
+		/// <summary>
+		/// Gets the file name of the currently open database.
+		/// </summary>
+		/// <returns>The file name of the currently open database.</returns>
+		private string GetFileName() {
+			DbConnectionStringBuilder ConStr;
+			
+			if (dbcon is OleDba) {
+				ConStr = new OleDbConnectionStringBuilder(dbcon.ConnectionString);
+				//For some reason FileName is blank.
+				return ((OleDbConnectionStringBuilder)ConStr).DataSource;
+			} else if (dbcon is SQLiteDba) {
+				ConStr = new SQLiteConnectionStringBuilder(dbcon.ConnectionString);
+				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
+			} else { return ""; }
 		}
 		
 		
@@ -544,6 +585,7 @@ namespace PlaneDisaster
 			//TODO: Scrub or escape this table name
 			this.LoadQueryResults(String.Format("SELECT * FROM [{0}]", Table));
 		}
+		
 		
 		private void OpenMDB (string FileName) {
 			DialogResult Result;
