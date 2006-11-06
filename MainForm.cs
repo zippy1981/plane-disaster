@@ -42,15 +42,8 @@ namespace PlaneDisaster
 	{
 		
 		private dba dbcon = null;
-		private bool _Connected = false;
-		
+				
 		#region Properties
-		
-		private bool Connected {
-			get { return _Connected; }
-			set { _Connected = value; }
-		}
-		
 		
 		/// <summary>The Results of the query in CSV format.</summary>
 		private string CSV {
@@ -75,6 +68,7 @@ namespace PlaneDisaster
 			InitializeComponent();
 			
 			/* ListBox Double Click event handlers */
+			lstColumns.DoubleClick += new System.EventHandler(this.lst_DblClick);
 			lstProcedures.DoubleClick += new System.EventHandler(this.lst_DblClick);
 			lstTables.DoubleClick += new System.EventHandler(this.lst_DblClick);
 			lstViews.DoubleClick += new System.EventHandler(this.lst_DblClick);
@@ -187,7 +181,12 @@ namespace PlaneDisaster
 	
 		void lst_DblClick(object sender, System.EventArgs e) {
 			ListBox lst = (ListBox) sender;
-			LoadTableResults(lst.Text);	
+			if (lst.Name == "lstColumns") {
+				txtResults.Text = 
+					string.Join(" :: ", dbcon.GetColumnAsStringArray(lstTables.Text, lst.Text));
+			} else {
+				LoadTableResults(lst.Text);
+			}
 		}
 		
 		
@@ -316,7 +315,6 @@ namespace PlaneDisaster
 				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
-			this.Connected = true;
 			InitContextMenues();
 		}
 
@@ -350,7 +348,6 @@ namespace PlaneDisaster
 				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
-			this.Connected = true;
 			InitContextMenues();
 		}
 
@@ -557,22 +554,22 @@ namespace PlaneDisaster
 		
 		
 		private void LoadQueryResults(string SQL) {
-			System.Data.DataSet ds;
+			System.Data.DataTable dt;
 			
 			//Don't do anything if the query window is empty or we are not connected to a database.
 			if (SQL == "" || dbcon == null) { return; }
 			
 			try {
-				ds = dbcon.ExecuteSql(SQL);
+				dt = dbcon.ExecuteSql(SQL);
 			} catch (System.Data.Common.DbException ex) {
 				MessageBox.Show
 					(String.Format("Problem loading query {0}\r\nError Message: {1}", SQL, ex.Message));
 				return;
 			}
 			
-			if (ds.Tables.Count == 1) {
-				txtResults.Text = dba.DataTable2CSV(ds.Tables[0]);
-				gridResults.DataSource = ds.Tables[0];
+			if (dt != null) {
+				txtResults.Text = dba.DataTable2CSV(dt);
+				gridResults.DataSource = dt;
 			}
 			// Assume that if no rows were returned, then the schema was altered.
 			else {
@@ -589,6 +586,7 @@ namespace PlaneDisaster
 		
 		private void OpenMDB (string FileName) {
 			DialogResult Result;
+			
 			this.dbcon = new OleDba();
 			
 			try {
@@ -620,10 +618,17 @@ namespace PlaneDisaster
 		
 		
 		private void OpenSQLite (string FileName) {
+			this.DisconnectDataSource();
 			this.dbcon = new SQLiteDba();
 			
 			((SQLiteDba) dbcon).Connect(FileName);
 			this.DisplayDataSource();
+		}
+		
+		void LstColumnsDoubleClick(object sender, System.EventArgs e)
+		{
+			ListBox lst = (ListBox)sender;
+			this.CSV = string.Join(" :: ", dbcon.GetColumnAsStringArray(lstTables.Text, lst.Text));
 		}
 	}
 }

@@ -26,6 +26,7 @@
 
 
 using System;
+using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -42,14 +43,12 @@ namespace PlaneDisaster
 	{
 		private DbConnection _Cn;
 		
-		/// <summary>The ADO.NET database connection</summary>
-		protected virtual DbConnection Cn {
-			get {
-				return this._Cn;
-			}
-			set {
-				this._Cn = value;
-			}
+		
+		/// <summary>
+		/// Returns true if there is an active database connection.
+		/// </summary>
+		public bool Connected {
+			get { return Cn.State == ConnectionState.Open; }
 		}
 		
 		
@@ -58,6 +57,17 @@ namespace PlaneDisaster
 		/// </summary>
 		public string ConnectionString {
 			get { return Cn.ConnectionString; }
+		}
+		
+		
+		/// <summary>The ADO.NET database connection</summary>
+		protected virtual DbConnection Cn {
+			get {
+				return this._Cn;
+			}
+			set {
+				this._Cn = value;
+			}
 		}
 		
 				
@@ -171,8 +181,8 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
-		public DataSet ExecuteSql(string SQL) {
-			DataSet ret;
+		public DataTable ExecuteSql(string SQL) {
+			DataTable ret;
 			DbCommand cmd = Cn.CreateCommand();
 			SQL = SQL.Trim();
 			SQL = SQL.TrimEnd(new char [] {';'});
@@ -184,7 +194,7 @@ namespace PlaneDisaster
 					cmd.ExecuteNonQuery();
 				}
 			}
-			ret = this.GetSqlAsDataSet(Statements[Statements.Length - 1]);
+			ret = this.GetSqlAsDataTable(Statements[Statements.Length - 1]);
 			return ret;
 		}
 		
@@ -196,8 +206,40 @@ namespace PlaneDisaster
 		/// A text file containing one or more SQL commands semicolon delimited.
 		/// </param>
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
-		public DataSet ExecuteSqlScript(string Script) {
+		public DataTable ExecuteSqlFile(string Script) {
 			return this.ExecuteSql(System.IO.File.ReadAllText(Script));
+		}
+		
+		
+		/// <summary>
+		/// Gets a column from a table and returns it as a string of arrays.
+		/// </summary>
+		/// <param name="Table">The name of the table or view.</param>
+		/// <param name="Col">The name of the column.</param>
+		/// <param name="Distinct">Set to true to only return unique values.</param>
+		/// <returns>The contents of the column as a string of arrays.</returns>
+		public virtual string [] GetColumnAsStringArray (string Table, string Col, bool Distinct) {
+			string SQL;
+			DbCommand cmd;
+			DbDataReader rdr;
+			ArrayList Rows = new ArrayList();
+			
+			using (cmd = Cn.CreateCommand()) {
+				Rows = new ArrayList();
+				
+				SQL = Distinct ?
+					string.Format("SELECT DISTINCT [{1}] FROM [{0}]", Table, Col) :
+					string.Format("SELECT [{1}] FROM [{0}]", Table, Col);
+				cmd.CommandText = SQL;
+				rdr = cmd.ExecuteReader();
+				
+				while (rdr.Read()) {
+					Rows.Add(rdr[Col].ToString());
+				}
+				rdr.Close();
+				rdr.Dispose();
+			}
+			return (string []) Rows.ToArray(typeof(System.String));
 		}
 		
 		
@@ -208,44 +250,7 @@ namespace PlaneDisaster
 		/// <param name="Col">The name of the column.</param>
 		/// <returns>The contents of the column as a string of arrays.</returns>
 		public string [] GetColumnAsStringArray (string Table, string Col) {
-			string SQL;
-			DbCommand cmd;
-			DbDataReader rdr;
-			int numRows;
-			string [] Rows;
-			int curRowNum = 0;	
-			
-			cmd = Cn.CreateCommand();
-
-			try {
-				SQL = string.Concat("SELECT COUNT(*) FROM ", Table);
-				cmd.CommandText = SQL;
-				rdr = cmd.ExecuteReader();
-				rdr.Read();
-				numRows = rdr.GetInt32(0);
-				rdr.Close();
-				rdr = null;
-				cmd = null;
-				if (numRows == 0) {
-					return new string [] {""};
-				}
-				Rows = new string [numRows];	
-				
-				SQL = string.Concat("SELECT ", Col, " FROM ", Table);
-				cmd.CommandText = SQL;
-				cmd.Parameters.Clear();
-				cmd.Parameters.Add(Col);
-				rdr = cmd.ExecuteReader();
-				
-				while (rdr.Read()) {
-					Rows[curRowNum] = (string) rdr[Col];
-					curRowNum++;
-				}
-				rdr.Close();
-			} catch {
-				Rows = new string [1] {""};				
-			}
-			return Rows;
+			return this.GetColumnAsStringArray(Table, Col, false);
 		}
 		 
 		 	
@@ -371,12 +376,26 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Executes a SQL statement and returns the results in a
+		/// <code>"System.DataTable"</code>
+		/// </summary>
+		/// <param name="SQL">The SQL Statement</param>
+		/// <param name="TableName">The title of the DataTable</param>
+		/// <returns>A DaTatable containing the result set.</returns>
+		public DataTable GetSqlAsDataTable(string SQL, string TableName) {
+			DataTable ret = this.GetSqlAsDataTable(SQL);
+			ret.TableName = TableName;
+			return ret;
+		}
+		
+		
+		/// <summary>
 		/// Executes a SQL statement and returns the results in a 
 		/// <code>System.DataGridView</code>
 		/// </summary>
 		/// <param name="SQL">The SQL Statement</param>
 		/// <returns>A DataGridView containing the result set.</returns>
-		public abstract DataSet GetSqlAsDataSet(string SQL);
+		public abstract DataTable GetSqlAsDataTable(string SQL);
 		//TODO: find a way to write GetSqlAsDataSet(string SQL) once
 		
 
@@ -415,10 +434,8 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="Table">The name of the table</param>
 		/// <returns>A DataGridView containing the result set.</returns>
-		public DataSet GetTableAsDataSet (string Table) {
-			DataSet ret = this.GetSqlAsDataSet("SELECT * FROM " + Table);
-			ret.Tables[0].TableName = Table;
-			
+		public DataTable GetTableAsDataTable (string Table) {
+			DataTable ret = this.GetSqlAsDataTable("SELECT * FROM " + Table, Table);
 			return ret;
 		}
 		
@@ -492,7 +509,7 @@ namespace PlaneDisaster
 		/// A string containing an XML serialized data tablr.
 		/// </returns>
 		public string SerializeQuery (string SQL) {
-			return this.GetSqlAsDataSet(SQL).GetXml();
+			return this.GetSqlAsDataTable(SQL).DataSet.GetXml();
 		}
 		
 		
@@ -505,7 +522,7 @@ namespace PlaneDisaster
 		/// The name of the file to write the xml to.
 		/// </param>
 		public void SerializeQuery (string SQL, string File) {
-			this.GetSqlAsDataSet(SQL).WriteXml(File, XmlWriteMode.WriteSchema);
+			this.GetSqlAsDataTable(SQL).DataSet.WriteXml(File, XmlWriteMode.WriteSchema);
 		}
 		
 		

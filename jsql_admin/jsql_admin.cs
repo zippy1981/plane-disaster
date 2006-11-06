@@ -82,7 +82,7 @@ namespace jsql_admin
 			if (oGetOpt.IsDefined("s")) {
 			    OleDba dbconn = new OleDba();
 			    dbconn.ConnectMDB(MdbFile);
-			    dbconn.ExecuteSqlScript(oGetOpt.GetOptionArg("s"));
+			    dbconn.ExecuteSqlFile(oGetOpt.GetOptionArg("s"));
 			    dbconn.Disconnect();
 			}
 		}

@@ -112,12 +112,12 @@ namespace PlaneDisaster
 		/// </summary>
 		/// <param name="SQL">The SQL Statement</param>
 		/// <returns>A DataGridView containing the result set.</returns>
-		public override DataSet GetSqlAsDataSet(string SQL) {
-			DataSet ds = new DataSet();
+		public override DataTable GetSqlAsDataTable(string SQL) {
+			DataTable dt = new DataTable();
 			OdbcDataAdapter da = new OdbcDataAdapter(SQL, (OdbcConnection)this.Cn);
 			
-			da.Fill(ds, "qryTemp");
-			return ds;
+			da.Fill(dt);
+			return dt;
 		}
 	}
 }
