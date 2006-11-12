@@ -182,8 +182,7 @@ namespace PlaneDisaster
 		void lst_DblClick(object sender, System.EventArgs e) {
 			ListBox lst = (ListBox) sender;
 			if (lst.Name == "lstColumns") {
-				txtResults.Text = 
-					string.Join(" :: ", dbcon.GetColumnAsStringArray(lstTables.Text, lst.Text));
+				//I dont know what the default action for the columm lsit should be
 			} else {
 				LoadTableResults(lst.Text);
 			}
@@ -372,6 +371,23 @@ namespace PlaneDisaster
 		}
 		
 		
+		void menuSchema_Click (object sender, System.EventArgs e) {
+			MenuItem mnu = (MenuItem) sender;
+			
+			if (mnu.Name == "menuProcedureSchema") {
+				this.gridResults.DataSource = dbcon.GetColumnSchema(lstProcedures.Text);
+			} else if (mnu.Name == "menuTableSchema") {
+				this.gridResults.DataSource = dbcon.GetColumnSchema(lstTables.Text);
+			} else if (mnu.Name == "menuViewSchema") {
+				this.gridResults.DataSource = dbcon.GetColumnSchema(lstViews.Text);
+			} else {
+				throw new ArgumentException
+					("sender for menu_Click must be one of " +
+					 "menuProcedures, menuTables, or menuViews.");
+			}
+		}
+		
+		
 		void menuScript_Click (object sender, System.EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
 			
@@ -501,6 +517,7 @@ namespace PlaneDisaster
 			MenuItem menuDropProcedure, menuDropTable, menuDropView;
 			MenuItem menuScriptProcedure, menuScriptTable, menuScriptView;
 			MenuItem menuShowProcedure, menuShowTable, menuShowView;
+			MenuItem menuTableSchema, menuViewSchema;
 			
 			menuDropProcedure = new MenuItem("Drop");
 			menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
@@ -529,10 +546,14 @@ namespace PlaneDisaster
 			menuShowTable.Click += new System.EventHandler(menuShow_Click);
 			menuShowTable.Name = "menuShowTable";
 			
+			menuTableSchema = new MenuItem("Schema");
+			menuTableSchema.Click += new System.EventHandler(menuSchema_Click);
+			menuTableSchema.Name = "menuTableSchema";
+			
 			if (dbcon is SQLiteDba) {
-				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuScriptTable, menuDropTable});
+				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuScriptTable, menuTableSchema, menuDropTable});
 			} else {
-				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuDropTable});
+				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuTableSchema, menuDropTable});
 			}
 			this.lstTables.ContextMenu = ctxTable;
 			
@@ -547,8 +568,12 @@ namespace PlaneDisaster
 			menuShowView = new MenuItem("Show");
 			menuShowView.Click += new System.EventHandler(menuShow_Click);
 			menuShowView.Name = "menuShowView";
+			
+			menuViewSchema = new MenuItem("Schema");
+			menuViewSchema.Click += new System.EventHandler(menuSchema_Click);
+			menuViewSchema.Name = "menuViewSchema";
 
-			ctxView = new ContextMenu(new MenuItem[] {menuShowView, menuScriptView, menuDropView});
+			ctxView = new ContextMenu(new MenuItem[] {menuShowView, menuViewSchema, menuScriptView, menuDropView});
 			this.lstViews.ContextMenu = ctxView;
 		}
 		
@@ -625,10 +650,26 @@ namespace PlaneDisaster
 			this.DisplayDataSource();
 		}
 		
-		void LstColumnsDoubleClick(object sender, System.EventArgs e)
+		
+		/// <summary>
+		/// Process keypresses.
+		/// </summary>
+		/// <param name="msg">
+		/// The window message that represents the keypress.
+		/// </param>
+		/// <param name="keyData">The kepress performed.</param>
+		/// <returns></returns>
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			ListBox lst = (ListBox)sender;
-			this.CSV = string.Join(" :: ", dbcon.GetColumnAsStringArray(lstTables.Text, lst.Text));
+			if (Control.FromHandle(msg.HWnd) is ListBox) {
+				if ((keyData & Keys.Enter) == Keys.Enter) {
+					ListBox lst = (ListBox) ListBox.FromHandle(msg.HWnd);
+					if (lst.Name != "lstColumns") {
+						this.LoadTableResults(lst.Text);
+					}
+				}
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
 		}
 	}
 }

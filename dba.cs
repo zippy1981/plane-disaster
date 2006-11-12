@@ -263,6 +263,19 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Gets information about columns for a given table, view or procedure.
+		/// </summary>
+		/// <param name="Object">
+		/// Table, view or procedure to get information about.
+		/// </param>
+		/// <returns>A Datatable with the column schema for the given object.</returns>
+		public DataTable GetColumnSchema (string Object) {
+			string [] Restrictions = new string[4]{ null, null, Object, null };
+			return Cn.GetSchema("Columns", Restrictions);
+		}
+		
+		
+		/// <summary>
 		/// Gets a list of Procedures in the database.
 		/// </summary>
 		/// <returns>
