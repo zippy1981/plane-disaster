@@ -42,6 +42,7 @@ namespace PlaneDisaster
 	{
 		
 		private dba dbcon = null;
+		MainFormEvents events;
 				
 		#region Properties
 		
@@ -65,6 +66,7 @@ namespace PlaneDisaster
 		/// </summary>
 		private MainForm()
 		{
+			events = new MainFormEvents();
 			InitializeComponent();
 			
 			/* ListBox Double Click event handlers */
@@ -91,7 +93,24 @@ namespace PlaneDisaster
 		[STAThread]
 		public static void Main(string[] args)
 		{
-			Application.Run(new MainForm());
+			MainForm frm = new MainForm();
+			/*
+			 * From the infalliable tomes of the msdn http://msdn2.microsoft.com/en-us/library/acy3edy3.aspx
+			 *    Unlike C and C++, the name of the program is not treated as the first command line argument.
+			 *    WHY WHY WHY!!!!!! Lets just have 1 bases arrays.
+			 */
+			if (args.Length > 0) {
+				string FileName = args[0];
+				if (File.Exists(FileName)) {
+					frm.OpenDatabaseFile(FileName);
+					frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+				} else if (Directory.Exists(Path.GetDirectoryName(FileName))) {
+					frm.NewDatabaseFile(FileName);
+				} else {
+					MessageBox.Show(String.Format("File {0} is not a real file.", FileName));
+				}
+			}
+			Application.Run(frm);
 		}
 
 		#region Events
@@ -111,12 +130,6 @@ namespace PlaneDisaster
 					sw.Write(this.CSV);
 	            }  
 			}
-		}
-		
-		
-		void CmdSQLClick(object sender, System.EventArgs e)
-		{
-			LoadQueryResults(this.txtSQL.Text);
 		}
 
 		
@@ -578,7 +591,12 @@ namespace PlaneDisaster
 		}
 		
 		
-		private void LoadQueryResults(string SQL) {
+		internal void LoadQueryResults() {
+			this.LoadQueryResults(this.Query);
+		}
+		
+		
+		internal void LoadQueryResults(string SQL) {
 			System.Data.DataTable dt;
 			
 			//Don't do anything if the query window is empty or we are not connected to a database.
@@ -603,9 +621,42 @@ namespace PlaneDisaster
 		}
 		
 		
-		private void LoadTableResults(string Table) {
+		internal void LoadTableResults(string Table) {
 			//TODO: Scrub or escape this table name
 			this.LoadQueryResults(String.Format("SELECT * FROM [{0}]", Table));
+		}
+		
+		
+		private void NewDatabaseFile(string FileName) {
+			string Extension = Path.GetExtension(FileName);
+			switch (Extension) {
+				case ".mdb":
+						JetSqlUtil.CreateMDB(FileName);
+						this.OpenMDB(FileName);
+						break;
+				case ".db":
+				case ".db3":
+				case ".sqlite":
+						System.Data.SQLite.SQLiteConnection.CreateFile(FileName);
+						this.OpenSQLite(FileName);
+						break;
+				}
+				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+		}
+		
+		
+		internal void OpenDatabaseFile (string FileName) {
+			try {
+				this.DisconnectDataSource(); 
+			} catch (NullReferenceException) {}
+			
+			string Extension =
+				System.IO.Path.GetExtension(FileName).ToLower();
+			if (Extension == ".mdb") {
+				this.OpenMDB(FileName);
+			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+				this.OpenSQLite(FileName);
+			} else {throw new ApplicationException("Unknown file type.");}
 		}
 		
 		
@@ -643,7 +694,6 @@ namespace PlaneDisaster
 		
 		
 		private void OpenSQLite (string FileName) {
-			this.DisconnectDataSource();
 			this.dbcon = new SQLiteDba();
 			
 			((SQLiteDba) dbcon).Connect(FileName);

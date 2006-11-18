@@ -19,6 +19,7 @@
     <FileAlignment>4096</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <ApplicationIcon>PlaneDisaster.NET.ico</ApplicationIcon>
+    <StartArguments>"c:\Program Files\TM2k3\At.sqlite"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,6 +38,9 @@
     <OutputPath>bin\Release\</OutputPath>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>None</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <StartAction>Project</StartAction>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -61,6 +65,7 @@
     <EmbeddedResource Include="ConnectionStringDialog.resx">
       <DependentUpon>ConnectionStringDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Include="MainFormEvents.cs" />
     <Compile Include="PostgresqlConnStrDialog.cs" />
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />

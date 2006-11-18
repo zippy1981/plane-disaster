@@ -124,7 +124,7 @@ namespace PlaneDisaster
 			this.cmdSQL.Size = new System.Drawing.Size(23, 35);
 			this.cmdSQL.TabIndex = 2;
 			this.cmdSQL.Text = "!";
-			this.cmdSQL.Click += new System.EventHandler(this.CmdSQLClick);
+			this.cmdSQL.Click += new System.EventHandler(events.CmdSQLClick);
 			// 
 			// lstColumns
 			// 
