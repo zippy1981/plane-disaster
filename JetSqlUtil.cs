@@ -69,7 +69,8 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
-		/// Creates an access database
+		/// Creates an access database. If the filename specified exists it is 
+		/// overwritten.
 		/// </summary>
 		/// <param name="FileName">The name of the databse to create.</param>
 		public static void CreateMDB (string FileName) {
