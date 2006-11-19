@@ -19,7 +19,6 @@
     <FileAlignment>4096</FileAlignment>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <ApplicationIcon>PlaneDisaster.NET.ico</ApplicationIcon>
-    <StartArguments>"c:\Program Files\TM2k3\At.sqlite"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,6 +39,9 @@
     <DebugType>None</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <StartAction>Project</StartAction>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <StartAction>Project</StartAction>
   </PropertyGroup>
   <ItemGroup>

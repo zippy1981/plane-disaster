@@ -25,6 +25,7 @@
 /*/
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace PlaneDisaster
@@ -73,6 +74,9 @@ namespace PlaneDisaster
 		/// <param name="FileName">The name of the databse to create.</param>
 		public static void CreateMDB (string FileName) {
 			int retCode;
+			if (File.Exists(FileName)) {
+				File.Delete(FileName);
+			}
 			string Attributes = 
 				String.Format("CREATE_DB=\"{0}\" General\0", FileName);
 			retCode = SQLConfigDataSource
