@@ -67,7 +67,6 @@
     <EmbeddedResource Include="ConnectionStringDialog.resx">
       <DependentUpon>ConnectionStringDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <Compile Include="MainFormEvents.cs" />
     <Compile Include="PostgresqlConnStrDialog.cs" />
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />

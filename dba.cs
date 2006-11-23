@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -390,6 +391,26 @@ namespace PlaneDisaster
 		
 		/// <summary>
 		/// Executes a SQL statement and returns the results in a
+		/// <code>DbDataReader</code>
+		/// </summary>
+		/// <param name="SQL">The SQL Statement</param>
+		/// <returns>A DbDataReader containing the result set.</returns>
+		/// <remarks>Remember to close te reader when you are done with it.</remarks>
+		public DbDataReader GetSqlAsDataReader(string SQL) {
+			DbCommand cmd;
+			DbDataReader rdr;
+			
+			using (cmd = Cn.CreateCommand()) {
+				cmd.CommandText = SQL;
+				rdr = cmd.ExecuteReader();
+			}
+			
+			return rdr;
+		}
+		
+		
+		/// <summary>
+		/// Executes a SQL statement and returns the results in a
 		/// <code>"System.DataTable"</code>
 		/// </summary>
 		/// <param name="SQL">The SQL Statement</param>
@@ -637,6 +658,47 @@ namespace PlaneDisaster
 			}
 
 			return CSV.ToString();
+		}
+		
+		
+		/// <summary>
+		/// Gets a column from a DataTable and returns it as a string of arrays.
+		/// </summary>
+		/// <param name="Table">The DataTable to get the data from.</param>
+		/// <param name="Column">The name of the column.</param>
+		/// <returns>The contents of the column as a string of arrays</returns>
+		public static string [] GetColumnAsStringArray (DataTable Table, string Column) {
+			ArrayList Rows = new ArrayList();
+			foreach(DataRow Row in Table.Rows) {
+				Rows.Add(Row[Column].ToString());
+			}
+			return (string []) Rows.ToArray(typeof(System.String));
+		}
+		
+		
+		/// <summary>
+		/// Gets a column from a table and returns it as a string of arrays.
+		/// </summary>
+		/// <param name="Table">The DataTable to get the data from.</param>
+		/// <param name="Column">The name of the column.</param>
+		/// <param name="Distinct">Set to true to only return unique values.</param>
+		/// <returns>The contents of the column as a string of arrays.</returns>
+		public static string [] GetColumnAsStringArray (DataTable Table, string Column, bool Distinct) {
+			if (!Distinct) {
+				return GetColumnAsStringArray (Table, Column);
+			} else {
+				List<string> ColumnValues = new List<string>();
+				string Val;
+				foreach(DataRow Row in Table.Rows) {
+					Val = (string)Row[Column];
+					if (!ColumnValues.Contains(Val)) {
+						ColumnValues.Add(Val);
+					}
+				}
+				ColumnValues.Sort();
+				return ColumnValues.ToArray();
+			}
+			
 		}
 				
 		#endregion

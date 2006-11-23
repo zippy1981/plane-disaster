@@ -42,7 +42,6 @@ namespace PlaneDisaster
 	{
 		
 		private dba dbcon = null;
-		MainFormEvents events;
 				
 		#region Properties
 		
@@ -66,21 +65,20 @@ namespace PlaneDisaster
 		/// </summary>
 		private MainForm()
 		{
-			events = new MainFormEvents();
 			InitializeComponent();
 			
 			/* ListBox Double Click event handlers */
-			lstColumns.DoubleClick += new System.EventHandler(events.lst_DblClick);
-			lstProcedures.DoubleClick += new System.EventHandler(events.lst_DblClick);
-			lstTables.DoubleClick += new System.EventHandler(events.lst_DblClick);
-			lstViews.DoubleClick += new System.EventHandler(events.lst_DblClick);
+			lstColumns.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			lstProcedures.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			lstTables.DoubleClick += new System.EventHandler(this.lst_DblClick);
+			lstViews.DoubleClick += new System.EventHandler(this.lst_DblClick);
 			
 			/* ListBox Right Click event handlers */
-			lstProcedures.MouseDown += new MouseEventHandler(events.ListBox_RightClickSelect);
-			lstTables.MouseDown += new MouseEventHandler(events.ListBox_RightClickSelect);
-			lstViews.MouseDown += new MouseEventHandler(events.ListBox_RightClickSelect);
+			lstProcedures.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
+			lstTables.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
+			lstViews.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
 			
-			gridResults.DataError += new DataGridViewDataErrorEventHandler(events.EvtDataGridError);
+			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
 			
 			//TODO: figure out the event fired whe enter is pressed. Its not Enter
 		}
@@ -114,6 +112,47 @@ namespace PlaneDisaster
 		}
 
 		#region Events
+		
+		#region Button Events
+		
+		void CmdSaveCsvClick(object sender, System.EventArgs e)
+		{
+			SaveFileDialog dlg = new SaveFileDialog();
+			string FileName;
+			dlg.Filter = "Comma Seperated Value (*.csv)|*.csv|All Files|";
+			
+			if(dlg.ShowDialog() == DialogResult.OK ) {
+				FileName = dlg.FileName;
+				using (StreamWriter sw = File.CreateText(FileName))
+				{
+					sw.Write(this.CSV);
+	            }  
+			}
+		}
+		
+		
+		void CmdSQLClick(object sender, System.EventArgs e)
+		{
+			LoadQueryResults();
+		}
+		
+		
+		void CmdStatusClick(object sender, System.EventArgs e)
+		{
+			MessageBox.Show(GetDatabaseStatus());
+		}
+		
+		#endregion
+				
+		#region DataGridView Events
+		
+		void EvtDataGridError(object sender, DataGridViewDataErrorEventArgs e) {
+			if ((e.Context & DataGridViewDataErrorContexts.Display) == DataGridViewDataErrorContexts.Display) {
+				//Its ok its just not a picture
+			} else { e.ThrowException = true;}
+		}
+		
+		#endregion
 		
 		#region Form Events
 		
@@ -154,7 +193,36 @@ namespace PlaneDisaster
 
 		
 		#region ListBox Events
-				
+	
+		void lst_DblClick(object sender, System.EventArgs e) {
+			ListBox lst = (ListBox) sender;
+			if (lst.Name == "lstColumns") {
+				//I dont know what the default action for the columm list should be
+			} else {
+				LoadTableResults(lst.Text);
+			}
+		}
+		
+		
+		/// <summary>
+		/// If you want to be able to select an item in your listbox via right click,
+		/// add this function as an event handler to the listbox's mousedown event.
+		/// </summary>
+		/// <param name="sender">The listbox being right clicked.</param>
+		/// <param name="e">The MouseEventArgs object.</param>
+		void Lst_RightClickSelect(object sender, MouseEventArgs  e) {
+			if (e.Button == MouseButtons.Right) {
+				ListBox lst = (ListBox) sender;
+				int Index = lst.IndexFromPoint(e.X, e.Y);
+			
+				if (Index >= 0 && Index < lst.Items.Count) {
+            	    lst.SelectedIndex = Index;
+            	}
+            	lst.Refresh();
+			}
+		}
+		
+		
 		void Lst_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
 			ListBox lst = (ListBox) sender;
@@ -169,13 +237,10 @@ namespace PlaneDisaster
 		#endregion
 		
 		
-		/* 
-		 * I am having trouble getting the container form from a toolstrip. Other wise
-		 * these menu items could be ported over.
-		 */
-		#region Migrated Menu Events
+	
+		#region Menu Events
 		
-		internal void menuAbout_Click (object sender, System.EventArgs e) {
+		void menuAbout_Click (object sender, System.EventArgs e) {
 			//TODO: write a proper about box
 			string Msg;
 			
@@ -184,123 +249,30 @@ namespace PlaneDisaster
 		}
 		
 		
-		internal void menuClose_Click(object sender, System.EventArgs e)
+		void menuClose_Click(object sender, System.EventArgs e)
 		{
-			GetMainForm(sender).DisconnectDataSource();
+			DisconnectDataSource();
 		}
 		
 		
-		internal void menuCompactDatabase_Click (object sender, System.EventArgs e)
+		void menuCompactDatabase_Click (object sender, System.EventArgs e)
 		{
-			string CurrentFile = GetMainForm(sender).GetFileName();
+			string CurrentFile = GetFileName();
 			string FileFilter = "Microsoft Access (*.mdb)|*.mdb";
 			FileDialog dlg = new OpenFileDialog();
 			dlg.Filter = FileFilter;
 			
 			if (dlg.ShowDialog() == DialogResult.OK) {
 				if (dlg.FileName == CurrentFile) {
-					GetMainForm(sender).DisconnectDataSource();
+					DisconnectDataSource();
 					JetSqlUtil.CompactMDB(dlg.FileName);
-					GetMainForm(sender).OpenMDB(CurrentFile);
+					OpenMDB(CurrentFile);
 				} else { 
 					JetSqlUtil.CompactMDB(dlg.FileName); }
 			}
 			dlg.Dispose();
 		}
-
 		
-		internal void menuExit_Click (object sender, System.EventArgs e) {
-			GetMainForm(sender).Close();
-		}
-		
-		
-		internal void menuNew_Click (object sender, System.EventArgs e)
-		{
-			MainForm frm = GetMainForm(((ToolStripItem)sender).Owner);
-			StringBuilder FileFilter = new StringBuilder();
-			FileDialog dlg = new SaveFileDialog();
-			dlg.Title = "New Database";
-			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
-			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
-			dlg.Filter = FileFilter.ToString();
-			
-			if (dlg.ShowDialog() == DialogResult.OK) {
-				switch (dlg.FilterIndex) {
-					case 1:
-						JetSqlUtil.CreateMDB(dlg.FileName);
-						frm.OpenMDB(dlg.FileName);
-						break;
-					case 2:
-						System.Data.SQLite.SQLiteConnection.CreateFile
-							(dlg.FileName);
-						frm.OpenSQLite(dlg.FileName);
-						break;
-				}
-				frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
-			}
-			dlg.Dispose();
-			frm.InitContextMenues();
-		}
-
-		
-		internal void menuOpen_Click (object sender, System.EventArgs e) {
-			MainForm frm = GetMainForm(sender);
-			StringBuilder FileFilter = new StringBuilder();
-			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("All supported database types|*.mdb;*.db;*.db3;*.sqlite");
-			FileFilter.Append("|Microsoft Access (*.mdb)|*.mdb");
-			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
-			dlg.Filter = FileFilter.ToString();
-			
-			if(dlg.ShowDialog() == DialogResult.OK) {
-				switch (dlg.FilterIndex) {
-					case 1:
-						string Extension = 
-							System.IO.Path.GetExtension(dlg.FileName).ToLower();
-						if (Extension == ".mdb") {
-							frm.OpenMDB(dlg.FileName);
-						} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
-							frm.OpenSQLite(dlg.FileName);
-						} else {throw new ApplicationException("Unknown file type.");}
-						break;
-					case 2:
-						frm.OpenMDB(dlg.FileName);
-						break;
-					case 3:
-						frm.OpenSQLite(dlg.FileName);
-						break;
-				}
-				frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
-			}
-			dlg.Dispose();
-			frm.InitContextMenues();
-		}
-
-
-		internal void menuRepairDatabase_Click (object sender, System.EventArgs e)
-		{
-			MainForm frm = GetMainForm(sender);
-			string CurrentFile = frm.GetFileName();
-			StringBuilder FileFilter = new StringBuilder();
-			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
-			dlg.Filter = FileFilter.ToString();
-			
-			if (dlg.ShowDialog() == DialogResult.OK) {
-				if (dlg.FileName == CurrentFile) {
-					frm.DisconnectDataSource();
-					JetSqlUtil.RepairMDB(dlg.FileName);
-					frm.OpenMDB(CurrentFile);
-				} else { 
-					JetSqlUtil.RepairMDB(dlg.FileName); }
-			}
-			dlg.Dispose();
-		}
-		
-		#endregion
-
-		
-		#region Unmigrated Menu Events	
 		
 		void menuDatabaseSchema_Click(object sender, System.EventArgs e)
 		{
@@ -326,9 +298,95 @@ namespace PlaneDisaster
 					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
+
+		
+		void menuExit_Click (object sender, System.EventArgs e) {
+			Close();
+		}
 		
 		
-		internal void menuSchema_Click (object sender, System.EventArgs e) {
+		void menuNew_Click (object sender, System.EventArgs e)
+		{
+			StringBuilder FileFilter = new StringBuilder();
+			FileDialog dlg = new SaveFileDialog();
+			dlg.Title = "New Database";
+			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
+			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
+			dlg.Filter = FileFilter.ToString();
+			
+			if (dlg.ShowDialog() == DialogResult.OK) {
+				switch (dlg.FilterIndex) {
+					case 1:
+						JetSqlUtil.CreateMDB(dlg.FileName);
+						OpenMDB(dlg.FileName);
+						break;
+					case 2:
+						System.Data.SQLite.SQLiteConnection.CreateFile
+							(dlg.FileName);
+						OpenSQLite(dlg.FileName);
+						break;
+				}
+				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
+			}
+			dlg.Dispose();
+			InitContextMenues();
+		}
+
+		
+		void menuOpen_Click (object sender, System.EventArgs e) {
+			StringBuilder FileFilter = new StringBuilder();
+			FileDialog dlg = new OpenFileDialog();
+			FileFilter.Append("All supported database types|*.mdb;*.db;*.db3;*.sqlite");
+			FileFilter.Append("|Microsoft Access (*.mdb)|*.mdb");
+			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
+			dlg.Filter = FileFilter.ToString();
+			
+			if(dlg.ShowDialog() == DialogResult.OK) {
+				switch (dlg.FilterIndex) {
+					case 1:
+						string Extension = 
+							System.IO.Path.GetExtension(dlg.FileName).ToLower();
+						if (Extension == ".mdb") {
+							OpenMDB(dlg.FileName);
+						} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+							OpenSQLite(dlg.FileName);
+						} else {throw new ApplicationException("Unknown file type.");}
+						break;
+					case 2:
+						OpenMDB(dlg.FileName);
+						break;
+					case 3:
+						OpenSQLite(dlg.FileName);
+						break;
+				}
+				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
+			}
+			dlg.Dispose();
+			InitContextMenues();
+		}
+
+
+		void menuRepairDatabase_Click (object sender, System.EventArgs e)
+		{
+			string CurrentFile = GetFileName();
+			StringBuilder FileFilter = new StringBuilder();
+			FileDialog dlg = new OpenFileDialog();
+			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
+			dlg.Filter = FileFilter.ToString();
+			
+			if (dlg.ShowDialog() == DialogResult.OK) {
+				if (dlg.FileName == CurrentFile) {
+					DisconnectDataSource();
+					JetSqlUtil.RepairMDB(dlg.FileName);
+					OpenMDB(CurrentFile);
+				} else { 
+					JetSqlUtil.RepairMDB(dlg.FileName); }
+			}
+			dlg.Dispose();
+		}
+		
+		
+		void menuSchema_Click (object sender, System.EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuProcedureSchema") {
@@ -366,20 +424,19 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuShowProcedure") {
-				events.lst_DblClick(lstProcedures, e);
+				this.lst_DblClick(lstProcedures, e);
 			} else if (mnu.Name == "menuShowTable") {
-				events.lst_DblClick(lstTables, e);
+				this.lst_DblClick(lstTables, e);
 			} else if (mnu.Name == "menuShowView") {
-				events.lst_DblClick(lstViews, e);
+				this.lst_DblClick(lstViews, e);
 			} else {
 				throw new ArgumentException
 					("sender for menuShow_Click must be one of " +
 					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
-
+		
 		#endregion
-
 
 		#region Radio Events
 		
@@ -471,12 +528,6 @@ namespace PlaneDisaster
 				ConStr = new SQLiteConnectionStringBuilder(dbcon.ConnectionString);
 				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
 			} else { return ""; }
-		}
-		
-		
-		[Obsolete("This is a workaround until I can fing the owning form of a ToolStripItem")]
-		private MainForm GetMainForm(object oControl) {
-			return this;
 		}
 		
 		

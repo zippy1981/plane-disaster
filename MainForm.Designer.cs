@@ -124,7 +124,7 @@ namespace PlaneDisaster
 			this.cmdSQL.Size = new System.Drawing.Size(23, 35);
 			this.cmdSQL.TabIndex = 2;
 			this.cmdSQL.Text = "!";
-			this.cmdSQL.Click += new System.EventHandler(events.CmdSQLClick);
+			this.cmdSQL.Click += new System.EventHandler(this.CmdSQLClick);
 			// 
 			// lstColumns
 			// 
@@ -159,7 +159,7 @@ namespace PlaneDisaster
 			this.cmdStatus.Size = new System.Drawing.Size(82, 21);
 			this.cmdStatus.TabIndex = 10;
 			this.cmdStatus.Text = "&Status";
-			this.cmdStatus.Click += new System.EventHandler(events.CmdStatusClick);
+			this.cmdStatus.Click += new System.EventHandler(this.CmdStatusClick);
 			// 
 			// gridResults
 			// 
@@ -176,7 +176,7 @@ namespace PlaneDisaster
 			this.cmdSaveCsv.Size = new System.Drawing.Size(82, 21);
 			this.cmdSaveCsv.TabIndex = 12;
 			this.cmdSaveCsv.Text = "Save &CSV";
-			this.cmdSaveCsv.Click += new System.EventHandler(events.CmdSaveCsvClick);
+			this.cmdSaveCsv.Click += new System.EventHandler(this.CmdSaveCsvClick);
 			// 
 			// menuStrip1
 			// 

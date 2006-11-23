@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
-# SharpDevelop 2.1.0.2003
+# SharpDevelop 2.1.0.2038
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster", "PlaneDisaster.csproj", "{BA5695EC-7541-4AE8-9934-E850C86C3DCD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jsql_admin", "jsql_admin\jsql_admin.csproj", "{14168B47-2D1A-4F23-B25C-43B80E1913C7}"
