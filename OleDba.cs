@@ -166,6 +166,23 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Returns all rows in a table in a 
+		/// <code>System.DataGridView</code>.
+		/// </summary>
+		/// <param name="Table">The name of the table</param>
+		/// <returns>A DataGridView containing the result set.</returns>
+		public override DataTable GetTableAsDataTable (string Table) {
+			DataTable ret = new DataTable();
+			OleDbCommand cmd = (OleDbCommand)this.Cn.CreateCommand();
+			cmd.CommandType = CommandType.TableDirect;
+			cmd.CommandText = Table;
+			OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+			da.Fill(ret);
+			return ret;
+		}
+		
+		
+		/// <summary>
 		/// Gets the SQL executed by a given VIEW.
 		/// </summary>
 		/// <returns>

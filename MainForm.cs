@@ -26,6 +26,7 @@
 
  
 using System;
+using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
 using System.Data.SQLite;
@@ -602,6 +603,18 @@ namespace PlaneDisaster
 		}
 		
 		
+		internal void LoadDataTable(DataTable dt) {
+			if (dt != null) {
+				txtResults.Text = dba.DataTable2CSV(dt);
+				gridResults.DataSource = dt;
+			}
+			// Assume that if no rows were returned, then the schema was altered.
+			else {
+				DisplayDataSource();
+			}
+		}
+		
+		
 		internal void LoadQueryResults(string SQL) {
 			System.Data.DataTable dt;
 			
@@ -616,20 +629,25 @@ namespace PlaneDisaster
 				return;
 			}
 			
-			if (dt != null) {
-				txtResults.Text = dba.DataTable2CSV(dt);
-				gridResults.DataSource = dt;
-			}
-			// Assume that if no rows were returned, then the schema was altered.
-			else {
-				DisplayDataSource();
-			}
+			LoadDataTable(dt);
 		}
 		
 		
 		internal void LoadTableResults(string Table) {
-			//TODO: Scrub or escape this table name
-			this.LoadQueryResults(String.Format("SELECT * FROM [{0}]", Table));
+			System.Data.DataTable dt;
+			
+			//Don't do anything if we are not connected to a database or no table is specified.
+			if (Table == "" || dbcon == null) { return; }
+			
+			try {
+				dt = dbcon.GetTableAsDataTable(Table);
+			} catch (System.Data.Common.DbException ex) {
+				MessageBox.Show
+					(String.Format("Problem loading table {0}\r\nError Message: {1}", Table, ex.Message));
+				return;
+			}
+			
+			LoadDataTable(dt);
 		}
 		
 		

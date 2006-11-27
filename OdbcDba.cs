@@ -119,5 +119,23 @@ namespace PlaneDisaster
 			da.Fill(dt);
 			return dt;
 		}
+		
+		
+		/// <summary>
+		/// Returns all rows in a table in a 
+		/// <code>System.DataGridView</code>.
+		/// </summary>
+		/// <param name="Table">The name of the table</param>
+		/// <returns>A DataGridView containing the result set.</returns>
+		public override DataTable GetTableAsDataTable (string Table) {
+			DataTable ret = new DataTable();
+			OdbcCommand cmd = (OdbcCommand)Cn.CreateCommand();
+			cmd.CommandType = CommandType.TableDirect;
+			cmd.CommandText = Table;
+			OdbcDataAdapter da = new OdbcDataAdapter(cmd);
+			da.Fill(ret);
+			return ret;
+		}
+		
 	}
 }

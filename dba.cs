@@ -461,16 +461,17 @@ namespace PlaneDisaster
 			return this.GetSQLAsCSV("SELECT * FROM " + Table);
 		}
 		
-
+		
 		/// <summary>
 		/// Returns all rows in a table in a 
 		/// <code>System.DataGridView</code>.
 		/// </summary>
 		/// <param name="Table">The name of the table</param>
 		/// <returns>A DataGridView containing the result set.</returns>
-		public DataTable GetTableAsDataTable (string Table) {
-			DataTable ret = this.GetSqlAsDataTable("SELECT * FROM " + Table, Table);
-			return ret;
+		public virtual DataTable GetTableAsDataTable (string Table) {
+			return this.GetSqlAsDataTable(
+				String.Format("SELECT * FROM [{0}]", Table)
+			);
 		}
 		
 
