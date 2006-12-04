@@ -54,6 +54,7 @@ ShowInstDetails show
 ShowUnInstDetails show
 
 Section "PlaneDisaster.NET" SEC01
+  SetShellVarContext all
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   File ".\bin\Debug\PlaneDisaster.exe"
@@ -70,6 +71,7 @@ Section "SQLite.NET" SEC02
 SectionEnd
 
 Section -AdditionalIcons
+  SetShellVarContext all
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateShortCut "$SMPROGRAMS\PlaneDisaster.NET\Website.lnk" "$INSTDIR\${PRODUCT_NAME}.url"
   CreateShortCut "$SMPROGRAMS\PlaneDisaster.NET\Uninstall.lnk" "$INSTDIR\uninst.exe"

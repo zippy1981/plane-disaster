@@ -53,6 +53,15 @@ namespace PlaneDisaster
 		}
 		
 		
+		/// <summary>
+		/// The maximum rows to display in the query window.
+		/// This only applies to tables and views, not custom queries.
+		/// </summary>
+		private int MaxRowDisplayCount {
+			get { return 500; }
+		}
+		
+		
 		/// <summary>The contents of the Query Text Area.</summary>
 		internal string Query {
 			get { return this.txtSQL.Text; }
@@ -80,8 +89,6 @@ namespace PlaneDisaster
 			lstViews.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
 			
 			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
-			
-			//TODO: figure out the event fired whe enter is pressed. Its not Enter
 		}
 
 
@@ -200,7 +207,21 @@ namespace PlaneDisaster
 			if (lst.Name == "lstColumns") {
 				//I dont know what the default action for the columm list should be
 			} else {
-				LoadTableResults(lst.Text);
+				int RowCount = dbcon.GetTableRowCount(lst.Text);
+				if (RowCount > this.MaxRowDisplayCount) {
+					string Message;
+					string SQL = String.Format
+						("SELECT TOP {1} * FROM {0}",
+						 lst.Text, MaxRowDisplayCount);
+					Message = String.Format
+						("Row count is {0}. Displaying the first {1} rows.", 
+						dbcon.GetTableRowCount(lst.Text),
+						MaxRowDisplayCount);
+					MessageBox.Show(Message, "Too Many Rows!");
+					LoadQueryResults(SQL);
+				} else {
+					LoadTableResults(lst.Text);
+				}
 			}
 		}
 		

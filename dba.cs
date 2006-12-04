@@ -474,6 +474,22 @@ namespace PlaneDisaster
 			);
 		}
 		
+		
+		public virtual int GetTableRowCount(String Table) {
+			IDbCommand cmd;
+			IDataReader rdr;
+			int ret;
+			using (cmd = Cn.CreateCommand()) {
+				cmd.CommandText = 
+					String.Format("SELECT COUNT(*) FROM [{0}]", Table);
+				rdr = cmd.ExecuteReader();
+				rdr.Read();
+				ret = (int) rdr[0];
+				rdr.Close();
+			}
+			return ret;
+		}
+		
 
 		/// <summary>
 		/// Gets a list of tables in the database.
