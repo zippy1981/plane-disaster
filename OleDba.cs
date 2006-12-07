@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.OleDb;
 using System.Text;
 
@@ -114,6 +115,21 @@ namespace PlaneDisaster
 			this.Connect();
 		}
 		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the OleDbDataAdapter type.
+		/// </summary>
+		/// <returns>A populated DataAdapter of the OleDbDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter() { return new OleDbDataAdapter();}
+		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the OleDbDataAdapter type.
+		/// </summary>
+		/// <param name="cmd">The select fommand for the data adapter.</param>
+		/// <returns>A populated DataAdapter of the OleDbDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OleDbDataAdapter((OleDbCommand) cmd);}
+		
 
 		/// <summary>
 		/// Gets the names of the columns in a table
@@ -147,21 +163,6 @@ namespace PlaneDisaster
 				(System.Data.OleDb.OleDbSchemaGuid.Procedures, 
 				 new object[] {null, null, Procedure, null});
 			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
-		}
-			
-		
-		/// <summary>
-		/// Executes a SQL statement and returns the results in a 
-		/// <code>System.DataGridView</code>
-		/// </summary>
-		/// <param name="SQL">The SQL Statement</param>
-		/// <returns>A DataGridView containing the result set.</returns>
-		public override DataTable GetSqlAsDataTable(string SQL) {
-			DataTable dt = new DataTable();
-			OleDbDataAdapter da = new OleDbDataAdapter(SQL, (OleDbConnection) this.Cn);
-			da.Fill(dt);
-			
-			return dt;
 		}
 		
 		

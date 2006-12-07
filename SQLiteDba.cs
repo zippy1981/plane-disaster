@@ -76,6 +76,21 @@ namespace PlaneDisaster
 			this.ConnStr = String.Format("Data Source={0}", FileName);
 			this.Connect();
 		}
+		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the SQLiteDataAdapter type.
+		/// </summary>
+		/// <returns>A populated DataAdapter of the SQLiteDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter() { return new SQLiteDataAdapter();}
+		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the SQLiteDataAdapter type.
+		/// </summary>
+		/// <param name="cmd">The select fommand for the data adapter.</param>
+		/// <returns>A populated DataAdapter of the SQLiteDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new SQLiteDataAdapter((SQLiteCommand) cmd);}
 
 		
 		/// <summary>
@@ -107,21 +122,6 @@ namespace PlaneDisaster
 		/// </returns>
 		public override string [] GetProcedures() {
 			return null;
-		}
-			
-		
-		/// <summary>
-		/// Executes a SQL statement and returns the results in a 
-		/// <code>System.DataGridView</code>
-		/// </summary>
-		/// <param name="SQL">The SQL Statement</param>
-		/// <returns>A DataGridView containing the result set.</returns>
-		public override DataTable GetSqlAsDataTable(string SQL) {
-			DataTable dt = new DataTable();
-			SQLiteDataAdapter da = new SQLiteDataAdapter(SQL, (SQLiteConnection)this.Cn);
-			
-			da.Fill(dt);
-			return dt;
 		}
 		
 		

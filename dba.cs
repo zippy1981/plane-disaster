@@ -71,6 +71,21 @@ namespace PlaneDisaster
 			}
 		}
 		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the appropiate type.
+		/// </summary>
+		/// <returns>A populated DataAdapter of the appropiate type.</returns>
+		public abstract DataAdapter CreateDataAdapter();
+		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the appropiate type.
+		/// </summary>
+		/// <param name="cmd">The select fommand for the data adapter.</param>
+		/// <returns>A populated DataAdapter of the appropiate type.</returns>
+		public abstract DataAdapter CreateDataAdapter(DbCommand cmd);
+		
 				
 		/// <summary>
 		/// Creates a procedure with a given name and sql statement if a procedure of the same name exists it 
@@ -410,6 +425,28 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Executes a SQL statement and returns the results in a 
+		/// <code>System.DataGridView</code>
+		/// </summary>
+		/// <param name="SQL">The SQL Statement</param>
+		/// <returns>A DataGridView containing the result set.</returns>
+		public virtual DataTable GetSqlAsDataTable(string SQL) {
+			DbCommand cmd;
+			DataSet ds = new DataSet();
+			DataAdapter da;
+			
+			using (cmd = Cn.CreateCommand()) {
+				cmd.CommandText = SQL;
+				da = this.CreateDataAdapter(cmd);
+				da.Fill(ds);
+			}
+			
+			return ds.Tables[0];
+		}
+		//TODO: find a way to write GetSqlAsDataSet(string SQL) once
+		
+		
+		/// <summary>
 		/// Executes a SQL statement and returns the results in a
 		/// <code>"System.DataTable"</code>
 		/// </summary>
@@ -424,13 +461,30 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
-		/// Executes a SQL statement and returns the results in a 
-		/// <code>System.DataGridView</code>
+		/// Executes a SQL statement applying the given array of parametera 
+		/// and returns the results in a <code>"System.DataTable"</code>.
 		/// </summary>
 		/// <param name="SQL">The SQL Statement</param>
-		/// <returns>A DataGridView containing the result set.</returns>
-		public abstract DataTable GetSqlAsDataTable(string SQL);
-		//TODO: find a way to write GetSqlAsDataSet(string SQL) once
+		/// <param name="Parameters">
+		/// The Parameters to apply to the SQL statement.
+		/// </param>
+		/// <returns>A DaTatable containing the result set.</returns>
+		public virtual DataTable GetSqlAsDataTable(string SQL, DbParameter[] Parameters) {
+			DbCommand cmd;
+			DataSet ds = new DataSet();
+			
+			DataAdapter da;
+			
+			
+			using (cmd = Cn.CreateCommand()) {
+				cmd.CommandText = SQL;
+				cmd.Parameters.AddRange(Parameters);
+				da = this.CreateDataAdapter(cmd);
+				da.Fill(ds);
+			}
+			
+			return ds.Tables[0];
+		}
 		
 
 		/// <summary>
@@ -475,6 +529,11 @@ namespace PlaneDisaster
 		}
 		
 		
+		/// <summary>
+		/// Retrieves the number of rows in a table.
+		/// </summary>
+		/// <param name="Table">The name of the table.</param>
+		/// <returns>The number of tables of an integer.</returns>
 		public virtual int GetTableRowCount(String Table) {
 			IDbCommand cmd;
 			IDataReader rdr;

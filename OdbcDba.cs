@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.Odbc;
 using System.Text;
 
@@ -66,6 +67,19 @@ namespace PlaneDisaster
 			Cn.Open();
 		}
 		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
+		/// </summary>
+		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter() { return new OdbcDataAdapter();}
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
+		/// </summary>
+		/// <param name="cmd">The select fommand for the data adapter.</param>
+		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
+		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OdbcDataAdapter((OdbcCommand) cmd);}
+		
 
 		/// <summary>
 		/// Connect to the specified DSN
@@ -103,21 +117,6 @@ namespace PlaneDisaster
 				Tables = null;
 			}
 			return Tables;
-		}
-			
-		
-		/// <summary>
-		/// Executes a SQL statement and returns the results in a 
-		/// <code>System.DataGridView</code>
-		/// </summary>
-		/// <param name="SQL">The SQL Statement</param>
-		/// <returns>A DataGridView containing the result set.</returns>
-		public override DataTable GetSqlAsDataTable(string SQL) {
-			DataTable dt = new DataTable();
-			OdbcDataAdapter da = new OdbcDataAdapter(SQL, (OdbcConnection)this.Cn);
-			
-			da.Fill(dt);
-			return dt;
 		}
 		
 		
