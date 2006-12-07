@@ -75,16 +75,9 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the appropiate type.
 		/// </summary>
-		/// <returns>A populated DataAdapter of the appropiate type.</returns>
-		public abstract DataAdapter CreateDataAdapter();
-		
-		
-		/// <summary>
-		/// Factory method to create a new DataAdapter of the appropiate type.
-		/// </summary>
 		/// <param name="cmd">The select fommand for the data adapter.</param>
 		/// <returns>A populated DataAdapter of the appropiate type.</returns>
-		public abstract DataAdapter CreateDataAdapter(DbCommand cmd);
+		protected abstract DataAdapter CreateDataAdapter(DbCommand cmd);
 		
 				
 		/// <summary>

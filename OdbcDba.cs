@@ -67,19 +67,6 @@ namespace PlaneDisaster
 			Cn.Open();
 		}
 		
-		/// <summary>
-		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
-		/// </summary>
-		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter() { return new OdbcDataAdapter();}
-		
-		/// <summary>
-		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
-		/// </summary>
-		/// <param name="cmd">The select fommand for the data adapter.</param>
-		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OdbcDataAdapter((OdbcCommand) cmd);}
-		
 
 		/// <summary>
 		/// Connect to the specified DSN
@@ -89,6 +76,14 @@ namespace PlaneDisaster
 			this.ConnStr = ConnStr;
 			this.Connect();
 		}
+		
+		
+		/// <summary>
+		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
+		/// </summary>
+		/// <param name="cmd">The select fommand for the data adapter.</param>
+		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
+		protected override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OdbcDataAdapter((OdbcCommand) cmd);}
 
 		
 		/// <summary>

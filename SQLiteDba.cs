@@ -81,16 +81,9 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the SQLiteDataAdapter type.
 		/// </summary>
-		/// <returns>A populated DataAdapter of the SQLiteDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter() { return new SQLiteDataAdapter();}
-		
-		
-		/// <summary>
-		/// Factory method to create a new DataAdapter of the SQLiteDataAdapter type.
-		/// </summary>
 		/// <param name="cmd">The select fommand for the data adapter.</param>
 		/// <returns>A populated DataAdapter of the SQLiteDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new SQLiteDataAdapter((SQLiteCommand) cmd);}
+		protected override DataAdapter CreateDataAdapter(DbCommand cmd) { return new SQLiteDataAdapter((SQLiteCommand) cmd);}
 
 		
 		/// <summary>

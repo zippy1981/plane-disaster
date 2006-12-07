@@ -119,16 +119,9 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the OleDbDataAdapter type.
 		/// </summary>
-		/// <returns>A populated DataAdapter of the OleDbDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter() { return new OleDbDataAdapter();}
-		
-		
-		/// <summary>
-		/// Factory method to create a new DataAdapter of the OleDbDataAdapter type.
-		/// </summary>
 		/// <param name="cmd">The select fommand for the data adapter.</param>
 		/// <returns>A populated DataAdapter of the OleDbDataAdapter type.</returns>
-		public override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OleDbDataAdapter((OleDbCommand) cmd);}
+		protected override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OleDbDataAdapter((OleDbCommand) cmd);}
 		
 
 		/// <summary>
