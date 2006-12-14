@@ -110,8 +110,10 @@ namespace PlaneDisaster
 				if (File.Exists(FileName)) {
 					frm.OpenDatabaseFile(FileName);
 					frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+					frm.InitContextMenues();
 				} else if (Directory.Exists(Path.GetDirectoryName(FileName))) {
 					frm.NewDatabaseFile(FileName);
+					frm.InitContextMenues();
 				} else {
 					MessageBox.Show(String.Format("File {0} is not a real file.", FileName));
 				}
