@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
-# SharpDevelop 2.1.0.2038
+# Visual Studio 2005
+# SharpDevelop 2.1.0.2164
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster", "PlaneDisaster.csproj", "{BA5695EC-7541-4AE8-9934-E850C86C3DCD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jsql_admin", "jsql_admin\jsql_admin.csproj", "{14168B47-2D1A-4F23-B25C-43B80E1913C7}"
@@ -19,5 +20,9 @@ Global
 		{14168B47-2D1A-4F23-B25C-43B80E1913C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{14168B47-2D1A-4F23-B25C-43B80E1913C7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{14168B47-2D1A-4F23-B25C-43B80E1913C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82F99553-B01B-48CB-A711-C1B4596E94B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82F99553-B01B-48CB-A711-C1B4596E94B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82F99553-B01B-48CB-A711-C1B4596E94B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82F99553-B01B-48CB-A711-C1B4596E94B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal

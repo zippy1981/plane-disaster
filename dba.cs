@@ -434,7 +434,7 @@ namespace PlaneDisaster
 				da.Fill(ds);
 			}
 			
-			return ds.Tables[0];
+			return (ds.Tables.Count == 0) ? null : ds.Tables[0];
 		}
 		//TODO: find a way to write GetSqlAsDataSet(string SQL) once
 		
@@ -536,7 +536,17 @@ namespace PlaneDisaster
 					String.Format("SELECT COUNT(*) FROM [{0}]", Table);
 				rdr = cmd.ExecuteReader();
 				rdr.Read();
-				ret = (int) rdr[0];
+				try {
+					ret = (int) rdr[0];
+				} 
+				/* 
+				 * The previous works with access databases, but trips an 
+				 * InvalidCastException in SQLite databases. Its probably that whole, 
+				 * "Lets make a loosley typed database." mentality of Dr. Hib.
+				 */
+				catch (InvalidCastException) {
+					ret = int.Parse(rdr[0].ToString());
+				}
 				rdr.Close();
 			}
 			return ret;

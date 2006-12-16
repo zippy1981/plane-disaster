@@ -29,9 +29,9 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("PlaneDisaster.NET")]
 [assembly: AssemblyDescription(".NET OLEDB Database Viewer")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCompany("ZippySoft")]
+[assembly: AssemblyProduct("Plane Disaster")]
+[assembly: AssemblyCopyright("2006")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

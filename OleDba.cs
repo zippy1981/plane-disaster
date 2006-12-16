@@ -177,6 +177,36 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Gets a list of tables in the database.
+		/// </summary>
+		/// <remarks>
+		/// This is overwritten here because when I use the GetSchema method in 
+		/// dba.GetTables(), I get all the database objects. I believe this to be 
+		/// more of an Access thing than an OleDb thing. Futher expirimentation
+		/// is neccessary.
+		/// </remarks>
+		/// <returns>
+		/// A list of table names as an array of strings.
+		/// </returns>
+		public override string [] GetTables() {
+			int numCols;
+			int i = 0;
+			string [] Tables;
+			DataTable dt = null;
+			
+			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
+				(OleDbSchemaGuid.Tables,
+				 new Object[] {null, null, null, "TABLE"});
+			numCols = dt.Rows.Count;
+			Tables = new string[numCols];
+			for (i = 0; i < numCols; i++) {
+				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+			}
+			return Tables;
+		}
+		
+		
+		/// <summary>
 		/// Gets the SQL executed by a given VIEW.
 		/// </summary>
 		/// <returns>
