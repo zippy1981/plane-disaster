@@ -57,17 +57,16 @@ Section "PlaneDisaster.NET" SEC01
   SetShellVarContext all
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File ".\bin\Debug\PlaneDisaster.exe"
+  File ".\bin\Release\PlaneDisaster.exe"
   CreateDirectory "$SMPROGRAMS\PlaneDisaster.NET"
   CreateShortCut "$SMPROGRAMS\PlaneDisaster.NET\PlaneDisaster.NET.lnk" "$INSTDIR\PlaneDisaster.exe"
   CreateShortCut "$DESKTOP\PlaneDisaster.NET.lnk" "$INSTDIR\PlaneDisaster.exe"
-  File ".\bin\Debug\PlaneDisaster.pdb"
   File ".\README.txt"
 SectionEnd
 
 Section "SQLite.NET" SEC02
-  File ".\bin\Debug\System.Data.SQLite.DLL"
-  File ".\bin\Debug\System.Data.SQLite.xml"
+  File ".\bin\Release\System.Data.SQLite.DLL"
+  File ".\bin\Release\System.Data.SQLite.xml"
 SectionEnd
 
 Section -AdditionalIcons
