@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
+	<Product Id="C15867C1-619B-43D8-9B3C-2541D404F4C5" Name="PlaneDisaster.NET" Language="1033" Version="1.0.0.0" Manufacturer="ZippySoft">
+		<Package Id="78B30472-1F61-4FCC-B3D9-CBCB1368978F" Description="#Description" Comments="Comments" InstallerVersion="200" Compressed="yes" />
+		<Property Id="AcceptLicense">No</Property>
+		<!--BUTTON TEXT-->
+		<Property Id="Button_Back">&lt; &amp;Back</Property>
+		<Property Id="Button_Next">&amp;Next &gt;</Property>
+		<Property Id="Button_Finish">&amp;Finish</Property>
+		<Property Id="Button_OK">OK</Property>
+		<Property Id="Button_Cancel">Cancel</Property>
+		<Property Id="Button_Browse">Br&amp;owse...</Property>
+		<Property Id="Button_Exit">&amp;Exit</Property>
+		<Property Id="Button_Ignore">&amp;Ignore</Property>
+		<Property Id="Button_Install">&amp;Install</Property>
+		<Property Id="Button_Remove">&amp;Remove</Property>
+		<Property Id="Button_Repair">&amp;Repair</Property>
+		<Property Id="Button_Reset">&amp;Reset</Property>
+		<Property Id="Button_Resume">&amp;Resume</Property>
+		<Property Id="Button_Retry">&amp;Retry</Property>
+		<Property Id="Button_Return">&amp;Return</Property>
+		<Property Id="Button_Yes">&amp;Yes</Property>
+		<Property Id="Button_No">&amp;No</Property>
+		<!--END BUTTON TEXT-->
+		<CustomAction Id="SET_INSTALLDIR" Property="INSTALLDIR" Value="[INSTALLDIR]" Execute="firstSequence" />
+		<!-- INSTALL DESCRIPTION -->
+		<Media Id="1" Cabinet="contents.cab" EmbedCab="yes" />
+		<Directory Id="TARGETDIR" Name="SourceDir" />
+		<Feature Id="PlaneDisaster.NET" Title="PlaneDisaster.NET" Level="1">
+			<ComponentRef Id="PlaneDisaster" />
+			<ComponentRef Id="SQLite.NET" />
+		</Feature>
+		<!-- END INSTALL DESCRIPTION -->
+		<AdminExecuteSequence>
+		</AdminExecuteSequence>
+		<InstallExecuteSequence>
+		</InstallExecuteSequence>
+		<UIRef Id="UserInterface" />
+	</Product>
+</Wix>

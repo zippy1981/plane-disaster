@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
+	<Fragment>
+		<DirectoryRef Id="TARGETDIR">
+			<Directory Id="ProgramFilesFolder" Name="PFiles">
+				<Directory Id="INSTALLDIR" Name="PlaneD~1" LongName="PlaneDisaster.NET">
+					<Component Id="PlaneDisaster" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
+						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
+						<File Id="MainExecutable" Name="PlaneD~1.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
+					</Component>
+					<Component Id="SQLite.NET" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
+						<File Id="SQLiteNet" Name="System~1.DLL" LongName="System.Data.SQLite.DLL" Source="..\bin\Release\System.Data.SQLite.DLL" />
+					</Component>
+				</Directory>
+			</Directory>
+		</DirectoryRef>
+	</Fragment>
+</Wix>

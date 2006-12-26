@@ -1,0 +1,43 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{337D91DF-22E4-4D70-8850-BD75594DE22B}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>package</OutputType>
+    <RootNamespace>PlaneDisaster.NET_Setup</RootNamespace>
+    <OutputName>PlaneDisaster.NET Setup</OutputName>
+    <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixToolPath>
+    <ToolPath Condition=" '$(ToolPath)' == '' ">$(WixToolPath)</ToolPath>
+    <WixMSBuildExtensionsPath Condition=" '$(WixMSBuildExtensionsPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixMSBuildExtensionsPath>
+    <DefineConstants>DATADIR=$(SharpDevelopBinPath)\..\data\resources\InstallerBitmaps</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BrowseDialog.wxs" />
+    <Compile Include="CancelDialog.wxs" />
+    <Compile Include="ExitDialog.wxs" />
+    <Compile Include="FatalErrorDialog.wxs" />
+    <Compile Include="Files.wxs" />
+    <Compile Include="OutOfDiskSpaceDialog.wxs" />
+    <Compile Include="OutOfRollbackDiskSpaceDialog.wxs" />
+    <Compile Include="ProgressDialog.wxs" />
+    <Compile Include="SelectFolderDialog.wxs" />
+    <Compile Include="Setup.wxs" />
+    <Compile Include="UserExitDialog.wxs" />
+    <Compile Include="UserInterface.wxs" />
+    <Compile Include="VerifyReadyDialog.wxs" />
+    <Compile Include="ViewLicenseAgreementDialog.wxs" />
+    <Compile Include="WelcomeDialog.wxs" />
+    <None Include="license.rtf" />
+  </ItemGroup>
+  <Import Project="$(WixMSBuildExtensionsPath)\wix.targets" />
+</Project>
