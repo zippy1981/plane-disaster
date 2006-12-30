@@ -3,14 +3,30 @@
 	<Fragment>
 		<DirectoryRef Id="TARGETDIR">
 			<Directory Id="ProgramFilesFolder" Name="PFiles">
-				<Directory Id="INSTALLDIR" Name="PlaneD~1" LongName="PlaneDisaster.NET">
+				<Directory Id="INSTALLDIR" Name="PlnDis" LongName="PlaneDisaster.NET">
 					<Component Id="PlaneDisaster" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
 						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
-						<File Id="MainExecutable" Name="PlaneD~1.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
+						<File Id="MainExecutable" Name="PlnDisNT.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
+						<Shortcut Id="startmenuPDShortcut" Directory="PMenu" Name="PlnDisNT" LongName="PlaneDisaster.NET" Target="[#MainExecutable]" />
+						<!-- Begin File associations -->
+						<ProgId Id="PlaneDisaster.mdbfile" Description="JetSQL Database" Icon="&quot;[#MainExecutable]&quot;">
+							<Extension Id="mdb">
+								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
+							</Extension>
+						</ProgId>
+						<ProgId Id="PlaneDisaster.sqlitefile" Description="SQLite Database" Icon="&quot;[#MainExecutable]&quot;">
+							<Extension Id="sqlite">
+								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
+							</Extension>
+						</ProgId>
+						<!-- End File associations -->
 					</Component>
 					<Component Id="SQLite.NET" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
-						<File Id="SQLiteNet" Name="System~1.DLL" LongName="System.Data.SQLite.DLL" Source="..\bin\Release\System.Data.SQLite.DLL" />
+						<File Id="SQLiteNet" Name="SQLitNET.DLL" LongName="System.Data.SQLite.DLL" Source="..\bin\Release\System.Data.SQLite.DLL" />
 					</Component>
+				</Directory>
+				<Directory Id="ProgramMenuFolder" Name="PMenu" LongName="Programs">
+					<Directory Id="PMenu" Name="PlnDisNT" LongName="PlaneDisaster.NET" />
 				</Directory>
 			</Directory>
 		</DirectoryRef>
