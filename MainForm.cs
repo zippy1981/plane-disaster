@@ -1,4 +1,4 @@
-/*/ 
+/* 
  * Copyright 2006 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PlaneDisaster.NET; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-/*/
+ */
 
-/*/
+/*
  * Created by SharpDevelop.
  * Author:		Justin Dearing <zippy1981@gmail.com>
  * Created:		08/01/2006
  * Description  This is the presentation code for PlaneDisaster.NET
-/*/
+ */
 
  
 using System;
@@ -209,6 +209,7 @@ namespace PlaneDisaster
 			if (lst.Name == "lstColumns") {
 				//I dont know what the default action for the columm list should be
 			} else {
+				try {
 				int RowCount = dbcon.GetTableRowCount(lst.Text);
 				if (RowCount > this.MaxRowDisplayCount) {
 					string Message;
@@ -223,6 +224,12 @@ namespace PlaneDisaster
 					LoadQueryResults(SQL);
 				} else {
 					LoadTableResults(lst.Text);
+				}
+				} catch (DbException ex) {
+					if (ex.ErrorCode == -2147217865) {
+						MessageBox.Show(ex.Message, "Query Error");
+					}
+					else { throw ex; }
 				}
 			}
 		}
@@ -282,7 +289,7 @@ namespace PlaneDisaster
 		void menuCompactDatabase_Click (object sender, System.EventArgs e)
 		{
 			string CurrentFile = GetFileName();
-			string FileFilter = "Microsoft Access (*.mdb)|*.mdb";
+			string FileFilter = "Microsoft Access (*.mdb;*.mde)|*.mdb;*,mde";
 			FileDialog dlg = new OpenFileDialog();
 			dlg.Filter = FileFilter;
 			
@@ -360,8 +367,8 @@ namespace PlaneDisaster
 		void menuOpen_Click (object sender, System.EventArgs e) {
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("All supported database types|*.mdb;*.db;*.db3;*.sqlite");
-			FileFilter.Append("|Microsoft Access (*.mdb)|*.mdb");
+			FileFilter.Append("All supported database types|*.mdb;*.mde;*.db;*.db3;*.sqlite");
+			FileFilter.Append("|Microsoft Access (*.mdb;*.mde)|*.mdb;*.mde");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
 			
@@ -370,7 +377,7 @@ namespace PlaneDisaster
 					case 1:
 						string Extension = 
 							System.IO.Path.GetExtension(dlg.FileName).ToLower();
-						if (Extension == ".mdb") {
+						if (Extension == ".mdb" || Extension == ".mde") {
 							OpenMDB(dlg.FileName);
 						} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
 							OpenSQLite(dlg.FileName);
@@ -699,7 +706,7 @@ namespace PlaneDisaster
 			
 			string Extension =
 				System.IO.Path.GetExtension(FileName).ToLower();
-			if (Extension == ".mdb") {
+			if (Extension == ".mdb" || Extension == ".mde") {
 				this.OpenMDB(FileName);
 			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
 				this.OpenSQLite(FileName);

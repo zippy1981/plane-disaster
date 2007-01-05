@@ -14,6 +14,14 @@
 								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
 							</Extension>
 						</ProgId>
+						<!-- We dont want to associate with MDE files. Let MS Access or the Access runtime handle that.
+						TODO: Figure out how to add an application to "Open With" without making it the default association.
+						<ProgId Id="PlaneDisaster.mdefile" Description="MS Access Application" Icon="&quot;[#MainExecutable]&quot;">
+							<Extension Id="mde">
+								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
+							</Extension>
+						</ProgId>
+						-->
 						<ProgId Id="PlaneDisaster.sqlitefile" Description="SQLite Database" Icon="&quot;[#MainExecutable]&quot;">
 							<Extension Id="sqlite">
 								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
