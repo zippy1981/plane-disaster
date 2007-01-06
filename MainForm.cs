@@ -342,6 +342,8 @@ namespace PlaneDisaster
 			FileDialog dlg = new SaveFileDialog();
 			dlg.Title = "New Database";
 			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
+			FileFilter.Append("|Microsoft Access 95 (*.mdb)|*.mdb");
+			FileFilter.Append("|Microsoft Access 2000 (*.mdb)|*.mdb");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
 			
@@ -352,6 +354,14 @@ namespace PlaneDisaster
 						OpenMDB(dlg.FileName);
 						break;
 					case 2:
+						JetSqlUtil.CreateMDBv3(dlg.FileName);
+						OpenMDB(dlg.FileName);
+						break;
+					case 3:
+						JetSqlUtil.CreateMDBv4(dlg.FileName);
+						OpenMDB(dlg.FileName);
+						break;
+					case 4:
 						System.Data.SQLite.SQLiteConnection.CreateFile
 							(dlg.FileName);
 						OpenSQLite(dlg.FileName);

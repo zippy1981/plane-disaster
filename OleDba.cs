@@ -1,4 +1,4 @@
-/*/ 
+/*
  * Copyright 2006 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with PlaneDisaster.NET; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-/*/
+ */
 
-/*/
+/*
  * Created by SharpDevelop.
  * Author:		Justin Dearing <zippy1981@gmail.com>
  * Date: 8/15/2006
  * Time: 6:07 PM
-/*/
+ */
 
 using System;
 using System.Data;

@@ -89,6 +89,48 @@ namespace PlaneDisaster
 		}
 		
 		
+		/// <summary>
+		/// Creates an Access 95 database. If the filename specified exists it is 
+		/// overwritten.
+		/// </summary>
+		/// <param name="FileName">The name of the databse to create.</param>
+		public static void CreateMDBv3 (string FileName) {
+			int retCode;
+			if (File.Exists(FileName)) {
+				File.Delete(FileName);
+			}
+			string Attributes = 
+				String.Format("CREATE_DBV3=\"{0}\" General\0", FileName);
+			retCode = SQLConfigDataSource
+				(0, ODBC_Constants.ODBC_ADD_DSN, 
+				"Microsoft Access Driver (*.mdb)", Attributes);
+			if (retCode == 0) {
+				throw new ApplicationException("Cannot create file: " + FileName);
+			}
+		}
+		
+		
+		/// <summary>
+		/// Creates an Access 2000 database. If the filename specified exists it is 
+		/// overwritten.
+		/// </summary>
+		/// <param name="FileName">The name of the databse to create.</param>
+		public static void CreateMDBv4 (string FileName) {
+			int retCode;
+			if (File.Exists(FileName)) {
+				File.Delete(FileName);
+			}
+			string Attributes = 
+				String.Format("CREATE_DBV4=\"{0}\" General\0", FileName);
+			retCode = SQLConfigDataSource
+				(0, ODBC_Constants.ODBC_ADD_DSN, 
+				"Microsoft Access Driver (*.mdb)", Attributes);
+			if (retCode == 0) {
+				throw new ApplicationException("Cannot create file: " + FileName);
+			}
+		}
+		
+		
 		
 		/// <summary>
 		/// Repairs an access database
