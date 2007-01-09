@@ -26,6 +26,8 @@
 
  
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
@@ -34,6 +36,8 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
+using PlaneDisaster.Configuration;
+
 namespace PlaneDisaster
 {
 	/// <summary>
@@ -41,7 +45,8 @@ namespace PlaneDisaster
 	/// </summary>
 	public sealed partial class MainForm
 	{
-		
+		private System.Configuration.Configuration Config;
+		private PlaneDisasterSection oPlaneDisasterSection;
 		private dba dbcon = null;
 				
 		#region Properties
@@ -73,7 +78,7 @@ namespace PlaneDisaster
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		private MainForm()
+		internal MainForm()
 		{
 			InitializeComponent();
 			
@@ -89,36 +94,30 @@ namespace PlaneDisaster
 			lstViews.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
 			
 			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
-		}
-
-
-		/// <summary>
-		/// Program entry point.
-		/// </summary>
-		/// <param name="args">Command line arguments.</param>
-		[STAThread]
-		public static void Main(string[] args)
-		{
-			MainForm frm = new MainForm();
-			/*
-			 * From the infalliable tomes of the msdn http://msdn2.microsoft.com/en-us/library/acy3edy3.aspx
-			 *    Unlike C and C++, the name of the program is not treated as the first command line argument.
-			 *    WHY WHY WHY!!!!!! Lets just have 1 bases arrays.
-			 */
-			if (args.Length > 0) {
-				string FileName = args[0];
-				if (File.Exists(FileName)) {
-					frm.OpenDatabaseFile(FileName);
-					frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
-					frm.InitContextMenues();
-				} else if (Directory.Exists(Path.GetDirectoryName(FileName))) {
-					frm.NewDatabaseFile(FileName);
-					frm.InitContextMenues();
-				} else {
-					MessageBox.Show(String.Format("File {0} is not a real file.", FileName));
+			
+			Config = ConfigurationManager.OpenExeConfiguration
+				(ConfigurationUserLevel.None);
+			//TODO: Make ConfigurationUserLevel.PerUserRoaming work
+			//See http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=168423&SiteID=1
+				//(ConfigurationUserLevel.PerUserRoaming);
+			oPlaneDisasterSection = (PlaneDisasterSection)Config.GetSection("planeDisaster");
+			try {
+				// Ensure that this value is explicitly written in the xml file
+				oPlaneDisasterSection.RecentFiles.MaxCount =
+					oPlaneDisasterSection.RecentFiles.MaxCount;
+				foreach (RecentFileElement RecentFile in oPlaneDisasterSection.RecentFiles) {
+					AddRecentFileToMenu(RecentFile.Name);
 				}
+			} 
+			catch (NullReferenceException) {
+				oPlaneDisasterSection = new PlaneDisasterSection();
+				oPlaneDisasterSection.RecentFiles.MaxCount =
+					oPlaneDisasterSection.RecentFiles.MaxCount;
+				Config.Sections.Remove("planeDisaster");
+				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
+				Config.Save();
 			}
-			Application.Run(frm);
+			
 		}
 
 		#region Events
@@ -268,7 +267,6 @@ namespace PlaneDisaster
 		#endregion
 		
 		
-	
 		#region Menu Events
 		
 		void menuAbout_Click (object sender, System.EventArgs e) {
@@ -400,10 +398,28 @@ namespace PlaneDisaster
 						OpenSQLite(dlg.FileName);
 						break;
 				}
+				AddRecentFile(dlg.FileName);
 				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
 			InitContextMenues();
+			
+			
+		}
+		
+		
+		void menuOpenRecent_Click (object sender, System.EventArgs e) {
+			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);			
+			string Extension =
+				System.IO.Path.GetExtension(FileName).ToLower();
+			
+			if (Extension == ".mdb" || Extension == ".mde") {
+				OpenMDB(FileName);
+			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+				OpenSQLite(FileName);
+			} else {throw new ApplicationException("Unknown file type.");}
+			AddRecentFile(FileName);	//Put this here to bump the file to the top of the list.
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 
 
@@ -499,7 +515,50 @@ namespace PlaneDisaster
 		#endregion
 
 		#endregion
+		
 
+		private void AddRecentFile (string FileName) {
+			FileName = Path.GetFullPath(FileName);
+			short FileCount;			
+			
+			try {
+				FileCount = oPlaneDisasterSection.RecentFiles.MaxCount;
+			} catch (NullReferenceException) {
+				MessageBox.Show("There is no spoon");
+				oPlaneDisasterSection = new PlaneDisasterSection();
+				Config.Sections.Remove("planeDisaster");
+				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
+				FileCount = oPlaneDisasterSection.RecentFiles.MaxCount;
+			}
+
+			//TODO: all this should be done by PlaneDisasterSection.Add
+			List<string> Files = new List<string>();
+			Files.Add(FileName);
+			int i = 0;
+			foreach (RecentFileElement curFile in oPlaneDisasterSection.RecentFiles) {
+				if (curFile.Name != FileName) {
+					Files.Add(curFile.Name);
+					i++;
+					if (i >= FileCount) break;
+				}
+			}
+			oPlaneDisasterSection.RecentFiles.Clear();
+			oPlaneDisasterSection.RecentFiles.AddRange(Files.ToArray());
+			Config.Save();
+			
+			//TODO: Update the Open Recent List
+			//AddRecentFileToMenu (FileName);
+		}
+		
+		
+		private void AddRecentFileToMenu (string FileName) {
+			openRecentToolStripMenuItem.Enabled = true;
+			ToolStripMenuItem RecentFileMenu = new ToolStripMenuItem(FileName);
+			RecentFileMenu.Click  += menuOpenRecent_Click;
+			this.openRecentToolStripMenuItem.DropDownItems.Add
+				(RecentFileMenu);
+		}
+		
 		/// <summary>
 		/// Disconnects from the data source and updates the GUI appropiatly.
 		/// </summary>
@@ -673,7 +732,7 @@ namespace PlaneDisaster
 		}
 		
 		
-		internal void LoadTableResults(string Table) {
+		private void LoadTableResults(string Table) {
 			System.Data.DataTable dt;
 			
 			//Don't do anything if we are not connected to a database or no table is specified.
@@ -691,7 +750,7 @@ namespace PlaneDisaster
 		}
 		
 		
-		private void NewDatabaseFile(string FileName) {
+		internal void NewDatabaseFile(string FileName) {
 			string Extension = Path.GetExtension(FileName);
 			switch (Extension) {
 				case ".mdb":

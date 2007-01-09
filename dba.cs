@@ -436,7 +436,6 @@ namespace PlaneDisaster
 			
 			return (ds.Tables.Count == 0) ? null : ds.Tables[0];
 		}
-		//TODO: find a way to write GetSqlAsDataSet(string SQL) once
 		
 		
 		/// <summary>

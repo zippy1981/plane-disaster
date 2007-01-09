@@ -66,6 +66,7 @@ namespace PlaneDisaster
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openRecentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -195,6 +196,7 @@ namespace PlaneDisaster
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.newToolStripMenuItem,
 									this.openToolStripMenuItem,
+									this.openRecentToolStripMenuItem,
 									this.closeToolStripMenuItem,
 									this.toolStripSeparator1,
 									this.exitToolStripMenuItem});
@@ -205,34 +207,41 @@ namespace PlaneDisaster
 			// newToolStripMenuItem
 			// 
 			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+			this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.newToolStripMenuItem.Text = "&New";
 			this.newToolStripMenuItem.Click += new System.EventHandler(this.menuNew_Click);
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.menuOpen_Click);
+			// 
+			// openRecentToolStripMenuItem
+			// 
+			this.openRecentToolStripMenuItem.Enabled = false;
+			this.openRecentToolStripMenuItem.Name = "openRecentToolStripMenuItem";
+			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openRecentToolStripMenuItem.Text = "Open &Recent";
 			// 
 			// closeToolStripMenuItem
 			// 
 			this.closeToolStripMenuItem.Enabled = false;
 			this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-			this.closeToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+			this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.closeToolStripMenuItem.Text = "&Close";
 			this.closeToolStripMenuItem.Click += new System.EventHandler(this.menuClose_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(108, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -373,6 +382,7 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.ToolStripMenuItem openRecentToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
 		private System.Windows.Forms.ListBox lstProcedures;
 		private System.Windows.Forms.Label lblProcedures;

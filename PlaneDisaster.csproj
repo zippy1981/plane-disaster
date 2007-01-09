@@ -45,6 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite">
       <HintPath>..\..\Program Files\SQLite.NET\bin\System.Data.SQLite.DLL</HintPath>
@@ -56,6 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Configuration\RecentFileElement.cs" />
+    <Compile Include="Configuration\RecentFilesCollection.cs" />
+    <Compile Include="Configuration\PlaneDisasterSection.cs" />
     <Compile Include="dba.cs" />
     <None Include="todo.txt" />
     <None Include="README.txt" />
@@ -66,6 +70,7 @@
     <EmbeddedResource Include="ConnectionStringDialog.resx">
       <DependentUpon>ConnectionStringDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Include="PlaneDisaster.cs" />
     <Compile Include="PostgresqlConnStrDialog.cs" />
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
@@ -87,6 +92,9 @@
     <Content Include="gpl.txt" />
     <Content Include="installer.nsi" />
     <Content Include="PlaneDisaster.NET.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Configuration" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
