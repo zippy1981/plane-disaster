@@ -1,0 +1,19 @@
+--- 0.9
+* Per user configuration file via "System.Configuration" (previously no configuration at all)
+* An Open Recent file menu to list all the recently opened files.
+* The binary is now signed. I don't quite understand the ramifications of 
+this. I have included the key in svn.
+* Made a separate class (PlaneDisaster) for the Main Function.
+* Now possible to explicitly create a new Access 95 or Access 2000 database.
+* Can now open up mde files. from the file dialogs and command line.
+* Running Stored procedures that reference non existant queries no longer 
+generates an exception.
+* Installer now adds a start menu icon and File Associations.
+--- pre 0.9
+* Built the application
+* Made it suck less
+* Built the NSIS Installer
+* built the MSI installer
+* You now get binaries without debuggin info.
+* BUG FIXED: If you opened a database file by command line, the right click
+menues for Tables, Views and Procedures were not generates.
