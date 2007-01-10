@@ -14,6 +14,6 @@ generates an exception.
 * Made it suck less
 * Built the NSIS Installer
 * built the MSI installer
-* You now get binaries without debuggin info.
+* You now get binaries without debuggins info.
 * BUG FIXED: If you opened a database file by command line, the right click
 menues for Tables, Views and Procedures were not generates.

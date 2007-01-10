@@ -259,10 +259,15 @@ namespace PlaneDisaster
 		
 		void menuAbout_Click (object sender, System.EventArgs e) {
 			//TODO: write a proper about box
-			string Msg;
+			StringBuilder Msg = new StringBuilder();
 			
-			Msg = "PlaneDisaster.NET database viewer\nCopyright 2006 Justin Dearing\nzippy1981@gmail.com";
-			MessageBox.Show(Msg, "About PlaneDisaster.NET");
+			Msg.AppendFormat
+				("{0} version {1}.\n", 
+				 Application.ProductName, 
+				 Application.ProductVersion);
+			Msg.AppendLine
+				("Copyright 2006 Justin Dearing <zippy1981@gmail.com>");
+			MessageBox.Show(Msg.ToString(), "About PlaneDisaster.NET");
 		}
 		
 		

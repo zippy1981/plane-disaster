@@ -65,6 +65,7 @@
     <Compile Include="Configuration\RecentFilesCollection.cs" />
     <Compile Include="Configuration\PlaneDisasterSection.cs" />
     <Compile Include="dba.cs" />
+    <None Include="Changelog.txt" />
     <None Include="todo.txt" />
     <None Include="README.txt" />
     <Compile Include="ConnectionStringDialog.cs" />

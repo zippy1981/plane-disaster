@@ -31,7 +31,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ZippySoft")]
 [assembly: AssemblyProduct("Plane Disaster")]
-[assembly: AssemblyCopyright("2006")]
+[assembly: AssemblyCopyright("2006 Justin Dearing\nzippy1981@gmail.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
