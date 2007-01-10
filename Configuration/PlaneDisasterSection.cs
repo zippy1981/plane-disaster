@@ -24,18 +24,6 @@ namespace PlaneDisaster.Configuration
 		{
 			get { return (RecentFilesCollection) base["recentFiles"]; }
 		}
-		
-		/*
-		/// <summary>
-		/// The number of recent files to store in 
-		/// <c>this"[recentFiles"]</c>
-		/// </summary>
-		[ConfigurationProperty("recentFileCount")]
-		public RecentFileCountElement RecentFileCount
-		{
-			get { return (RecentFileCountElement) base["recentFileCount"]; }
-		}
-		*/
 	}
 }
 

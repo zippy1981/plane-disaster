@@ -7,6 +7,7 @@
 
 using System;
 using System.Configuration;
+using System.IO;
 
 
 namespace PlaneDisaster.Configuration
@@ -73,6 +74,15 @@ namespace PlaneDisaster.Configuration
 			BaseAdd(element);
 		}
 		
+		
+		/// <summary>
+		/// Adds a PlaneDisasterElement to the configuration file.
+		/// </summary>
+		public void Add(string FileName)
+		{
+			Add (new RecentFileElement(Path.GetFullPath(FileName)));
+		}
+		
 		/// <summary>
 		/// Adds a group of to the configuration file.
 		/// </summary>
@@ -102,9 +112,24 @@ namespace PlaneDisaster.Configuration
 		{
 			return new RecentFileElement();
 		}
-
+			   
 	   
-	   
+		/// <summary>
+		/// Checks for the existance of a given file in the
+		/// <c>RecentFilesCollection</c>.
+		/// </summary>
+		/// <param name="FileName">The name of the file.</param>
+		/// <returns>True if the file exists. False otherwise.</returns>
+		public  bool FileExists(string FileName)
+		{
+			FileName = Path.GetFullPath(FileName);
+			foreach (RecentFileElement File in this) {
+				if (File.Name == FileName) return true;
+			} return false;
+			
+		}
+		
+		
 		/// <summary>
 		/// Gets the key of an element based on it's Id.
 		/// </summary>

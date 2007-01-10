@@ -1,7 +1,50 @@
 <?xml version="1.0"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
-	<Product Id="C15867C1-619B-43D8-9B3C-2541D404F4C5" Name="PlaneDisaster.NET" Language="1033" Version="1.0.0.0" Manufacturer="ZippySoft">
-		<Package Id="78B30472-1F61-4FCC-B3D9-CBCB1368978F" Description="#Description" Comments="Comments" InstallerVersion="200" Compressed="yes" />
+	<Product 
+		Id="C15867C1-619B-43D8-9B3C-2541D404F4C5"
+		Name="PlaneDisaster.NET 0.9" 
+		Language="1033"
+		Codepage="1252"
+		Version="0.9" 
+		Manufacturer="ZippySoft">
+		
+		<Package 
+			Id="78B30472-1F61-4FCC-B3D9-CBCB1368978F" 
+			Description="#Description" 
+			Comments="Comments" 
+			InstallerVersion="200" 
+			Compressed="yes" />
+		
+		
+		<!-- 
+			Conditions to be satisfied before the installer begins.
+			Note that we are using "Installed OR" in the conditions so
+			so they never block the user from repairing, patching, or 
+			uninstalling the package after it has been installed. 
+
+			For	example the user could do something odd like uninstall .NET 2.0
+ 			and then run the msi to uninstall SharpDevelop. Without the 
+			"Installed OR" this would not be allowed.
+		-->
+		<!--
+			Check for .NET 2.0 
+			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/msinetassemblysupport.asp
+		-->
+		<Condition Message="This setup requires the .NET Framework 2.0 or higher.">
+			Installed OR MsiNetAssemblySupport &gt;= "2.0.50727"
+		</Condition>
+		
+		<!-- 
+			Install for all users.
+
+			Using ALLUSERS=2 means the application can be installed by a non-admin. 
+			In this case it will be a per-user installation installed into the 
+			user's personal profile. 
+
+			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/allusers.asp
+		-->
+		<Property Id="ALLUSERS">2</Property>
+		
 		<Property Id="AcceptLicense">No</Property>
 		<!--BUTTON TEXT-->
 		<Property Id="Button_Back">&lt; &amp;Back</Property>
@@ -28,6 +71,8 @@
 		<Directory Id="TARGETDIR" Name="SourceDir" />
 		<Feature Id="PlaneDisaster.NET" Title="PlaneDisaster.NET" Level="1">
 			<ComponentRef Id="PlaneDisaster" />
+		</Feature>
+		<Feature Id="SQLite.NET" Title="SQLite.NET" Level="1">
 			<ComponentRef Id="SQLite.NET" />
 		</Feature>
 		<!-- END INSTALL DESCRIPTION -->

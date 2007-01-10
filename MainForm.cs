@@ -96,28 +96,16 @@ namespace PlaneDisaster
 			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
 			
 			Config = ConfigurationManager.OpenExeConfiguration
-				(ConfigurationUserLevel.None);
-			//TODO: Make ConfigurationUserLevel.PerUserRoaming work
-			//See http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=168423&SiteID=1
-				//(ConfigurationUserLevel.PerUserRoaming);
+				(ConfigurationUserLevel.PerUserRoaming);
 			oPlaneDisasterSection = (PlaneDisasterSection)Config.GetSection("planeDisaster");
-			try {
-				// Ensure that this value is explicitly written in the xml file
-				oPlaneDisasterSection.RecentFiles.MaxCount =
-					oPlaneDisasterSection.RecentFiles.MaxCount;
-				foreach (RecentFileElement RecentFile in oPlaneDisasterSection.RecentFiles) {
-					AddRecentFileToMenu(RecentFile.Name);
-				}
-			} 
-			catch (NullReferenceException) {
+			if (oPlaneDisasterSection == null) {
 				oPlaneDisasterSection = new PlaneDisasterSection();
-				oPlaneDisasterSection.RecentFiles.MaxCount =
-					oPlaneDisasterSection.RecentFiles.MaxCount;
-				Config.Sections.Remove("planeDisaster");
+				oPlaneDisasterSection.SectionInformation.AllowExeDefinition =
+					ConfigurationAllowExeDefinition.MachineToLocalUser;
 				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
-				Config.Save();
 			}
 			
+			GenerateOpenRecentMenu();
 		}
 
 		#region Events
@@ -367,6 +355,8 @@ namespace PlaneDisaster
 				}
 				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
+			AddRecentFile(dlg.FileName);
+			GenerateOpenRecentMenu();
 			dlg.Dispose();
 			InitContextMenues();
 		}
@@ -399,6 +389,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
+				GenerateOpenRecentMenu();
 				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
@@ -419,6 +410,7 @@ namespace PlaneDisaster
 				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);	//Put this here to bump the file to the top of the list.
+			GenerateOpenRecentMenu();	//Regenerate the open recent menu
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 
@@ -545,9 +537,6 @@ namespace PlaneDisaster
 			oPlaneDisasterSection.RecentFiles.Clear();
 			oPlaneDisasterSection.RecentFiles.AddRange(Files.ToArray());
 			Config.Save();
-			
-			//TODO: Update the Open Recent List
-			//AddRecentFileToMenu (FileName);
 		}
 		
 		
@@ -557,6 +546,10 @@ namespace PlaneDisaster
 			RecentFileMenu.Click  += menuOpenRecent_Click;
 			this.openRecentToolStripMenuItem.DropDownItems.Add
 				(RecentFileMenu);
+		}
+		
+		private void ClearRecentFileMenu() {
+			this.openRecentToolStripMenuItem.DropDownItems.Clear();
 		}
 		
 		/// <summary>
@@ -607,8 +600,28 @@ namespace PlaneDisaster
 			this.closeToolStripMenuItem.Enabled = true;
 		}
 		
+		private void GenerateOpenRecentMenu() {
+			try {
+				// Ensure that this value is explicitly written in the xml file
+				oPlaneDisasterSection.RecentFiles.MaxCount =
+					oPlaneDisasterSection.RecentFiles.MaxCount;
+				ClearRecentFileMenu();
+				foreach (RecentFileElement RecentFile in oPlaneDisasterSection.RecentFiles) {
+					AddRecentFileToMenu(RecentFile.Name);
+				}
+			} 
+			catch (NullReferenceException) {
+				oPlaneDisasterSection = new PlaneDisasterSection();
+				oPlaneDisasterSection.RecentFiles.MaxCount =
+					oPlaneDisasterSection.RecentFiles.MaxCount;
+				Config.Sections.Remove("planeDisaster");
+				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
+				Config.Save();
+			}
+		}
 		
-		internal string GetDatabaseStatus() {
+		
+		private string GetDatabaseStatus() {
 			return dbcon.GetStatus();
 		}
 		
@@ -780,6 +793,8 @@ namespace PlaneDisaster
 			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
 				this.OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
+			AddRecentFile(FileName);
+			GenerateOpenRecentMenu();
 		}
 		
 		

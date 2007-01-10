@@ -25,18 +25,6 @@ namespace PlaneDisaster.Configuration
 			set { this["fileName"] = value; }
 		}
 		
-		/*
-		/// <summary>
-		/// The order in which the files apprear in the recent files collection.
-		/// </summary>
-		[ConfigurationProperty("order", IsRequired = true)]
-		public short Order
-		{
-			get { return (short)this["order"]; }
-			set { this["order"] = value; }
-		}
-		*/
-		
 		internal RecentFileElement() : base()
 		{}
 		
