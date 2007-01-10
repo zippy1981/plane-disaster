@@ -15,6 +15,13 @@
 			InstallerVersion="200" 
 			Compressed="yes" />
 		
+		<!--
+			Much of the "customization" here is blatantly stolen from
+			SharpDevelop's setup file.
+ 
+			http://www.icsharpcode.net/OpenSource/SD/
+		-->
+		
 		
 		<!-- 
 			Conditions to be satisfied before the installer begins.
@@ -44,6 +51,19 @@
 			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/allusers.asp
 		-->
 		<Property Id="ALLUSERS">2</Property>
+		
+		
+		<!-- 
+			Support entries shown when clicking "Click here for support information"
+			in Control Panel's Add/Remove Programs
+
+			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/configuration_properties.asp
+		-->
+		<!-- Suppress the Modify button in the Control Panel's Add/Remove Programs -->
+		<Property Id="ARPNOMODIFY">1</Property> 
+		<!-- Puts PlaneDisaster.NET icon in Control Panel's Add/Remove Programs -->
+		<Property Id="ARPPRODUCTICON">MainExecutable</Property>
+		<Icon Id="MainExecutable" SourceFile="..\bin\Release\PlaneDisaster.exe"/>
 		
 		<Property Id="AcceptLicense">No</Property>
 		<!--BUTTON TEXT-->
