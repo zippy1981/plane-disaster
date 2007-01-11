@@ -24,7 +24,7 @@
  * Description  This is the presentation code for PlaneDisaster.NET
  */
 
- 
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -48,7 +48,7 @@ namespace PlaneDisaster
 		private System.Configuration.Configuration Config;
 		private PlaneDisasterSection oPlaneDisasterSection;
 		private dba dbcon = null;
-				
+		
 		#region Properties
 		
 		/// <summary>The Results of the query in CSV format.</summary>
@@ -100,12 +100,12 @@ namespace PlaneDisaster
 			oPlaneDisasterSection = (PlaneDisasterSection)Config.GetSection("planeDisaster");
 			if (oPlaneDisasterSection == null) {
 				oPlaneDisasterSection = new PlaneDisasterSection();
-				oPlaneDisasterSection.SectionInformation.AllowExeDefinition =
-					ConfigurationAllowExeDefinition.MachineToLocalUser;
 				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
 			}
 			
-			GenerateOpenRecentMenu();
+			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				(openRecentToolStripMenuItem,
+				 menuOpenRecent_Click);
 		}
 
 		#region Events
@@ -123,7 +123,7 @@ namespace PlaneDisaster
 				using (StreamWriter sw = File.CreateText(FileName))
 				{
 					sw.Write(this.CSV);
-	            }  
+				}
 			}
 		}
 		
@@ -140,7 +140,7 @@ namespace PlaneDisaster
 		}
 		
 		#endregion
-				
+		
 		#region DataGridView Events
 		
 		void EvtDataGridError(object sender, DataGridViewDataErrorEventArgs e) {
@@ -190,28 +190,28 @@ namespace PlaneDisaster
 
 		
 		#region ListBox Events
-	
+		
 		void lst_DblClick(object sender, System.EventArgs e) {
 			ListBox lst = (ListBox) sender;
 			if (lst.Name == "lstColumns") {
 				//I dont know what the default action for the columm list should be
 			} else {
 				try {
-				int RowCount = dbcon.GetTableRowCount(lst.Text);
-				if (RowCount > this.MaxRowDisplayCount) {
-					string Message;
-					string SQL = String.Format
-						("SELECT TOP {1} * FROM {0}",
-						 lst.Text, MaxRowDisplayCount);
-					Message = String.Format
-						("Row count is {0}. Displaying the first {1} rows.", 
-						dbcon.GetTableRowCount(lst.Text),
-						MaxRowDisplayCount);
-					MessageBox.Show(Message, "Too Many Rows!");
-					LoadQueryResults(SQL);
-				} else {
-					LoadTableResults(lst.Text);
-				}
+					int RowCount = dbcon.GetTableRowCount(lst.Text);
+					if (RowCount > this.MaxRowDisplayCount) {
+						string Message;
+						string SQL = String.Format
+							("SELECT TOP {1} * FROM {0}",
+							 lst.Text, MaxRowDisplayCount);
+						Message = String.Format
+							("Row count is {0}. Displaying the first {1} rows.",
+							 dbcon.GetTableRowCount(lst.Text),
+							 MaxRowDisplayCount);
+						MessageBox.Show(Message, "Too Many Rows!");
+						LoadQueryResults(SQL);
+					} else {
+						LoadTableResults(lst.Text);
+					}
 				} catch (DbException ex) {
 					if (ex.ErrorCode == -2147217865) {
 						MessageBox.Show(ex.Message, "Query Error");
@@ -232,11 +232,11 @@ namespace PlaneDisaster
 			if (e.Button == MouseButtons.Right) {
 				ListBox lst = (ListBox) sender;
 				int Index = lst.IndexFromPoint(e.X, e.Y);
-			
+				
 				if (Index >= 0 && Index < lst.Items.Count) {
-            	    lst.SelectedIndex = Index;
-            	}
-            	lst.Refresh();
+					lst.SelectedIndex = Index;
+				}
+				lst.Refresh();
 			}
 		}
 		
@@ -262,8 +262,8 @@ namespace PlaneDisaster
 			StringBuilder Msg = new StringBuilder();
 			
 			Msg.AppendFormat
-				("{0} version {1}.\n", 
-				 Application.ProductName, 
+				("{0} version {1}.\n",
+				 Application.ProductName,
 				 Application.ProductVersion);
 			Msg.AppendLine
 				("Copyright 2006 Justin Dearing <zippy1981@gmail.com>");
@@ -289,7 +289,7 @@ namespace PlaneDisaster
 					DisconnectDataSource();
 					JetSqlUtil.CompactMDB(dlg.FileName);
 					OpenMDB(CurrentFile);
-				} else { 
+				} else {
 					JetSqlUtil.CompactMDB(dlg.FileName); }
 			}
 			dlg.Dispose();
@@ -361,7 +361,9 @@ namespace PlaneDisaster
 				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			AddRecentFile(dlg.FileName);
-			GenerateOpenRecentMenu();
+			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				(openRecentToolStripMenuItem,
+				 menuOpenRecent_Click);
 			dlg.Dispose();
 			InitContextMenues();
 		}
@@ -378,7 +380,7 @@ namespace PlaneDisaster
 			if(dlg.ShowDialog() == DialogResult.OK) {
 				switch (dlg.FilterIndex) {
 					case 1:
-						string Extension = 
+						string Extension =
 							System.IO.Path.GetExtension(dlg.FileName).ToLower();
 						if (Extension == ".mdb" || Extension == ".mde") {
 							OpenMDB(dlg.FileName);
@@ -394,7 +396,9 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				GenerateOpenRecentMenu();
+				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+					(openRecentToolStripMenuItem,
+					 menuOpenRecent_Click);
 				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
@@ -405,7 +409,7 @@ namespace PlaneDisaster
 		
 		
 		void menuOpenRecent_Click (object sender, System.EventArgs e) {
-			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);			
+			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);
 			string Extension =
 				System.IO.Path.GetExtension(FileName).ToLower();
 			
@@ -415,7 +419,9 @@ namespace PlaneDisaster
 				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);	//Put this here to bump the file to the top of the list.
-			GenerateOpenRecentMenu();	//Regenerate the open recent menu
+			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				(openRecentToolStripMenuItem,
+				 menuOpenRecent_Click);
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 
@@ -433,7 +439,7 @@ namespace PlaneDisaster
 					DisconnectDataSource();
 					JetSqlUtil.RepairMDB(dlg.FileName);
 					OpenMDB(CurrentFile);
-				} else { 
+				} else {
 					JetSqlUtil.RepairMDB(dlg.FileName); }
 			}
 			dlg.Dispose();
@@ -516,46 +522,25 @@ namespace PlaneDisaster
 
 		private void AddRecentFile (string FileName) {
 			FileName = Path.GetFullPath(FileName);
-			short FileCount;			
 			
 			try {
-				FileCount = oPlaneDisasterSection.RecentFiles.MaxCount;
+				oPlaneDisasterSection.RecentFiles.Add(FileName);
 			} catch (NullReferenceException) {
-				MessageBox.Show("There is no spoon");
 				oPlaneDisasterSection = new PlaneDisasterSection();
+				oPlaneDisasterSection.SectionInformation.AllowExeDefinition =
+					ConfigurationAllowExeDefinition.MachineToLocalUser;
 				Config.Sections.Remove("planeDisaster");
 				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
-				FileCount = oPlaneDisasterSection.RecentFiles.MaxCount;
+				oPlaneDisasterSection.RecentFiles.Add(FileName);
 			}
-
-			//TODO: all this should be done by PlaneDisasterSection.Add
-			List<string> Files = new List<string>();
-			Files.Add(FileName);
-			int i = 0;
-			foreach (RecentFileElement curFile in oPlaneDisasterSection.RecentFiles) {
-				if (curFile.Name != FileName) {
-					Files.Add(curFile.Name);
-					i++;
-					if (i >= FileCount) break;
-				}
-			}
-			oPlaneDisasterSection.RecentFiles.Clear();
-			oPlaneDisasterSection.RecentFiles.AddRange(Files.ToArray());
 			Config.Save();
 		}
 		
 		
-		private void AddRecentFileToMenu (string FileName) {
-			openRecentToolStripMenuItem.Enabled = true;
-			ToolStripMenuItem RecentFileMenu = new ToolStripMenuItem(FileName);
-			RecentFileMenu.Click  += menuOpenRecent_Click;
-			this.openRecentToolStripMenuItem.DropDownItems.Add
-				(RecentFileMenu);
-		}
-		
 		private void ClearRecentFileMenu() {
 			this.openRecentToolStripMenuItem.DropDownItems.Clear();
 		}
+		
 		
 		/// <summary>
 		/// Disconnects from the data source and updates the GUI appropiatly.
@@ -589,7 +574,7 @@ namespace PlaneDisaster
 		/// database.
 		/// </summary>
 		/// <remarks>
-		/// Anything that Connects to a Datasource should call this to 
+		/// Anything that Connects to a Datasource should call this to
 		/// refresh the form.
 		/// </remarks>
 		private void DisplayDataSource() {
@@ -603,26 +588,6 @@ namespace PlaneDisaster
 			
 			databaseSchemaToolStripMenuItem.Enabled = true;
 			this.closeToolStripMenuItem.Enabled = true;
-		}
-		
-		private void GenerateOpenRecentMenu() {
-			try {
-				// Ensure that this value is explicitly written in the xml file
-				oPlaneDisasterSection.RecentFiles.MaxCount =
-					oPlaneDisasterSection.RecentFiles.MaxCount;
-				ClearRecentFileMenu();
-				foreach (RecentFileElement RecentFile in oPlaneDisasterSection.RecentFiles) {
-					AddRecentFileToMenu(RecentFile.Name);
-				}
-			} 
-			catch (NullReferenceException) {
-				oPlaneDisasterSection = new PlaneDisasterSection();
-				oPlaneDisasterSection.RecentFiles.MaxCount =
-					oPlaneDisasterSection.RecentFiles.MaxCount;
-				Config.Sections.Remove("planeDisaster");
-				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
-				Config.Save();
-			}
 		}
 		
 		
@@ -670,7 +635,7 @@ namespace PlaneDisaster
 			
 			ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
 			this.lstProcedures.ContextMenu = ctxProcedure;
-				
+			
 			menuDropTable = new MenuItem("Drop");
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
 			menuDropTable.Name = "menuDropTable";
@@ -772,23 +737,23 @@ namespace PlaneDisaster
 			string Extension = Path.GetExtension(FileName);
 			switch (Extension) {
 				case ".mdb":
-						JetSqlUtil.CreateMDB(FileName);
-						this.OpenMDB(FileName);
-						break;
+					JetSqlUtil.CreateMDB(FileName);
+					this.OpenMDB(FileName);
+					break;
 				case ".db":
 				case ".db3":
 				case ".sqlite":
-						System.Data.SQLite.SQLiteConnection.CreateFile(FileName);
-						this.OpenSQLite(FileName);
-						break;
-				}
-				this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+					System.Data.SQLite.SQLiteConnection.CreateFile(FileName);
+					this.OpenSQLite(FileName);
+					break;
+			}
+			this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 		
 		
 		internal void OpenDatabaseFile (string FileName) {
 			try {
-				this.DisconnectDataSource(); 
+				this.DisconnectDataSource();
 			} catch (NullReferenceException) {}
 			
 			string Extension =
@@ -799,7 +764,9 @@ namespace PlaneDisaster
 				this.OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
-			GenerateOpenRecentMenu();
+			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				(openRecentToolStripMenuItem,
+				 menuOpenRecent_Click);
 		}
 		
 		
@@ -826,12 +793,12 @@ namespace PlaneDisaster
 							}
 							return;
 						} finally { GetPassword.Dispose(); }
-					} 
+					}
 				}
-				else { 
+				else {
 					throw ex;
 				}
-			} 
+			}
 			this.DisplayDataSource();
 		}
 		

@@ -8,6 +8,7 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Windows.Forms;
 
 
 namespace PlaneDisaster.Configuration
@@ -71,7 +72,20 @@ namespace PlaneDisaster.Configuration
 		/// </summary>
 		public void Add(RecentFileElement element)
 		{
-			BaseAdd(element);
+			RecentFileElement [] NewFiles = new RecentFileElement [this.Count];
+			short FileCount = this.MaxCount;
+			
+			this.CopyTo(NewFiles, 0);
+			this.Clear();
+			int i = 1;
+			this.BaseAdd(element);
+			foreach (RecentFileElement curFile in NewFiles) {
+				if (curFile.Name != element.Name) {
+					this.BaseAdd(curFile);
+					i++;
+					if (i >= FileCount) break;
+				}
+			}
 		}
 		
 		
@@ -81,6 +95,19 @@ namespace PlaneDisaster.Configuration
 		public void Add(string FileName)
 		{
 			Add (new RecentFileElement(Path.GetFullPath(FileName)));
+		}
+		
+		
+		private void AddRecentFileToMenu 
+			(string FileName, 
+			 ToolStripDropDownItem  oToolStripItem,
+			 EventHandler menu_Click)
+		{
+			oToolStripItem.Enabled = true;
+			ToolStripMenuItem RecentFileMenu = new ToolStripMenuItem(FileName);
+			RecentFileMenu.Click  += menu_Click;
+			oToolStripItem.DropDownItems.Add
+				(RecentFileMenu);
 		}
 		
 		/// <summary>
@@ -127,6 +154,43 @@ namespace PlaneDisaster.Configuration
 				if (File.Name == FileName) return true;
 			} return false;
 			
+		}
+		
+		/// <summary>
+		/// Generates a group of drop <c>ToolStipItem(s)</c>
+		/// under the given <c>ToolStripDropDownItem</c>
+		/// The <c>EventHandler</c> menu_Click is assign
+		/// to each <c>ToolStripDropDownItem.Click</c> event.
+		/// </summary>
+		/// <remarks>
+		/// <example>
+		/// The developer can assume that <c>ToolStripDropDownItem.Text</c>
+		/// is the name of the file. It is assumed that the developer would do
+		/// something similar to the code below.
+		/// <code>
+		/// ToolStripDropDownItem menuItem = (ToolStripDropDownItem) sender;
+		/// string FileName = menuItem.Text;
+		/// 
+		/// //Open the file
+		/// </code>
+		/// </example>
+		/// This function will be marked <c>[Obsolete]</c> in the event that 
+		/// changes to it are made. I might assign the file name to
+		/// <c>ToolStripDropDownItem.Tag</c>
+		/// </remarks>
+		/// <param name="menuParent">
+		/// Parent <c>ToolStripDropDownItem</c>
+		/// </param>
+		/// <param name="menu_Click">
+		/// <c>EventHandler</c> for Click Events
+		/// </param>
+		public void GenerateOpenRecentMenu
+			(ToolStripDropDownItem menuParent, EventHandler menu_Click) {
+			menuParent.DropDownItems.Clear();
+			foreach (RecentFileElement RecentFile in this) {
+				AddRecentFileToMenu
+					(RecentFile.Name, menuParent, menu_Click);
+			}
 		}
 		
 		
