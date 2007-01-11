@@ -53,7 +53,6 @@ namespace PlaneDisaster
 				string FileName = args[0];
 				if (File.Exists(FileName)) {
 					frm.OpenDatabaseFile(FileName);
-					frm.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 					frm.InitContextMenues();
 				} else if (Directory.Exists(Path.GetDirectoryName(FileName))) {
 					frm.NewDatabaseFile(FileName);

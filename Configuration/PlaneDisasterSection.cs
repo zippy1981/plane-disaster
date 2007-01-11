@@ -24,6 +24,11 @@ namespace PlaneDisaster.Configuration
 		{
 			get { return (RecentFilesCollection) base["recentFiles"]; }
 		}
+		
+		public PlaneDisasterSection () : base () {
+			this.SectionInformation.AllowExeDefinition =
+				ConfigurationAllowExeDefinition.MachineToLocalUser;
+		}
 	}
 }
 

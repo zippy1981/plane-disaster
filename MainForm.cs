@@ -358,7 +358,6 @@ namespace PlaneDisaster
 						OpenSQLite(dlg.FileName);
 						break;
 				}
-				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			AddRecentFile(dlg.FileName);
 			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
@@ -399,7 +398,6 @@ namespace PlaneDisaster
 				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
-				Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(dlg.FileName), dlg.FileName);
 			}
 			dlg.Dispose();
 			InitContextMenues();
@@ -410,19 +408,8 @@ namespace PlaneDisaster
 		
 		void menuOpenRecent_Click (object sender, System.EventArgs e) {
 			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);
-			string Extension =
-				System.IO.Path.GetExtension(FileName).ToLower();
 			
-			if (Extension == ".mdb" || Extension == ".mde") {
-				OpenMDB(FileName);
-			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
-				OpenSQLite(FileName);
-			} else {throw new ApplicationException("Unknown file type.");}
-			AddRecentFile(FileName);	//Put this here to bump the file to the top of the list.
-			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
-				(openRecentToolStripMenuItem,
-				 menuOpenRecent_Click);
-			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+			OpenDatabaseFile(FileName);
 		}
 
 
@@ -527,8 +514,6 @@ namespace PlaneDisaster
 				oPlaneDisasterSection.RecentFiles.Add(FileName);
 			} catch (NullReferenceException) {
 				oPlaneDisasterSection = new PlaneDisasterSection();
-				oPlaneDisasterSection.SectionInformation.AllowExeDefinition =
-					ConfigurationAllowExeDefinition.MachineToLocalUser;
 				Config.Sections.Remove("planeDisaster");
 				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
 				oPlaneDisasterSection.RecentFiles.Add(FileName);
@@ -562,7 +547,7 @@ namespace PlaneDisaster
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			dbcon.Disconnect();
 			dbcon = null;
-			Text = string.Format("PlaneDisaster.NET");
+			Text = "PlaneDisaster.NET";
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			this.closeToolStripMenuItem.Enabled = false;
 			
@@ -747,7 +732,7 @@ namespace PlaneDisaster
 					this.OpenSQLite(FileName);
 					break;
 			}
-			this.Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 		
 		
@@ -794,11 +779,16 @@ namespace PlaneDisaster
 							return;
 						} finally { GetPassword.Dispose(); }
 					}
-				}
-				else {
+				} else if (ex.ErrorCode == -2147467259) {
+					Text = "PlaneDisaster.NET";
+					string Msg = String.Format("File [{0}] not found.", FileName);
+					MessageBox.Show(Msg, "Error Opening File");
+					return;
+				} else {
 					throw ex;
 				}
 			}
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 			this.DisplayDataSource();
 		}
 		
@@ -807,6 +797,7 @@ namespace PlaneDisaster
 			this.dbcon = new SQLiteDba();
 			
 			((SQLiteDba) dbcon).Connect(FileName);
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 			this.DisplayDataSource();
 		}
 		
