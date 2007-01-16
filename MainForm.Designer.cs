@@ -53,7 +53,7 @@ namespace PlaneDisaster
 		private void InitializeComponent() {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.lstTables = new System.Windows.Forms.ListBox();
-			this.radText = new System.Windows.Forms.RadioButton();
+			this.radCSV = new System.Windows.Forms.RadioButton();
 			this.radGrid = new System.Windows.Forms.RadioButton();
 			this.cmdSQL = new System.Windows.Forms.Button();
 			this.lstColumns = new System.Windows.Forms.ListBox();
@@ -83,6 +83,7 @@ namespace PlaneDisaster
 			this.lblColumns = new System.Windows.Forms.Label();
 			this.lblProcedures = new System.Windows.Forms.Label();
 			this.lstProcedures = new System.Windows.Forms.ListBox();
+			this.radInsert = new System.Windows.Forms.RadioButton();
 			((System.ComponentModel.ISupportInitialize)(this.gridResults)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -95,15 +96,15 @@ namespace PlaneDisaster
 			this.lstTables.TabIndex = 5;
 			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
-			// radText
+			// radCSV
 			// 
-			this.radText.Location = new System.Drawing.Point(681, 404);
-			this.radText.Name = "radText";
-			this.radText.Size = new System.Drawing.Size(95, 25);
-			this.radText.TabIndex = 7;
-			this.radText.TabStop = true;
-			this.radText.Text = "Text (CSV)";
-			this.radText.CheckedChanged += new System.EventHandler(this.RadTextCheckedChanged);
+			this.radCSV.Location = new System.Drawing.Point(681, 404);
+			this.radCSV.Name = "radCSV";
+			this.radCSV.Size = new System.Drawing.Size(95, 25);
+			this.radCSV.TabIndex = 8;
+			this.radCSV.TabStop = true;
+			this.radCSV.Text = "Text (CSV)";
+			this.radCSV.CheckedChanged += new System.EventHandler(this.RadCSVCheckedChanged);
 			// 
 			// radGrid
 			// 
@@ -111,7 +112,7 @@ namespace PlaneDisaster
 			this.radGrid.Location = new System.Drawing.Point(681, 377);
 			this.radGrid.Name = "radGrid";
 			this.radGrid.Size = new System.Drawing.Size(95, 25);
-			this.radGrid.TabIndex = 8;
+			this.radGrid.TabIndex = 7;
 			this.radGrid.TabStop = true;
 			this.radGrid.Text = "DataGridView";
 			this.radGrid.CheckedChanged += new System.EventHandler(this.RadGridCheckedChanged);
@@ -175,7 +176,7 @@ namespace PlaneDisaster
 			this.cmdSaveCsv.Location = new System.Drawing.Point(782, 402);
 			this.cmdSaveCsv.Name = "cmdSaveCsv";
 			this.cmdSaveCsv.Size = new System.Drawing.Size(82, 21);
-			this.cmdSaveCsv.TabIndex = 12;
+			this.cmdSaveCsv.TabIndex = 11;
 			this.cmdSaveCsv.Text = "Save &CSV";
 			this.cmdSaveCsv.Click += new System.EventHandler(this.CmdSaveCsvClick);
 			// 
@@ -207,14 +208,14 @@ namespace PlaneDisaster
 			// newToolStripMenuItem
 			// 
 			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.newToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.newToolStripMenuItem.Text = "&New";
 			this.newToolStripMenuItem.Click += new System.EventHandler(this.menuNew_Click);
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.menuOpen_Click);
 			// 
@@ -222,26 +223,26 @@ namespace PlaneDisaster
 			// 
 			this.openRecentToolStripMenuItem.Enabled = false;
 			this.openRecentToolStripMenuItem.Name = "openRecentToolStripMenuItem";
-			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.openRecentToolStripMenuItem.Text = "Open &Recent";
 			// 
 			// closeToolStripMenuItem
 			// 
 			this.closeToolStripMenuItem.Enabled = false;
 			this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-			this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.closeToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.closeToolStripMenuItem.Text = "&Close";
 			this.closeToolStripMenuItem.Click += new System.EventHandler(this.menuClose_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(145, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -348,10 +349,21 @@ namespace PlaneDisaster
 			this.lstProcedures.Size = new System.Drawing.Size(160, 56);
 			this.lstProcedures.TabIndex = 18;
 			// 
+			// radInsert
+			// 
+			this.radInsert.Location = new System.Drawing.Point(681, 431);
+			this.radInsert.Name = "radInsert";
+			this.radInsert.Size = new System.Drawing.Size(107, 25);
+			this.radInsert.TabIndex = 9;
+			this.radInsert.TabStop = true;
+			this.radInsert.Text = "Text (INSERTS)";
+			this.radInsert.CheckedChanged += new System.EventHandler(this.RadInsertCheckedChanged);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(876, 464);
+			this.Controls.Add(this.radInsert);
 			this.Controls.Add(this.lblProcedures);
 			this.Controls.Add(this.lstProcedures);
 			this.Controls.Add(this.lblColumns);
@@ -360,7 +372,7 @@ namespace PlaneDisaster
 			this.Controls.Add(this.lstViews);
 			this.Controls.Add(this.cmdSaveCsv);
 			this.Controls.Add(this.radGrid);
-			this.Controls.Add(this.radText);
+			this.Controls.Add(this.radCSV);
 			this.Controls.Add(this.cmdSQL);
 			this.Controls.Add(this.txtResults);
 			this.Controls.Add(this.lstColumns);
@@ -382,6 +394,8 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.RadioButton radInsert;
+		private System.Windows.Forms.RadioButton radCSV;
 		private System.Windows.Forms.ToolStripMenuItem openRecentToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
 		private System.Windows.Forms.ListBox lstProcedures;
@@ -412,7 +426,6 @@ namespace PlaneDisaster
 		private System.Windows.Forms.ListBox lstColumns;
 		private System.Windows.Forms.Button cmdSQL;
 		private System.Windows.Forms.RadioButton radGrid;
-		private System.Windows.Forms.RadioButton radText;
 		private System.Windows.Forms.ListBox lstTables;
 		#endregion
 	}

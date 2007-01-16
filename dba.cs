@@ -740,6 +740,55 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>
+		/// Converts a DataTable to the INSERT queries neccessary
+		/// to recreate it.
+		/// </summary>
+		/// <param name="dt">The datatable</param>
+		/// <returns>
+		/// The INSERT statements neccessary to reproduce the existing query.
+		/// <remarks>
+		/// The DDL (CREATE TABLE) statement neccessary to define the table
+		/// is not created.
+		/// </remarks>
+		/// </returns>
+		public static string DataTable2DML(DataTable dt) {
+			int numFields;
+			string [] Fields;
+			string [] FieldValues;
+			StringBuilder DML = new StringBuilder();
+			StringBuilder InsertFormatter = new StringBuilder();
+			
+			numFields = dt.Columns.Count;
+			Fields = new string[numFields];
+			FieldValues = new string[numFields];
+			//TODO: I need to scrub output here.
+			for (int i = 0; i < numFields; i++) {
+				Fields[i] = dt.Columns[i].ColumnName;
+			}
+			
+			InsertFormatter.AppendFormat
+				("INSERT INTO [{0}] ({1}) VALUES(", 
+				 dt.TableName,
+				 String.Join(", ", Fields));
+			for (int i = 0; i < numFields - 1; i++) {
+				InsertFormatter.AppendFormat(@"'{{{0}}}', ", i);
+			}
+			InsertFormatter.AppendFormat(@"'{{{0}}}');", numFields - 1);
+			
+			foreach(DataRow row in dt.Rows) {
+				for (int i = 0; i < numFields; i++) {
+					FieldValues[i] = row[Fields[i]].ToString();
+				}
+				DML.AppendFormat
+					(InsertFormatter.ToString(), FieldValues);
+				DML.AppendLine();
+			}
+
+			return DML.ToString();
+		}
+		
+		
+		/// <summary>
 		/// Gets a column from a DataTable and returns it as a string of arrays.
 		/// </summary>
 		/// <param name="Table">The DataTable to get the data from.</param>

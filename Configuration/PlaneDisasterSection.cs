@@ -25,7 +25,12 @@ namespace PlaneDisaster.Configuration
 			get { return (RecentFilesCollection) base["recentFiles"]; }
 		}
 		
+		
+		/// <summary>
+		/// Default Constructor.
+		/// </summary>
 		public PlaneDisasterSection () : base () {
+			//We want to allow this section to be stored in user.app
 			this.SectionInformation.AllowExeDefinition =
 				ConfigurationAllowExeDefinition.MachineToLocalUser;
 		}

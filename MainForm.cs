@@ -48,13 +48,22 @@ namespace PlaneDisaster
 		private System.Configuration.Configuration Config;
 		private PlaneDisasterSection oPlaneDisasterSection;
 		private dba dbcon = null;
+		private string _CSV;
+		private string _InsertStatements;
 		
 		#region Properties
 		
 		/// <summary>The Results of the query in CSV format.</summary>
-		internal string CSV {
-			get { return this.txtResults.Text; }
-			set { this.txtResults.Text = value; }
+		private string CSV {
+			get { return this._CSV; }
+			set { this._CSV = value; }
+		}
+		
+		
+		/// <summary>The Results of the query in InsertStatements format.</summary>
+		private string InsertStatements {
+			get { return this._InsertStatements; }
+			set { this._InsertStatements = value; }
 		}
 		
 		
@@ -178,7 +187,8 @@ namespace PlaneDisaster
 			this.lstViews.Top = this.ClientSize.Height - 65;
 			// Radio Buttons
 			this.radGrid.Top = this.ClientSize.Height -85;
-			this.radText.Top = this.ClientSize.Height -60;
+			this.radCSV.Top = this.ClientSize.Height -65;
+			this.radInsert.Top = this.ClientSize.Height -45;
 			// Buttons
 			this.cmdStatus.Top = this.ClientSize.Height - 85;
 			this.cmdSaveCsv.Top = this.ClientSize.Height -60;
@@ -200,15 +210,23 @@ namespace PlaneDisaster
 					int RowCount = dbcon.GetTableRowCount(lst.Text);
 					if (RowCount > this.MaxRowDisplayCount) {
 						string Message;
-						string SQL = String.Format
-							("SELECT TOP {1} * FROM {0}",
-							 lst.Text, MaxRowDisplayCount);
+						string SQL;
+							
+						if (this.dbcon is OleDba) {
+							SQL = String.Format
+								("SELECT TOP {1} * FROM {0}",
+							 	lst.Text, MaxRowDisplayCount);
+						} else {
+							SQL = String.Format
+								("SELECT * FROM {0} LIMIT {1}",
+							 	lst.Text, MaxRowDisplayCount);
+						}
 						Message = String.Format
 							("Row count is {0}. Displaying the first {1} rows.",
 							 dbcon.GetTableRowCount(lst.Text),
 							 MaxRowDisplayCount);
 						MessageBox.Show(Message, "Too Many Rows!");
-						LoadQueryResults(SQL);
+						LoadQueryResults(SQL, lst.Text);
 					} else {
 						LoadTableResults(lst.Text);
 					}
@@ -488,6 +506,14 @@ namespace PlaneDisaster
 		#region Radio Events
 		
 
+		void RadCSVCheckedChanged(object sender, System.EventArgs e)
+		{
+			gridResults.Hide();
+			txtResults.Show();
+			txtResults.Text = CSV;
+		}
+		
+
 		void RadGridCheckedChanged(object sender, System.EventArgs e)
 		{
 			txtResults.Hide();
@@ -495,10 +521,11 @@ namespace PlaneDisaster
 		}
 		
 
-		void RadTextCheckedChanged(object sender, System.EventArgs e)
+		void RadInsertCheckedChanged(object sender, System.EventArgs e)
 		{
 			gridResults.Hide();
 			txtResults.Show();
+			txtResults.Text = InsertStatements;
 		}
 		
 
@@ -542,6 +569,7 @@ namespace PlaneDisaster
 			lstViews.ContextMenu = null;
 			
 			txtResults.Text = "";
+			this.CSV = "";
 			gridResults.DataSource = null;
 			
 			databaseSchemaToolStripMenuItem.Enabled = false;
@@ -665,31 +693,43 @@ namespace PlaneDisaster
 		}
 		
 		
-		internal void LoadQueryResults() {
-			this.LoadQueryResults(this.Query);
-		}
-		
-		
 		internal void LoadDataTable(DataTable dt) {
 			if (dt != null) {
-				txtResults.Text = dba.DataTable2CSV(dt);
+				this.CSV = dba.DataTable2CSV(dt);
+				this.InsertStatements = dba.DataTable2DML(dt);
 				gridResults.DataSource = dt;
 			}
 			// Assume that if no rows were returned, then the schema was altered.
 			else {
 				DisplayDataSource();
+				this.CSV = null;
+				this.InsertStatements = null;
+			}
+			if (radCSV.Checked) {
+				this.txtResults.Text = CSV;
+			} else if (radInsert.Checked) {
+				this.txtResults.Text = InsertStatements;
 			}
 		}
 		
 		
-		internal void LoadQueryResults(string SQL) {
+		private void LoadQueryResults() {
+			this.LoadQueryResults(this.Query, null);
+		}
+		
+		
+		private void LoadQueryResults(string SQL, string TableName) {
 			System.Data.DataTable dt;
 			
-			//Don't do anything if the query window is empty or we are not connected to a database.
+			/* 
+			 * Don't do anything if the query window is empty or we
+			 * are not connected to a database.
+			 */
 			if (SQL == "" || dbcon == null) { return; }
 			
 			try {
 				dt = dbcon.ExecuteSql(SQL);
+				dt.TableName = TableName;
 			} catch (System.Data.Common.DbException ex) {
 				MessageBox.Show
 					(String.Format("Problem loading query {0}\r\nError Message: {1}", SQL, ex.Message));
