@@ -92,12 +92,6 @@ namespace PlaneDisaster
 		{
 			InitializeComponent();
 			
-			/* ListBox Double Click event handlers */
-			lstColumns.DoubleClick += new System.EventHandler(this.lst_DblClick);
-			lstProcedures.DoubleClick += new System.EventHandler(this.lst_DblClick);
-			lstTables.DoubleClick += new System.EventHandler(this.lst_DblClick);
-			lstViews.DoubleClick += new System.EventHandler(this.lst_DblClick);
-			
 			/* ListBox Right Click event handlers */
 			lstProcedures.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
 			lstTables.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
@@ -202,25 +196,26 @@ namespace PlaneDisaster
 		
 		#region ListBox Events
 		
-		void lst_DblClick(object sender, System.EventArgs e) {
+		void lst_DblClick(object sender, EventArgs  e) {
 			ListBox lst = (ListBox) sender;
+			
 			if (lst.Name == "lstColumns") {
 				//I dont know what the default action for the columm list should be
-			} else {
+			} else if (lst.Text != ""){
 				try {
 					int RowCount = dbcon.GetTableRowCount(lst.Text);
 					if (RowCount > this.MaxRowDisplayCount) {
 						string Message;
 						string SQL;
-							
+						
 						if (this.dbcon is OleDba) {
 							SQL = String.Format
 								("SELECT TOP {1} * FROM {0}",
-							 	lst.Text, MaxRowDisplayCount);
+								 lst.Text, MaxRowDisplayCount);
 						} else {
 							SQL = String.Format
 								("SELECT * FROM {0} LIMIT {1}",
-							 	lst.Text, MaxRowDisplayCount);
+								 lst.Text, MaxRowDisplayCount);
 						}
 						Message = String.Format
 							("Row count is {0}. Displaying the first {1} rows.",
@@ -232,10 +227,19 @@ namespace PlaneDisaster
 						LoadTableResults(lst.Text);
 					}
 				} catch (DbException ex) {
-					if (ex.ErrorCode == -2147217865) {
-						MessageBox.Show(ex.Message, "Query Error");
+					switch (ex.ErrorCode) {
+						case -2147217865:
+							MessageBox.Show(ex.Message, "Query Error");
+							break;
+						case -2147217904:
+							MessageBox.Show
+								(String.Format
+								 ("Query {0} requires parameters. Please execute it with parameters via the SQL prompt.",
+								  lst.Text));
+							break;
+						default:
+							throw ex;
 					}
-					else { throw ex; }
 				}
 			}
 		}
@@ -377,13 +381,13 @@ namespace PlaneDisaster
 						OpenSQLite(dlg.FileName);
 						break;
 				}
+				AddRecentFile(dlg.FileName);
+				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+					(openRecentToolStripMenuItem,
+					 menuOpenRecent_Click);
+				InitContextMenues();
 			}
-			AddRecentFile(dlg.FileName);
-			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
-				(openRecentToolStripMenuItem,
-				 menuOpenRecent_Click);
 			dlg.Dispose();
-			InitContextMenues();
 		}
 
 		
@@ -417,11 +421,9 @@ namespace PlaneDisaster
 				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
+				InitContextMenues();
 			}
 			dlg.Dispose();
-			InitContextMenues();
-			
-			
 		}
 		
 		
@@ -429,6 +431,8 @@ namespace PlaneDisaster
 			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);
 			
 			OpenDatabaseFile(FileName);
+			//TODO: If the call to OpenDatatabatse fails 
+			InitContextMenues();
 		}
 
 
@@ -478,15 +482,11 @@ namespace PlaneDisaster
 				this.Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
 			} else if (mnu.Name == "menuScriptView") {
 				this.Query = dbcon.GetViewSQL(lstViews.Text);
-			} else {
-				throw new ArgumentException
-					("sender for menuScript_Click must be one of " +
-					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
 		
 		
-		void menuShow_Click (object sender, System.EventArgs e) {
+		void menuShow_Click (object sender, EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuShowProcedure") {
@@ -559,10 +559,21 @@ namespace PlaneDisaster
 		/// Disconnects from the data source and updates the GUI appropiatly.
 		/// </summary>
 		internal void DisconnectDataSource() {
-			lstColumns.DataSource = null;
+			
+			/* ListBox Double Click event handlers */
+			lstColumns.DoubleClick -= lst_DblClick;
+			lstProcedures.DoubleClick -= this.lst_DblClick;
+			lstTables.DoubleClick -= lst_DblClick;
+			lstViews.DoubleClick -= lst_DblClick;
+			
 			lstProcedures.DataSource = null;
 			lstTables.DataSource = null;
 			lstViews.DataSource = null;
+			/*
+			 * We must clear this last otherwise, events firing from
+			 * the first three might repopulate this.
+			 */
+			lstColumns.DataSource = null;
 			
 			lstColumns.ContextMenu = null;
 			lstProcedures.ContextMenu = null;
@@ -635,20 +646,26 @@ namespace PlaneDisaster
 			MenuItem menuShowProcedure, menuShowTable, menuShowView;
 			MenuItem menuTableSchema, menuViewSchema;
 			
-			menuDropProcedure = new MenuItem("Drop");
-			menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
-			menuDropProcedure.Name = "menuDropProcedure";
+			if (!(dbcon is SQLiteDba)) {	
+				lstProcedures.DoubleClick += new EventHandler(this.lst_DblClick);
+				
+				menuDropProcedure = new MenuItem("Drop");
+				menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
+				menuDropProcedure.Name = "menuDropProcedure";
+				
+				menuScriptProcedure = new MenuItem("Script");
+				menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
+				menuScriptProcedure.Name = "menuScriptProcedure";
+				
+				menuShowProcedure = new MenuItem("Show");
+				menuShowProcedure.Click += new EventHandler(menuShow_Click);
+				menuShowProcedure.Name = "menuShowProcedure";
+				
+				ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
+				this.lstProcedures.ContextMenu = ctxProcedure;
+			}
 			
-			menuScriptProcedure = new MenuItem("Script");
-			menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
-			menuScriptProcedure.Name = "menuScriptProcedure";
-			
-			menuShowProcedure = new MenuItem("Show");
-			menuShowProcedure.Click += new System.EventHandler(menuShow_Click);
-			menuShowProcedure.Name = "menuShowProcedure";
-			
-			ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
-			this.lstProcedures.ContextMenu = ctxProcedure;
+			lstTables.DoubleClick += new EventHandler(this.lst_DblClick);
 			
 			menuDropTable = new MenuItem("Drop");
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
@@ -659,7 +676,7 @@ namespace PlaneDisaster
 			menuScriptTable.Name = "menuScriptTable";
 			
 			menuShowTable = new MenuItem("Show");
-			menuShowTable.Click += new System.EventHandler(menuShow_Click);
+			menuShowTable.Click += new EventHandler(menuShow_Click);
 			menuShowTable.Name = "menuShowTable";
 			
 			menuTableSchema = new MenuItem("Schema");
@@ -673,6 +690,8 @@ namespace PlaneDisaster
 			}
 			this.lstTables.ContextMenu = ctxTable;
 			
+			lstViews.DoubleClick += new EventHandler(this.lst_DblClick);
+			
 			menuDropView = new MenuItem("Drop");
 			menuDropView.Click += new System.EventHandler(menuDrop_Click);
 			menuDropView.Name = "menuDropView";
@@ -682,7 +701,7 @@ namespace PlaneDisaster
 			menuScriptView.Name = "menuScriptView";
 			
 			menuShowView = new MenuItem("Show");
-			menuShowView.Click += new System.EventHandler(menuShow_Click);
+			menuShowView.Click += new EventHandler(menuShow_Click);
 			menuShowView.Name = "menuShowView";
 			
 			menuViewSchema = new MenuItem("Schema");

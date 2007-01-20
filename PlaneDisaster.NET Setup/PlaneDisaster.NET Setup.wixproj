@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>package</OutputType>
     <RootNamespace>PlaneDisaster.NET_Setup</RootNamespace>
-    <OutputName>PlaneDisaster.NET Setup</OutputName>
+    <OutputName>PlaneDisaster.NET-Setup</OutputName>
     <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixToolPath>
     <ToolPath Condition=" '$(ToolPath)' == '' ">$(WixToolPath)</ToolPath>
     <WixMSBuildExtensionsPath Condition=" '$(WixMSBuildExtensionsPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixMSBuildExtensionsPath>
