@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <link href="PlaneDisaster.css" type="text/css" rel="stylesheet">
+  <title>PlaneDisaster.NET</title>
+</head>
+<body>
+<h1 class="firstHeading">PlaneDisaster.NET<br>
+<!-- start content --> </h1>
+<p>PlaneDisaster.NET is a SQL Frontend for JetSQL (MS Access) and
+SQLite.NET databases. It is written in C# and available on <a
+ href="http://www.sf.net" class="external text"
+ title="http://www.sf.net" rel="nofollow">SourceForge.net</a>
+</p>
+<table id="toc" class="toc" summary="Contents">
+  <tbody>
+    <tr>
+      <td>
+      <h2>Contents</h2>
+      <ul>
+        <li class="toclevel-1"><a
+ href="#Origins_and_History"><span
+ class="tocnumber">1</span> <span class="toctext">Origins and History</span></a>
+          <ul>
+            <li class="toclevel-2"><a
+ href="#The_Name_PlaneDisaster.NET"><span
+ class="tocnumber">1.1</span> <span class="toctext">The Name
+PlaneDisaster.NET</span></a></li>
+          </ul>
+        </li>
+        <li class="toclevel-1"><a
+ href="#Features"><span
+ class="tocnumber">2</span> <span class="toctext">Features</span></a></li>
+        <li class="toclevel-1"><a
+ href="#Getting_PlaneDisaster.NET"><span
+ class="tocnumber">3</span> <span class="toctext">Getting
+PlaneDisaster.NET</span></a>
+          <ul>
+            <li class="toclevel-2"><a
+ href="#Versioning"><span
+ class="tocnumber">3.1</span> <span class="toctext">Versioning</span></a></li>
+          </ul>
+        </li>
+        <li class="toclevel-1"><a
+ href="#Development"><span
+ class="tocnumber">4</span> <span class="toctext">Development</span></a>
+          <ul>
+            <li class="toclevel-2"><a
+ href="#Feature_Requests"><span
+ class="tocnumber">4.1</span> <span class="toctext">Feature Requests</span></a></li>
+            <li class="toclevel-2"><a
+ href="#Current_Issues"><span
+ class="tocnumber">4.2</span> <span class="toctext">Current Issues</span></a></li>
+            <li class="toclevel-2"><a
+ href="#Development_Roadmap"><span
+ class="tocnumber">4.3</span> <span class="toctext">Development Roadmap</span></a>
+              <ul>
+                <li class="toclevel-3"><a
+ href="#Previous_Release_.280.9.29"><span
+ class="tocnumber">4.3.1</span> <span class="toctext">Previous Release
+(0.9)</span></a></li>
+                <li class="toclevel-3"><a
+ href="#Imminent_Upcoming_Release_.280.9.1.29"><span
+ class="tocnumber">4.3.2</span> <span class="toctext">Imminent
+Upcoming Release (0.9.1)</span></a></li>
+                <li class="toclevel-3"><a
+ href="#Next_Upcoming_Release_.280.9.2.29"><span
+ class="tocnumber">4.3.3</span> <span class="toctext">Next Upcoming
+Release (0.9.2)</span></a></li>
+                <li class="toclevel-3"><a
+ href="#Version_1.0"><span
+ class="tocnumber">4.3.4</span> <span class="toctext">Version 1.0</span></a></li>
+              </ul>
+            </li>
+            <li class="toclevel-2"><a
+ href="#Contributors"><span
+ class="tocnumber">4.4</span> <span class="toctext">Contributors</span></a></li>
+          </ul>
+        </li>
+      </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<a name="Origins_and_History"></a>
+<h1> Origins and History </h1>
+<p>I wrote a database viewer due to the fact that I needed a way to
+browse Microsoft Access files. I was working in C# at the time so that
+was the language I chose. It made perfect sense to distribute this as
+an open source project, as I knew of no open source tools for viewing
+and editing MS access databases.
+</p>
+<p>My project quickly grew to support several databases. I created
+a nice hierarchy of classes that wrapped around ADO.NET Provider
+classes. However, I then realized that I wasn't filling a need with the
+MySQL and Postgres frontend. I prefer the existing frontends for
+Postgresql, MySQL and Microsoft SQL server. As a result, I dropped
+support for all databases besides MS access and SQLite. While there are
+other front ends for SQLite available, I prefer PlaneDisaster to them
+so I kept support for it. Also, SQLite and MS Access database are used
+in similar manners and in both cases the database is just a file and
+the database engine is just a shared library.
+</p>
+<a name="The_Name_PlaneDisaster.NET"></a>
+<h2> The Name PlaneDisaster.NET </h2>
+<p>The prototype of PlaneDisaster.NET was a VB6 application called
+PlaneCrash. The plane part of the name refers to the name of the MS
+Access database engine JetSQL. The words Crash and Disaster refer to my
+dislike of the JetSQL engine for its lack of scalability and features.
+I might change the name if I can think of a better one.
+</p>
+<a name="Features"></a>
+<h1> Features </h1>
+<ul>
+  <li> Creating new databases
+  </li>
+  <li> Arbitrary SQL execution
+  </li>
+  <li> Can retrieve the contents of any table, view or procedure as a
+CSV or DataGridView.
+  </li>
+  <li> "Scripting" of database objects
+  </li>
+</ul>
+<dl>
+  <dd>You can retrieve the DDL of a database object. All objects
+besides tables in JetSQL are supported. JetSQL has no mechanism for
+giving you a "CREATE TABLE" statement that will exactly duplicate a
+tables schema. There is much code that attempts to create the DDL by
+examing the schema of the table. This feature would be good to
+implement. I will gladly accept contributions in this regard.
+  </dd>
+</dl>
+<ul>
+  <li> Microsoft Access specific features:
+    <ul>
+      <li> Database compacting
+      </li>
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dd><i>MDB</i> files need to be periodically compacted to remove
+wasted space. PlaneDisaster.NET allows you to do this.
+  </dd>
+</dl>
+<ul>
+  <li>
+    <ul>
+      <li> Database Repair
+      </li>
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dd>The JetSQL Engine has a method of repairing corrupted
+databases. I don't know how well it works, but I expose that
+functionality here. This is the same repair database functionality
+available from Microsoft Access.
+  </dd>
+</dl>
+<a name="Screen Shots"></a>
+<h2> Screen Shots </h2>
+<dl>
+  <dd><a href="screenshots.html">View PlaneDisaster in action</a>
+  </dd>
+</dl>
+<a name="Getting_PlaneDisaster.NET"></a>
+<h1> Getting PlaneDisaster.NET </h1>
+<p>PlaneDisaster.NET has a <a
+ href="http://www.sf.net/projects/plane-disaster" class="external text"
+ title="http://www.sf.net/projects/plane-disaster" rel="nofollow">project
+page</a> on sourceforge. I make periodic releases. </p>
+<a name="Versioning"></a>
+<h2> Versioning </h2>
+<p>The first "official release" was 0.9. This is the current release.
+Previous to that releases were labeles
+PlaneDisaster.NET-YYYYMMDDHHMMSS-alpha. I felt it was time to release
+more formal versions.
+</p>
+<p>Its quite stable and haven't broken any databases yet. However,
+I've yet to arbitrarily declare a specific SVN revision an official
+release. I use the latest SVN version on my production databases. All
+that being said, backing up your database involves making a copy of one
+file, so you have no excuses not to.
+</p>
+<p>Future release plans are outlined below.
+</p>
+<a name="Development"></a>
+<h1> Development </h1>
+<p>The sourceforge page is <a
+ href="http://sourceforge.net/projects/plane-disaster/"
+ class="external free"
+ title="http://sourceforge.net/projects/plane-disaster/" rel="nofollow">http://sourceforge.net/projects/plane-disaster/</a>.
+Feel free to create a source forge account and use the feedback
+mechanisms provided.
+</p>
+<a name="Feature_Requests"></a>
+<h2> Feature Requests </h2>
+<p><a href="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872673"
+ class="external text"
+ title="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872673"
+ rel="nofollow">Make a feature request on Source Forge</a>
+</p>
+<p>Feature requests fall into three categories.
+</p>
+<ol>
+  <li> Features I will eventually implement
+  </li>
+  <li> Features that I'm not quite sure how to implement. Contributions
+are quite welcome here.
+  </li>
+  <li> Features users have requested.
+  </li>
+</ol>
+<a name="Current_Issues"></a>
+<h2> Current Issues </h2>
+<p>To report a bug or view current ones please see the <a
+ href="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872670"
+ class="external text"
+ title="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872670"
+ rel="nofollow">SourceForge bug tracker page</a>.
+</p>
+<a name="Development_Roadmap"></a>
+<h2> Development Roadmap </h2>
+<p>The version release is as follows. I recently decided I didn't like
+the lack of version numbers. I also had not done a release for a while.
+After some thinking about it I did some coding, got it to a releasable
+state and declared the release <b>0.9</b>. The 0.9 series will
+continue until I release 1.0. I will probably be releasing version 1.0
+shortly.
+</p>
+<a name="Previous_Release_.280.9.29"></a>
+<h3> Previous Release (0.9) </h3>
+<ul>
+  <li> Per user configuration file via "System.Configuration"
+(previously no configuration at all)
+  </li>
+  <li> An Open Recent file menu to list all the recently opened files.
+  </li>
+  <li> The binary is now signed. I don't quite understand the
+ramifications of </li>
+</ul>
+<p>this. I have included the key in svn.
+</p>
+<ul>
+  <li> Made a separate class (PlaneDisaster) for the Main Function.
+  </li>
+  <li> Now possible to explicitly create a new Access 95 or Access 2000
+database.
+  </li>
+  <li> Can now open up mde files. from the file dialogs and command
+line.
+  </li>
+  <li> Running Stored procedures that reference non existant queries no
+longer </li>
+</ul>
+<p>generates an exception.
+</p>
+<ul>
+  <li> Installer now adds a start menu icon and File Associations.
+  </li>
+</ul>
+<a name="Imminent_Upcoming_Release_.280.9.1.29"></a>
+<h3> Imminent Upcoming Release (0.9.1) </h3>
+<ul>
+  <li> Added a display mode where you get INSERT statements to populate
+said data into another database.
+  </li>
+  <li> Fixed a bug where you could not display SQLite tables with more
+than 500 rows by double clicking.
+  </li>
+  <li> Consolidated File opening code.
+  </li>
+  <li> Application gives a nice error if you open a non existant access
+file.
+  </li>
+  <li> Specified that PlaneDisasterSection could be in user.config in
+the constructor For PlaneDisasterSection.
+  </li>
+  <li> Updated aboutbox to use strings from the AssemblyManifest.
+  </li>
+</ul>
+<p><br>
+</p>
+<a name="Next_Upcoming_Release_.280.9.2.29"></a>
+<h3> Next Upcoming Release (0.9.2) </h3>
+<ul>
+  <li> New Database creation
+    <ul>
+      <li> SQLite
+        <ul>
+          <li> The ability to specify SQLite version 2 or three and to
+specify compression.
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li> Database Utilities
+    <ul>
+      <li> JetSQL
+        <ul>
+          <li> The ability to create and remove linked tables.
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<a name="Version_1.0"></a>
+<h3> Version 1.0 </h3>
+<ul>
+  <li> Database utilities
+    <ul>
+      <li> JetSQL
+        <ul>
+          <li> The ability to upgrade or downgrade an existing JetSQL
+file.
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li> UI Changes
+    <ul>
+      <li> Display all tables, views, procedures, etc in one ListTree
+on
+the left as opposed to ListBoxes on the bottom. This makes it easier to
+deal with different databases that have different types of objects. For
+example I could make a category for System Tables, Linked tables and
+Notmal tables for JetSQL databases.
+      </li>
+    </ul>
+  </li>
+</ul>
+<a name="Contributors"></a>
+<h2> Contributors </h2>
+<p>If you send me a patch I'll look at it. If I like it I'll apply it
+and submit it to SVN. You will get credit in the source and on this
+page.
+</p>
+<ul>
+  <li> User Rasha on the SQLite.NET forums showed me how to retrieve
+the DDL of a table in SQLite.NET
+  </li>
+</ul>
+<dl>
+  <dd><a href="http://sqlite.phxsoftware.com/forums/thread/2272.aspx"
+ class="external free"
+ title="http://sqlite.phxsoftware.com/forums/thread/2272.aspx"
+ rel="nofollow">http://sqlite.phxsoftware.com/forums/thread/2272.aspx</a>
+  </dd>
+</dl>
+<p>
+<a href="http://validator.w3.org/check?uri=referer"><img
+  src="http://www.w3.org/Icons/valid-html401"
+  alt="Valid HTML 4.01 Transitional" height="31" width="88">
+</a>
+</p>
+
+</body>
+</html>

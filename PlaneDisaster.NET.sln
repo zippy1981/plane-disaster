@@ -1,12 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-# SharpDevelop 2.1.0.2201
+# SharpDevelop 3.0.0.2305
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster", "PlaneDisaster.csproj", "{BA5695EC-7541-4AE8-9934-E850C86C3DCD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jsql_admin", "jsql_admin\jsql_admin.csproj", "{14168B47-2D1A-4F23-B25C-43B80E1913C7}"
 EndProject
 Project("{CFEE4113-1246-4D54-95CB-156813CB8593}") = "PlaneDisaster.NET Setup", "PlaneDisaster.NET Setup\PlaneDisaster.NET Setup.wixproj", "{337D91DF-22E4-4D70-8850-BD75594DE22B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster.WEB", "PlaneDisaster.WEB\PlaneDisaster.WEB.csproj", "{F64E1895-0C06-4B50-BC7D-BC911C49795F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster.LIB", "PlaneDisaster.LIB\PlaneDisaster.LIB.csproj", "{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,5 +38,13 @@ Global
 		{439FDCE1-80FB-4EC3-858B-4233AC8C0187}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{439FDCE1-80FB-4EC3-858B-4233AC8C0187}.Release|Any CPU.Build.0 = Release|Any CPU
 		{439FDCE1-80FB-4EC3-858B-4233AC8C0187}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F64E1895-0C06-4B50-BC7D-BC911C49795F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F64E1895-0C06-4B50-BC7D-BC911C49795F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F64E1895-0C06-4B50-BC7D-BC911C49795F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F64E1895-0C06-4B50-BC7D-BC911C49795F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 EndGlobal
