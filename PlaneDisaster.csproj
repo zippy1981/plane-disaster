@@ -64,7 +64,6 @@
     <Compile Include="Configuration\RecentFileElement.cs" />
     <Compile Include="Configuration\RecentFilesCollection.cs" />
     <Compile Include="Configuration\PlaneDisasterSection.cs" />
-    <Compile Include="dba.cs" />
     <None Include="Changelog.txt" />
     <None Include="todo.txt" />
     <None Include="README.txt" />
@@ -80,10 +79,7 @@
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
     <Compile Include="MsSqlConnStrDialog.cs" />
-    <Compile Include="OleDba.cs" />
-    <Compile Include="OdbcDba.cs" />
     <Compile Include="JetSqlUtil.cs" />
-    <Compile Include="SQLiteDba.cs" />
     <Compile Include="MainForm.cs" />
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -100,6 +96,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration" />
+    <ProjectReference Include="PlaneDisaster.LIB\PlaneDisaster.LIB.csproj">
+      <Project>{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}</Project>
+      <Name>PlaneDisaster.LIB</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

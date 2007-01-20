@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
+<!--
+	Much of the "customization" here is blatantly stolen from
+	SharpDevelop's setup file.
+
+	http://www.icsharpcode.net/OpenSource/SD/
+-->
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
 	<Product 
-		Id="C15867C1-619B-43D8-9B3C-2541D404F4C5"
-		Name="PlaneDisaster.NET 0.9" 
+		Id="BA1AE330-A83C-11DB-ABBD-0800200C9A66"
+		Name="PlaneDisaster.NET 0.9.1" 
 		Language="1033"
 		Codepage="1252"
-		Version="0.9" 
+		Version="0.9.1" 
+		UpgradeCode="AC7AACE6-D31E-4039-883C-3DC11D707B04"
 		Manufacturer="ZippySoft">
 		
 		<Package 
@@ -15,12 +22,7 @@
 			InstallerVersion="200" 
 			Compressed="yes" />
 		
-		<!--
-			Much of the "customization" here is blatantly stolen from
-			SharpDevelop's setup file.
- 
-			http://www.icsharpcode.net/OpenSource/SD/
-		-->
+
 		
 		
 		<!-- 

@@ -1,3 +1,12 @@
+--- 0.9.1
+* MSI installer now has an Upgrade code.
+* Data Access code moved to a seperate DLL.
+* Added a display mode where you get INSERT statements to populate said data into anothe database.
+* Fixed a bug where you could not display SQLite tables with more than 500 rows by double clicking.
+* Consolidated File opening code.
+* Application gives a nice error if you open a non existant access file.
+* Specified that PlaneDisasterSection could be in user.config in the constructor For PlaneDisasterSection.
+* Updated aboutbox to use strings from the AssemblyManifest.
 --- 0.9
 * Per user configuration file via "System.Configuration" (previously no configuration at all)
 * An Open Recent file menu to list all the recently opened files.

@@ -30,7 +30,7 @@ using System.Data.Common;
 using System.Data.OleDb;
 using System.Text;
 
-namespace PlaneDisaster
+namespace PlaneDisaster.LIB
 {
 	/// <summary>
 	/// Description of OleDba.

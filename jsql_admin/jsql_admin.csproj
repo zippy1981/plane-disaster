@@ -38,6 +38,10 @@
       <Project>{BA5695EC-7541-4AE8-9934-E850C86C3DCD}</Project>
       <Name>PlaneDisaster</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PlaneDisaster.LIB\PlaneDisaster.LIB.csproj">
+      <Project>{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}</Project>
+      <Name>PlaneDisaster.LIB</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

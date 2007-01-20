@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jsql_admin", "jsql_admin\js
 EndProject
 Project("{CFEE4113-1246-4D54-95CB-156813CB8593}") = "PlaneDisaster.NET Setup", "PlaneDisaster.NET Setup\PlaneDisaster.NET Setup.wixproj", "{337D91DF-22E4-4D70-8850-BD75594DE22B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster.WEB", "PlaneDisaster.WEB\PlaneDisaster.WEB.csproj", "{F64E1895-0C06-4B50-BC7D-BC911C49795F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaneDisaster.LIB", "PlaneDisaster.LIB\PlaneDisaster.LIB.csproj", "{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}"
 EndProject
 Global

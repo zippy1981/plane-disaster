@@ -3,7 +3,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "PlaneDisaster.NET"
-!define PRODUCT_VERSION "0.9"
+!define PRODUCT_VERSION "0.9.1"
 !define PRODUCT_PUBLISHER "ZippySoft Inc"
 !define PRODUCT_WEB_SITE "http://www.sf.net/projects/plane-disaster"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\PlaneDisaster.exe"
@@ -61,6 +61,7 @@ Section "PlaneDisaster.NET" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   File ".\bin\Release\PlaneDisaster.exe"
+  File ".\bin\Release\PlaneDisaster.LIB.dll"
   CreateDirectory "$SMPROGRAMS\PlaneDisaster.NET"
   CreateShortCut "$SMPROGRAMS\PlaneDisaster.NET\PlaneDisaster.NET.lnk" "$INSTDIR\PlaneDisaster.exe"
   CreateShortCut "$DESKTOP\PlaneDisaster.NET.lnk" "$INSTDIR\PlaneDisaster.exe"

@@ -27,35 +27,35 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SQLite;
+using System.Data.Odbc;
 using System.Text;
 
-namespace PlaneDisaster
+namespace PlaneDisaster.LIB
 {
 	/// <summary>
-	/// Description of SQLitea.
+	/// Description of OdbcDba.
 	/// </summary>
-	public class SQLiteDba : dba
-	{
-		private SQLiteConnection _Cn;
+	public class OdbcDba : dba
+	{	
+		private OdbcConnection _Cn;
 		private string _ConnStr;
+
 		
-		
-		/// <summary>The SQLite Connection string.</summary>
-		protected string ConnStr {
-			get { return this._ConnStr; }
-			set { this._ConnStr = value; }
-		}
-		
-		
-		/// <summary>The SQLite database connection</summary>
+		/// <summary>The Odbc database connection</summary>
 		protected override System.Data.Common.DbConnection Cn {
 			get {
 				return this._Cn;
 			}
 			set {
-				this._Cn = (SQLiteConnection) value;
+				this._Cn = (OdbcConnection) value;
 			}
+		}
+		
+		
+		/// <summary>The Odbc Connection string</summary>
+		protected string ConnStr {
+			get { return this._ConnStr; }
+			set { this._ConnStr = value; }
 		}
 		
 		
@@ -63,27 +63,27 @@ namespace PlaneDisaster
 		/// Connect to the previously defined connection string.
 		/// </summary>
 		public void Connect (){
-			this.Cn = new SQLiteConnection(ConnStr);
+			this.Cn = new OdbcConnection(ConnStr);
 			Cn.Open();
 		}
 		
 
 		/// <summary>
-		/// Connect to the specified database
+		/// Connect to the specified DSN
 		/// </summary>
-		/// <param name="FileName">Database to connect to.</param>
-		public void Connect(string FileName) {
-			this.ConnStr = String.Format("Data Source={0}", FileName);
+		/// <param name="ConnStr">DSN to connect to.</param>
+		public void ConnectDSN(string ConnStr) {
+			this.ConnStr = ConnStr;
 			this.Connect();
 		}
 		
 		
 		/// <summary>
-		/// Factory method to create a new DataAdapter of the SQLiteDataAdapter type.
+		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.
 		/// </summary>
 		/// <param name="cmd">The select fommand for the data adapter.</param>
-		/// <returns>A populated DataAdapter of the SQLiteDataAdapter type.</returns>
-		protected override DataAdapter CreateDataAdapter(DbCommand cmd) { return new SQLiteDataAdapter((SQLiteCommand) cmd);}
+		/// <returns>A populated DataAdapter of the OdbcDataAdapter type.</returns>
+		protected override DataAdapter CreateDataAdapter(DbCommand cmd) { return new OdbcDataAdapter((OdbcCommand) cmd);}
 
 		
 		/// <summary>
@@ -102,39 +102,25 @@ namespace PlaneDisaster
 			for (int i = 0; i < numCols; i++) {
 				Tables[i] = (string) dt.Rows[i]["COLUMN_NAME"];
 			}
-			
 			return Tables;
 		}
 		
 		
 		/// <summary>
-		/// Gets a list of procedures in the database.
+		/// Returns all rows in a table in a 
+		/// <code>System.DataGridView</code>.
 		/// </summary>
-		/// <returns>
-		/// A list of procedure names as an array of strings.
-		/// </returns>
-		public override string [] GetProcedures() {
-			return null;
+		/// <param name="Table">The name of the table</param>
+		/// <returns>A DataGridView containing the result set.</returns>
+		public override DataTable GetTableAsDataTable (string Table) {
+			DataTable ret = new DataTable();
+			OdbcCommand cmd = (OdbcCommand)Cn.CreateCommand();
+			cmd.CommandType = CommandType.TableDirect;
+			cmd.CommandText = Table;
+			OdbcDataAdapter da = new OdbcDataAdapter(cmd);
+			da.Fill(ret);
+			return ret;
 		}
 		
-		
-		/// <summary>
-		/// Gets the SQL executed by a given TABLE.
-		/// </summary>
-		/// <remarks>
-		/// Posted by Rasha in http://sqlite.phxsoftware.com/forums/thread/2272.aspx 
-		/// </remarks>
-		/// <returns>
-		/// The DDL of the given table.
-		/// </returns>
-		public virtual string GetTableSQL(string Table) {
-			using (SQLiteCommand cmd = (SQLiteCommand)Cn.CreateCommand()) {
-				cmd.CommandText =  "SELECT sql FROM sqlite_master " +
-					"WHERE name = @tablename";
-				cmd.Parameters.Add("@tablename", DbType.String);
-				cmd.Parameters["@tablename"].Value = Table;
-				return (string) cmd.ExecuteScalar();
-			}
-		}
 	}
 }

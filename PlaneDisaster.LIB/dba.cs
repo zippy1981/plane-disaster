@@ -33,7 +33,7 @@ using System.Data.Common;
 using System.Text;
 
 
-namespace PlaneDisaster
+namespace PlaneDisaster.LIB
 {
 
 	/// <summary>
@@ -685,6 +685,7 @@ namespace PlaneDisaster
 		/// This is my catchall for dealing with exceptions.
 		/// </summary>
 		/// <param name="e">The Exception I am dealing with.</param>
+		/*
 		protected static void DbaException (DbException e) {
 			string Title;
 		
@@ -692,6 +693,7 @@ namespace PlaneDisaster
 			System.Windows.Forms.MessageBox.Show
 				(e.ToString() , Title);
 		}
+		*/
 		
 		
 		/// <summary>

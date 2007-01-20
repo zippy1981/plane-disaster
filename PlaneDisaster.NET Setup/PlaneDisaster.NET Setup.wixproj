@@ -36,6 +36,7 @@
     <Compile Include="UserInterface.wxs" />
     <Compile Include="VerifyReadyDialog.wxs" />
     <Compile Include="ViewLicenseAgreementDialog.wxs" />
+    <Compile Include="Warning.wxs" />
     <Compile Include="WelcomeDialog.wxs" />
     <None Include="license.rtf" />
   </ItemGroup>

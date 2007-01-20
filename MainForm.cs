@@ -37,6 +37,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using PlaneDisaster.Configuration;
+using PlaneDisaster.LIB;
 
 namespace PlaneDisaster
 {

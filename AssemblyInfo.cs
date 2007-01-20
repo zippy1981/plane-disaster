@@ -27,7 +27,7 @@ using System.Runtime.CompilerServices;
 // you compile.
 
 [assembly: AssemblyTitle("PlaneDisaster.NET")]
-[assembly: AssemblyDescription(".NET OLEDB Database Viewer")]
+[assembly: AssemblyDescription(".NET SQL Editor for JetSQL and SQLite files.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ZippySoft")]
 [assembly: AssemblyProduct("Plane Disaster")]
@@ -42,7 +42,7 @@ using System.Runtime.CompilerServices;
 // You can specify all values by your own or you can build default build and revision
 // numbers with the '*' character (the default):
 
-[assembly: AssemblyVersion("0.9")]
+[assembly: AssemblyVersion("0.9.1")]
 
 // The following attributes specify the key for the sign of your assembly. See the
 // .NET Framework documentation for more information about signing.

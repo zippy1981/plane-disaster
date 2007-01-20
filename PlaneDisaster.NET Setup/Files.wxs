@@ -7,6 +7,7 @@
 					<Component Id="PlaneDisaster" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
 						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
 						<File Id="MainExecutable" Name="PlnDisNT.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
+						<File Id="PlaneDisaster.LIB" Name="PlnDisNT.dll" LongName="PlaneDisaster.LIB.dll" Source="..\bin\Release\PlaneDisaster.LIB.dll" />
 						<Shortcut 
 							Id="startmenuPDShortcut" 
 							Directory="PlaneDisasterStartMenuFolder" 
