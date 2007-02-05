@@ -749,7 +749,9 @@ namespace PlaneDisaster
 			
 			try {
 				dt = dbcon.ExecuteSql(SQL);
-				dt.TableName = TableName;
+				if (TableName != null ) {
+					dt.TableName = TableName;
+				}
 			} catch (System.Data.Common.DbException ex) {
 				MessageBox.Show
 					(String.Format("Problem loading query {0}\r\nError Message: {1}", SQL, ex.Message));
