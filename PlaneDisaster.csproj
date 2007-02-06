@@ -79,7 +79,6 @@
     <Compile Include="MySQLConnStrDialog.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
     <Compile Include="MsSqlConnStrDialog.cs" />
-    <Compile Include="JetSqlUtil.cs" />
     <Compile Include="MainForm.cs" />
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>

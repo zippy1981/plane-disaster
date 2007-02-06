@@ -31,7 +31,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ZippySoft")]
 [assembly: AssemblyProduct("Plane Disaster")]
-[assembly: AssemblyCopyright("2006 Justin Dearing\nzippy1981@gmail.com")]
+[assembly: AssemblyCopyright("2006-2007 Justin Dearing\nzippy1981@gmail.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -42,7 +42,7 @@ using System.Runtime.CompilerServices;
 // You can specify all values by your own or you can build default build and revision
 // numbers with the '*' character (the default):
 
-[assembly: AssemblyVersion("0.9.1")]
+[assembly: AssemblyVersion("0.9.2")]
 
 // The following attributes specify the key for the sign of your assembly. See the
 // .NET Framework documentation for more information about signing.

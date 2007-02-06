@@ -307,13 +307,23 @@ namespace PlaneDisaster
 			FileDialog dlg = new OpenFileDialog();
 			dlg.Filter = FileFilter;
 			
-			if (dlg.ShowDialog() == DialogResult.OK) {
-				if (dlg.FileName == CurrentFile) {
-					DisconnectDataSource();
-					JetSqlUtil.CompactMDB(dlg.FileName);
-					OpenMDB(CurrentFile);
-				} else {
-					JetSqlUtil.CompactMDB(dlg.FileName); }
+			try {
+				if (dlg.ShowDialog() == DialogResult.OK) {
+					if (dlg.FileName == CurrentFile) {
+						DisconnectDataSource();
+						JetSqlUtil.CompactMDB(dlg.FileName);
+						OpenMDB(CurrentFile);
+					} else {
+						JetSqlUtil.CompactMDB(dlg.FileName); }
+				}
+			} catch (ApplicationException) {
+				StringBuilder ErrorMessage = new StringBuilder();
+				ErrorMessage.AppendFormat
+					("There seems to be a problem compacting {0}.\n", dlg.FileName);
+				ErrorMessage.AppendLine
+					("Perhaps the file is opened by another process.");
+				MessageBox.Show(ErrorMessage.ToString(),
+					 "PlaneDisaster.NET");
 			}
 			dlg.Dispose();
 		}
@@ -444,13 +454,24 @@ namespace PlaneDisaster
 			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
 			dlg.Filter = FileFilter.ToString();
 			
-			if (dlg.ShowDialog() == DialogResult.OK) {
-				if (dlg.FileName == CurrentFile) {
-					DisconnectDataSource();
-					JetSqlUtil.RepairMDB(dlg.FileName);
-					OpenMDB(CurrentFile);
-				} else {
-					JetSqlUtil.RepairMDB(dlg.FileName); }
+			try {
+				if (dlg.ShowDialog() == DialogResult.OK) {
+					if (dlg.FileName == CurrentFile) {
+						DisconnectDataSource();
+						JetSqlUtil.RepairMDB(dlg.FileName);
+						OpenMDB(CurrentFile);
+					} else {
+						JetSqlUtil.RepairMDB(dlg.FileName); }
+				}
+			} catch (ApplicationException) {
+				StringBuilder ErrorMessage = new StringBuilder();
+				ErrorMessage.AppendFormat
+					("There seems to be a problem repairing {0}.\n", dlg.FileName);
+				ErrorMessage.AppendLine
+					("Perhaps the file is opened by another process.");
+				MessageBox.Show
+					(ErrorMessage.ToString(),
+					 "PlaneDisaster.NET");
 			}
 			dlg.Dispose();
 		}

@@ -28,7 +28,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace PlaneDisaster
+namespace PlaneDisaster.LIB
 {
 	/// <summary>
 	/// JetSQL is the "code name" for the sql engine behind access.
