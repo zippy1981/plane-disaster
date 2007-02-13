@@ -7,22 +7,27 @@
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
 	<Product 
-		Id="BA1AE330-A83C-11DB-ABBD-0800200C9A66"
-		Name="PlaneDisaster.NET 0.9.1" 
+		Id="942fbc80-9e58-4436-aa7c-5e40c4f95ce7"
+		Name="PlaneDisaster.NET 0.9.2" 
 		Language="1033"
 		Codepage="1252"
-		Version="0.9.1" 
+		Version="0.9.2" 
 		UpgradeCode="AC7AACE6-D31E-4039-883C-3DC11D707B04"
 		Manufacturer="ZippySoft">
-		
+			
 		<Package 
-			Id="78B30472-1F61-4FCC-B3D9-CBCB1368978F" 
+			Id="E77100E0-6CE2-40DE-BE21-BB4C76C1CA80" 
 			Description="#Description" 
 			Comments="Comments" 
 			InstallerVersion="200" 
 			Compressed="yes" />
 		
-
+		<Upgrade Id='AC7AACE6-D31E-4039-883C-3DC11D707B04'>
+			<UpgradeVersion
+				Property="PREVIOUSVERSIONFOUND"
+				IncludeMinimum='yes' Minimum='0.9.0'
+				IncludeMaximum='yes' Maximum='0.9.1' />
+		</Upgrade>
 		
 		
 		<!-- 
@@ -101,6 +106,7 @@
 		<AdminExecuteSequence>
 		</AdminExecuteSequence>
 		<InstallExecuteSequence>
+			<RemoveExistingProducts Before="InstallInitialize"/>
 		</InstallExecuteSequence>
 		<UIRef Id="UserInterface" />
 	</Product>
