@@ -77,6 +77,17 @@ namespace PlaneDisaster.LIB
 			this.Connect();
 		}
 		
+
+		/// <summary>
+		/// Connect to the specified MDB file.
+		/// </summary>
+		/// <param name="File">MDB file to connect to.</param>
+		public void ConnectMDB(string File) {
+			ConnStr = String.Format
+				("Driver={Microsoft Access Driver (*.mdb)};Dbq={0};Uid=Admin;Pwd=;", File);
+			this.Connect();
+		}
+		
 		
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the OdbcDataAdapter type.

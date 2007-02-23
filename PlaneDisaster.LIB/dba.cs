@@ -769,9 +769,9 @@ namespace PlaneDisaster.LIB
 			}
 			
 			InsertFormatter.AppendFormat
-				("INSERT INTO [{0}] ({1}) VALUES(", 
+				("INSERT INTO [{0}] ([{1}]) VALUES(", 
 				 dt.TableName,
-				 String.Join(", ", Fields));
+				 String.Join("], [", Fields));
 			for (int i = 0; i < numFields - 1; i++) {
 				InsertFormatter.AppendFormat(@"'{{{0}}}', ", i);
 			}

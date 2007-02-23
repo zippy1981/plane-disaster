@@ -85,7 +85,7 @@ namespace PlaneDisaster.LIB
 		/// </summary>
 		public void ConnectMDB() {
 			ConnStr = String.Format
-				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};", MDB);
+				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};User Id=admin;Password=;", MDB);
 			this.Connect();
 		}
 		

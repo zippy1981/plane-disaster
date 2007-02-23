@@ -237,6 +237,9 @@ namespace PlaneDisaster
 								 ("Query {0} requires parameters. Please execute it with parameters via the SQL prompt.",
 								  lst.Text));
 							break;
+						case -2147217911:
+							MessageBox.Show(ex.Message, "Permission Error");
+							break;
 						default:
 							throw ex;
 					}
@@ -406,6 +409,7 @@ namespace PlaneDisaster
 			FileDialog dlg = new OpenFileDialog();
 			FileFilter.Append("All supported database types|*.mdb;*.mde;*.db;*.db3;*.sqlite");
 			FileFilter.Append("|Microsoft Access (*.mdb;*.mde)|*.mdb;*.mde");
+			FileFilter.Append("|Microsoft Access via ODBC (*.mdb;*.mde)|*.mdb;*.mde");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
 			
@@ -421,9 +425,12 @@ namespace PlaneDisaster
 						} else {throw new ApplicationException("Unknown file type.");}
 						break;
 					case 2:
-						OpenMDB(dlg.FileName);
+						OpenMDBodbc(dlg.FileName);
 						break;
 					case 3:
+						OpenMDB(dlg.FileName);
+						break;
+					case 4:
 						OpenSQLite(dlg.FileName);
 						break;
 				}
@@ -845,6 +852,44 @@ namespace PlaneDisaster
 			
 			try {
 				((OleDba) dbcon).ConnectMDB(FileName);
+			} catch (OleDbException ex) {
+				//TODO: this is the error code for incorrect access password. Make this a constant.
+				if (ex.ErrorCode == -2147217843) {
+					InputDialog GetPassword = new InputDialog();
+					Result = GetPassword.ShowDialog("Enter the password for the database");
+					if (Result == DialogResult.OK) {
+						try {
+							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
+						} catch (OleDbException exSecond) {
+							if (exSecond.ErrorCode == -2147217843) {
+								MessageBox.Show("Incorrect Password");
+							} else {
+								throw exSecond;
+							}
+							return;
+						} finally { GetPassword.Dispose(); }
+					}
+				} else if (ex.ErrorCode == -2147467259) {
+					Text = "PlaneDisaster.NET";
+					string Msg = String.Format("File [{0}] not found.", FileName);
+					MessageBox.Show(Msg, "Error Opening File");
+					return;
+				} else {
+					throw ex;
+				}
+			}
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+			this.DisplayDataSource();
+		}
+		
+		
+		internal void OpenMDBodbc (string FileName) {
+			DialogResult Result;
+			
+			this.dbcon = new OdbcDba();
+			
+			try {
+				((OdbcDba) dbcon).ConnectMDB(FileName);
 			} catch (OleDbException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
 				if (ex.ErrorCode == -2147217843) {
