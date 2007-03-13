@@ -1,12 +1,32 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-  <link href="PlaneDisaster.css" type="text/css" rel="stylesheet">
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type" />
+  <link href="PlaneDisaster.css" type="text/css" rel="stylesheet" />
   <title>PlaneDisaster.NET</title>
 </head>
 <body>
-<h1 class="firstHeading">PlaneDisaster.NET<br>
+<div id="ButtonLinks">
+Statistics by Ohloh<br />
+  <script type='text/javascript' src='http://www.ohloh.net/projects/4044;badge_js'></script><br />
+Hosted by<br />
+  <a  href="http://sourceforge.net/projects/plane-disaster"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=176756&amp;type=1" width="88" height="31" alt="SourceForge.net Logo" /></a><br />
+  <a href="http://sourceforge.net/project/platformdownload.php?group_id=175298">Download it now.</a><br />
+  <p>
+    <a href="http://validator.w3.org/check?uri=referer"><img
+       style="width:88px;height:31px"
+       src="http://www.w3.org/Icons/valid-xhtml10"
+       alt="Valid XHTML 1.0 Strict" /></a>
+  </p>
+  <p>
+   <a href="http://jigsaw.w3.org/css-validator/"><img
+       style="width:88px;height:31px"
+       src="http://jigsaw.w3.org/css-validator/images/vcss" 
+       alt="Valid CSS!" /></a>
+  </p>
+</div>
+<div id="content">
+<h1 class="firstHeading">PlaneDisaster.NET<br />
 <!-- start content --> </h1>
 <p>PlaneDisaster.NET is a SQL Frontend for JetSQL (MS Access) and
 SQLite.NET databases. It is written in C# and available on <a
@@ -31,7 +51,13 @@ PlaneDisaster.NET</span></a></li>
         </li>
         <li class="toclevel-1"><a
  href="#Features"><span
- class="tocnumber">2</span> <span class="toctext">Features</span></a></li>
+ class="tocnumber">2</span> <span class="toctext">Features</span></a>
+          <ul>
+            <li class="toclevel-2"><a
+ href="#ScreenShots"><span
+ class="tocnumber">2.1</span> <span class="toctext">ScreenShots</span></a></li>
+          </ul>
+        </li>
         <li class="toclevel-1"><a
  href="#Getting_PlaneDisaster.NET"><span
  class="tocnumber">3</span> <span class="toctext">Getting
@@ -66,13 +92,11 @@ PlaneDisaster.NET</span></a>
     </tr>
   </tbody>
 </table>
-<a name="Origins_and_History"></a>
-<h1> Origins and History </h1>
+<h1><a name="Origins_and_History"> Origins and History</a></h1>
 <p>I wrote a database viewer due to the fact that I needed a way to
 browse Microsoft Access files. I was working in C# at the time so that
-was the language I chose. It made perfect sense to distribute this as
-an open source project, as I knew of no open source tools for viewing
-and editing MS access databases.
+was the language I chose. I wanted to make this an open source project
+in the hopes of benifiting others.
 </p>
 <p>My project quickly grew to support several databases. I created
 a nice hierarchy of classes that wrapped around ADO.NET Provider
@@ -85,16 +109,14 @@ so I kept support for it. Also, SQLite and MS Access database are used
 in similar manners and in both cases the database is just a file and
 the database engine is just a shared library.
 </p>
-<a name="The_Name_PlaneDisaster.NET"></a>
-<h2> The Name PlaneDisaster.NET </h2>
+<h2><a name="The_Name_PlaneDisaster.NET">The Name PlaneDisaster.NET</a></h2>
 <p>The prototype of PlaneDisaster.NET was a VB6 application called
 PlaneCrash. The plane part of the name refers to the name of the MS
 Access database engine JetSQL. The words Crash and Disaster refer to my
 dislike of the JetSQL engine for its lack of scalability and features.
 I might change the name if I can think of a better one.
 </p>
-<a name="Features"></a>
-<h1> Features </h1>
+<h1><a name="Features">Features</a></h1>
 <ul>
   <li> Creating new databases
   </li>
@@ -118,19 +140,8 @@ implement. I will gladly accept contributions in this regard.
 <ul>
   <li> Microsoft Access specific features:
     <ul>
-      <li> Database compacting
+      <li> Database compacting. MDB files need to be periodically compacted to remove wasted space. PlaneDisaster.NET allows you to do this.
       </li>
-    </ul>
-  </li>
-</ul>
-<dl>
-  <dd><i>MDB</i> files need to be periodically compacted to remove
-wasted space. PlaneDisaster.NET allows you to do this.
-  </dd>
-</dl>
-<ul>
-  <li>
-    <ul>
       <li> Database Repair
       </li>
     </ul>
@@ -143,44 +154,42 @@ functionality here. This is the same repair database functionality
 available from Microsoft Access.
   </dd>
 </dl>
-<a name="Screen Shots"></a>
-<h2> Screen Shots </h2>
+<h2><a name="ScreenShots">Screen Shots</a></h2>
 <dl>
   <dd><a href="screenshots.html">View PlaneDisaster in action</a>
   </dd>
 </dl>
-<a name="Getting_PlaneDisaster.NET"></a>
-<h1> Getting PlaneDisaster.NET </h1>
+<h1><a name="Getting_PlaneDisaster.NET">Getting PlaneDisaster.NET</a></h1>
 <p>PlaneDisaster.NET has a <a
  href="http://www.sf.net/projects/plane-disaster" class="external text"
  title="http://www.sf.net/projects/plane-disaster" rel="nofollow">project
 page</a> on sourceforge. I make periodic releases. </p>
-<a name="Versioning"></a>
-<h2> Versioning </h2>
-<p>The first "official release" was 0.9. This is the current release.
+<h2><a name="Versioning">Versioning</a></h2>
+<p>
+The first "official release" was 0.9. This is the current release.
 Previous to that releases were labeles
 PlaneDisaster.NET-YYYYMMDDHHMMSS-alpha. I felt it was time to release
 more formal versions.
 </p>
-<p>Its quite stable and haven't broken any databases yet. However,
-I've yet to arbitrarily declare a specific SVN revision an official
-release. I use the latest SVN version on my production databases. All
-that being said, backing up your database involves making a copy of one
-file, so you have no excuses not to.
+<p>
+Its quite stable and haven't broken any databases yet. I use the
+latest SVN version on my production databases. All that being said,
+backing up your database involves making a copy of one file, so you
+have no excuses not to.
 </p>
-<p>Future release plans are outlined below.
+<p>
+Future release plans are outlined below.
 </p>
-<a name="Development"></a>
-<h1> Development </h1>
-<p>The sourceforge page is <a
+<h1><a name="Development">Development</a></h1>
+<p>
+ The sourceforge page is <a
  href="http://sourceforge.net/projects/plane-disaster/"
  class="external free"
  title="http://sourceforge.net/projects/plane-disaster/" rel="nofollow">http://sourceforge.net/projects/plane-disaster/</a>.
 Feel free to create a source forge account and use the feedback
 mechanisms provided.
 </p>
-<a name="Feature_Requests"></a>
-<h2> Feature Requests </h2>
+<h2><a name="Feature_Requests">Feature Requests</a></h2>
 <p><a href="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872673"
  class="external text"
  title="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872673"
@@ -197,16 +206,14 @@ are quite welcome here.
   <li> Features users have requested.
   </li>
 </ol>
-<a name="Current_Issues"></a>
-<h2> Current Issues </h2>
+<h2><a name="Current_Issues">Current Issues</a></h2>
 <p>To report a bug or view current ones please see the <a
  href="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872670"
  class="external text"
  title="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872670"
  rel="nofollow">SourceForge bug tracker page</a>.
 </p>
-<a name="Development_Roadmap"></a>
-<h2> Development Roadmap </h2>
+<h2><a name="Development_Roadmap">Development Roadmap</a></h2>
 <p>The version release is as follows. I recently decided I didn't like
 the lack of version numbers. I also had not done a release for a while.
 After some thinking about it I did some coding, got it to a releasable
@@ -214,37 +221,7 @@ state and declared the release <b>0.9</b>. The 0.9 series will
 continue until I release 1.0. I will probably be releasing version 1.0
 shortly.
 </p>
-<h3> Previous Release (0.9) </h3>
-<ul>
-  <li> Per user configuration file via "System.Configuration"
-(previously no configuration at all)
-  </li>
-  <li> An Open Recent file menu to list all the recently opened files.
-  </li>
-  <li> The binary is now signed. I don't quite understand the
-ramifications of </li>
-</ul>
-<p>this. I have included the key in svn.
-</p>
-<ul>
-  <li> Made a separate class (PlaneDisaster) for the Main Function.
-  </li>
-  <li> Now possible to explicitly create a new Access 95 or Access 2000
-database.
-  </li>
-  <li> Can now open up mde files. from the file dialogs and command
-line.
-  </li>
-  <li> Running Stored procedures that reference non existant queries no
-longer </li>
-</ul>
-<p>generates an exception.
-</p>
-<ul>
-  <li> Installer now adds a start menu icon and File Associations.
-  </li>
-</ul>
-<h3> Current Release (0.9.1) </h3>
+<h3> Previous Release (0.9.1) </h3>
 <ul>
   <li> Better delegate assigning</li>
   <li> Better exception handling</li>
@@ -269,9 +246,9 @@ the constructor For PlaneDisasterSection.
   <li> Updated aboutbox to use strings from the AssemblyManifest.
   </li>
 </ul>
-<p><br>
+<p><br />
 </p>
-<h3> Upcoming Release (0.9.2) </h3>
+<h3> Current Release (0.9.2) </h3>
 <ul>
   <li> New Database creation
     <ul>
@@ -295,17 +272,15 @@ specify compression.
     </ul>
   </li>
 </ul>
+<h3> Upcoming Release (0.9.3) </h3>
+<ul>
+  <li> I catch an exception for when you attempt to display a table you lack permission to display. </li>
+</ul>
 <h3> Version 1.0 </h3>
 <ul>
   <li> Database utilities
     <ul>
-      <li> JetSQL
-        <ul>
-          <li> The ability to upgrade or downgrade an existing JetSQL
-file.
-          </li>
-        </ul>
-      </li>
+      <li> The ability to upgrade or downgrade an existing JetSQL file. </li>
     </ul>
   </li>
   <li> UI Changes
@@ -320,8 +295,7 @@ Notmal tables for JetSQL databases.
     </ul>
   </li>
 </ul>
-<a name="Contributors"></a>
-<h2> Contributors </h2>
+<h2><a name="Contributors">Contributors</a></h2>
 <p>If you send me a patch I'll look at it. If I like it I'll apply it
 and submit it to SVN. You will get credit in the source and on this
 page.
@@ -338,12 +312,6 @@ the DDL of a table in SQLite.NET
  rel="nofollow">http://sqlite.phxsoftware.com/forums/thread/2272.aspx</a>
   </dd>
 </dl>
-<p>
-<a href="http://validator.w3.org/check?uri=referer"><img
-  src="http://www.w3.org/Icons/valid-html401"
-  alt="Valid HTML 4.01 Transitional" height="31" width="88">
-</a>
-</p>
-
+</div>
 </body>
 </html>
