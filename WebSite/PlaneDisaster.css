@@ -53,14 +53,11 @@ TEXTAREA
 /*----------------------------------------------*/
 A
 {	FONT-WEIGHT: 	 normal;
-	font-style:	 	 normal;
+	font-style:	 normal;
 	text-decoration: none;
 }
 A:link { color: #004080; }
-A:hover
-{	FONT-WEIGHT: normal;
-	COLOR: 		 #FF5357;
-}
+A:hover { color: #004080; }
 /*----------------------------------------------*/
 #title {
 	font-size: xx-large;
@@ -78,7 +75,7 @@ A:hover
 	position: absolute;
 	left: 75px;
 	right: 150px;
-	border-left: thick solid #004080;
+	border-left: thick solid #000080;
 	padding-top: 25px;
 	padding-left: 10px;
 	padding-right: 10px;
