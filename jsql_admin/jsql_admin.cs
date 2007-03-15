@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using PlaneDisaster.LIB;
+using PlaneDisaster.Dba;
 
 namespace jsql_admin
 {

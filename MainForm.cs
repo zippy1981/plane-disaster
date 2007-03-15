@@ -37,7 +37,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using PlaneDisaster.Configuration;
-using PlaneDisaster.LIB;
+using PlaneDisaster.Dba;
 
 namespace PlaneDisaster
 {
@@ -73,6 +73,7 @@ namespace PlaneDisaster
 		/// This only applies to tables and views, not custom queries.
 		/// </summary>
 		private int MaxRowDisplayCount {
+			//TODO make this number configurable.
 			get { return 500; }
 		}
 		
@@ -657,11 +658,11 @@ namespace PlaneDisaster
 			DbConnectionStringBuilder ConStr;
 			
 			if (dbcon is OleDba) {
-				ConStr = new OleDbConnectionStringBuilder(dbcon.ConnectionString);
+				ConStr = new OleDbConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
 				//For some reason FileName is blank.
 				return ((OleDbConnectionStringBuilder)ConStr).DataSource;
 			} else if (dbcon is SQLiteDba) {
-				ConStr = new SQLiteConnectionStringBuilder(dbcon.ConnectionString);
+				ConStr = new SQLiteConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
 				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
 			} else { return ""; }
 		}
