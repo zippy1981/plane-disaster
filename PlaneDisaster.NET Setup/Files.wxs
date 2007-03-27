@@ -4,10 +4,8 @@
 		<DirectoryRef Id="TARGETDIR">
 			<Directory Id="ProgramFilesFolder" Name="PFiles">
 				<Directory Id="INSTALLDIR" Name="PlnDis" LongName="PlaneDisaster.NET">
-					<Component Id="PlaneDisaster" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
-						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
+					<Component Id="PlaneDisasterExe" Guid="cb0d6ac3-94fc-4063-b4b1-ded21d15867c" DiskId="1">
 						<File Id="MainExecutable" Name="PlnDisNT.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
-						<File Id="PlaneDisaster.Dba" Name="PlnDisNT.dll" LongName="PlaneDisaster.Dba.dll" Source="..\bin\Release\PlaneDisaster.Dba.dll" />
 						<Shortcut 
 							Id="startmenuPDShortcut" 
 							Directory="PlaneDisasterStartMenuFolder" 
@@ -37,6 +35,19 @@
 							</Extension>
 						</ProgId>
 						<!-- End File associations -->
+					</Component>
+					<Component Id="PlaneDisasterDll" Guid="41d255e7-6d36-45d7-aee6-16f34c7474ce" DiskId="1">
+						<File Id="PlaneDisaster.Dba" Name="PlnDba.dll" LongName="PlaneDisaster.Dba.dll" Source="..\bin\Release\PlaneDisaster.Dba.dll" />
+						<!-- 
+							In version 0.92 This file was called PlaneDisaster.LIB.dll I also had 
+							all the files in one component. When I upgraded. both files would be in the 
+							install directory. They would both be removed on uninstall. So we attempt to
+							delete the old file here.
+						-->
+						<RemoveFile Id="PlaneDisasterLib" Name="PlnDisNT.dll" LongName="PlaneDisaster.LIB.dll" On="install" />
+					</Component>
+					<Component Id="PlaneDisasterDocs" Guid="4173884a-b5ab-4891-8bd2-81295188d519" DiskId="1">
+						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
 					</Component>
 					<Component Id="SQLite.NET" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
 						<File Id="SQLiteNet" Name="SQLitNET.DLL" LongName="System.Data.SQLite.DLL" Source="..\bin\Release\System.Data.SQLite.DLL" />

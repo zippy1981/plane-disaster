@@ -26,7 +26,7 @@
 			<UpgradeVersion
 				Property="PREVIOUSVERSIONFOUND"
 				IncludeMinimum='yes' Minimum='0.9.0'
-				IncludeMaximum='yes' Maximum='0.9.1' />
+				IncludeMaximum='yes' Maximum='0.9.2' />
 		</Upgrade>
 		
 		
@@ -97,15 +97,22 @@
 		<Media Id="1" Cabinet="contents.cab" EmbedCab="yes" />
 		<Directory Id="TARGETDIR" Name="SourceDir" />
 		<Feature Id="PlaneDisaster.NET" Title="PlaneDisaster.NET" Level="1">
-			<ComponentRef Id="PlaneDisaster" />
+			<ComponentRef Id="PlaneDisasterExe" />
+			<ComponentRef Id="PlaneDisasterDll" />
+			<ComponentRef Id="PlaneDisasterDocs" />
 		</Feature>
 		<Feature Id="SQLite.NET" Title="SQLite.NET" Level="1">
 			<ComponentRef Id="SQLite.NET" />
 		</Feature>
 		<!-- END INSTALL DESCRIPTION -->
+		
+		<CustomAction Id='DowngradeForbidden' Error='Newer version alrady installed.' />
+								
 		<AdminExecuteSequence>
 		</AdminExecuteSequence>
 		<InstallExecuteSequence>
+			<!-- Prevent downgrades -->
+			<Custom Action='DowngradeForbidden' After='FindRelatedProducts'>PREVIOUSVERSIONFOUND</Custom>
 			<RemoveExistingProducts Before="InstallInitialize"/>
 		</InstallExecuteSequence>
 		<UIRef Id="UserInterface" />
