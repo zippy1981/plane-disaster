@@ -1,3 +1,0 @@
-TODO:
-	* Enumerate DSNs
-	* Allow user to connect to remote servers.

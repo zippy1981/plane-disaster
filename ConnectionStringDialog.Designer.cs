@@ -1,9 +1,9 @@
-﻿/*/
+﻿/*
  * Created by SharpDevelop.
  * User: EddingtonAndAssoc
  * Date: 8/13/2006
  * Time: 6:00 PM
-/*/
+ */
  	
 namespace PlaneDisaster
 {

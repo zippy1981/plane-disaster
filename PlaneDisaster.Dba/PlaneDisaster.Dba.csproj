@@ -39,7 +39,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite">
-      <HintPath>..\..\..\Program Files\SQLite.NET\bin\System.Data.SQLite.DLL</HintPath>
+      <HintPath>C:\Program Files\SQLite.NET\bin\System.Data.SQLite.DLL</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System.Xml" />
