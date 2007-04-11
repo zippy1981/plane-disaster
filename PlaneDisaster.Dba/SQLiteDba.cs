@@ -91,9 +91,10 @@ namespace PlaneDisaster.Dba
 		
 		
 		/// <summary>
-		/// Takes the passed DataTable <c>dt</c>, creates a sqlite database named
-		/// <c>FileName</c>, and creates a single table with equivilant
-		///  schama and values.
+		/// Takes the passed DataTable <c>dt</c> and creates a table in the currently
+		/// open SQLite database with equivilant schama and values. If the currently 
+		/// open database  has a table of the same name, attempts to append the rows
+		/// in the DataTable to it.
 		/// </summary>
 		/// <remarks>
 		/// <para>This qualifies as one of the greatest dirty hacks that just works.
@@ -108,12 +109,21 @@ namespace PlaneDisaster.Dba
 		/// produced a sensible value. If storing dates in integers as unix
 		/// timestamps makes more sense in the future I might do that. Be warned.
 		/// I never told you to depend on this function.</para>
+		/// <para>All INSERT statements are done as one transaction. The reason for this
+		/// is that no writes are performed to the database until a transaction is
+		/// committed and therefore the difference in execution time between 
+		/// inserting a thousand rows in one transaction and inserting a thousand rows 
+		/// without transactions is greater than a thousand fold. This has been tested on
+		/// a table containing 179442 rows with 5 numeric column and one DateTime column
+		/// that was inserted as a text column. Tests much be performed on even larger 
+		/// datasets to see if there is a point of noticeable performance degradation.
+		/// </para>
 		/// </remarks>
 		/// <param name="dt">The DataTable to place in a new SQLite database.</param>
 		public void DataTable2SQLiteTable(DataTable dt) {
 			/* Check to make sure that the DataTable has a name */
 			string TableNameError =
-				"DataTable passed to CreateSQLiteDbWithTable() must have the TableName Property " +
+				"DataTable passed to DataTable2SQLiteTable() must have the TableName Property " +
 				"set to a non null, non empty string (\"\") value.";
 			if (dt.TableName == null) {
 				throw new ArgumentNullException (TableNameError);
@@ -135,7 +145,7 @@ namespace PlaneDisaster.Dba
 					{
 						Cols.Add(String.Format("[{0}] TEXT", col.ColumnName));
 					}
-					else if (col.DataType == typeof(long) || col.DataType == typeof(ulong) || col.DataType == typeof(Int32) || col.DataType == typeof(bool))
+					else if (col.DataType == typeof(long) || col.DataType == typeof(ulong) || col.DataType == typeof(Single) || col.DataType == typeof(Int32) || col.DataType == typeof(bool) || col.DataType == typeof(Guid))
 					{
 						Cols.Add(String.Format("[{0}] INTEGER", col.ColumnName));
 					}
@@ -145,14 +155,13 @@ namespace PlaneDisaster.Dba
 					}
 					else {
 						throw new DataException
-							(String.Concat("CreateSQLiteDbWithTable() doesn't know how to map columns of type ", col.DataType.ToString()));
+							(String.Concat("DataTable2SQLiteTable() doesn't know how to map columns of type ", col.DataType.ToString()));
 					}
 				}
 				DDL.Append(String.Join(", ", Cols.ToArray()));
 				DDL.Append(")");
 				cmd.CommandText = DDL.ToString();
 				cmd.ExecuteNonQuery();
-				
 			}
 			
 			using (SQLiteCommand cmd = (SQLiteCommand) Cn.CreateCommand()) {
@@ -179,6 +188,8 @@ namespace PlaneDisaster.Dba
 					}
 				}
 				
+				/* It is much faster if this is done as one transaction. */
+				cmd.Transaction = (SQLiteTransaction) Cn.BeginTransaction();
 				DataTableReader rdr = dt.CreateDataReader();
 				/* Populate the parameters for the INSERT INTO statement and execute. */
 				while(rdr.Read()) {
@@ -187,6 +198,8 @@ namespace PlaneDisaster.Dba
 					}
 					cmd.ExecuteNonQuery();
 				}
+				cmd.Transaction.Commit();
+				cmd.Transaction.Dispose();
 			}
 		}
 

@@ -64,6 +64,12 @@ namespace PlaneDisaster.Dba
 		}
 		
 		
+		/// <summary>The OleDb Connection string</summary>
+		public string ConnectionString {
+			get { return this.Cn.ConnectionString; }
+		}
+		
+		
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the appropiate type.
 		/// </summary>
@@ -551,15 +557,15 @@ namespace PlaneDisaster.Dba
 		/// A list of table names as an array of strings.
 		/// </returns>
 		public virtual string [] GetTables() {
-			int numCols;
+			int RowCount;
 			int i = 0;
 			string [] Tables;
 			DataTable dt = null;
 			
 			dt = Cn.GetSchema("tables");
-			numCols = dt.Rows.Count;
-			Tables = new string[numCols];
-			for (i = 0; i < numCols; i++) {
+			RowCount = dt.Rows.Count;
+			Tables = new string[RowCount];
+			for (i = 0; i < RowCount; i++) {
 				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
 			}
 			return Tables;

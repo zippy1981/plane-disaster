@@ -40,5 +40,19 @@
     <Compile Include="WelcomeDialog.wxs" />
     <None Include="license.rtf" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Jet2SQLite\Jet2SQLite.csproj">
+      <Project>{D9402D0E-F69F-497B-94E6-405BD3D1D012}</Project>
+      <Name>Jet2SQLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PlaneDisaster.csproj">
+      <Project>{BA5695EC-7541-4AE8-9934-E850C86C3DCD}</Project>
+      <Name>PlaneDisaster</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">
+      <Project>{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}</Project>
+      <Name>PlaneDisaster.Dba</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(WixMSBuildExtensionsPath)\wix.targets" />
 </Project>

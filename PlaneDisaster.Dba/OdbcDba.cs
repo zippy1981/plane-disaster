@@ -38,7 +38,6 @@ namespace PlaneDisaster.Dba
 	public class OdbcDba : dba
 	{	
 		private OdbcConnection _Cn;
-		private string _ConnStr;
 
 		
 		/// <summary>The Odbc database connection</summary>
@@ -50,31 +49,14 @@ namespace PlaneDisaster.Dba
 				this._Cn = (OdbcConnection) value;
 			}
 		}
-		
-		
-		/// <summary>The Odbc Connection string</summary>
-		protected string ConnStr {
-			get { return this._ConnStr; }
-			set { this._ConnStr = value; }
-		}
-		
-		
-		/// <summary>
-		/// Connect to the previously defined connection string.
-		/// </summary>
-		public void Connect (){
-			this.Cn = new OdbcConnection(ConnStr);
-			Cn.Open();
-		}
-		
 
 		/// <summary>
 		/// Connect to the specified DSN
 		/// </summary>
 		/// <param name="ConnStr">DSN to connect to.</param>
 		public void ConnectDSN(string ConnStr) {
-			this.ConnStr = ConnStr;
-			this.Connect();
+			Cn = new OdbcConnection(ConnStr);
+			Cn.Open();
 		}
 		
 
@@ -83,9 +65,25 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="File">MDB file to connect to.</param>
 		public void ConnectMDB(string File) {
-			ConnStr = String.Format
-				("Driver={Microsoft Access Driver (*.mdb)};Dbq={0};Uid=Admin;Pwd=;", File);
-			this.Connect();
+			Cn = new OdbcConnection();
+			Cn.ConnectionString = String.Format
+				("Driver={{Microsoft Access Driver (*.mdb)}};Dbq={0};Uid=Admin;Pwd=;", File);
+			Cn.Open();
+		}
+		
+		
+		/// <summary>
+		/// Connect to the specified MDB file with the specified passwd.
+		/// </summary>
+		/// <param name="File">MDB file to connect to.</param>
+		/// <param name="Password">
+		/// The password to connecto to the database as.
+		/// </param>
+		public void ConnectMDB(string File, string Password) {
+			Cn = new OdbcConnection();
+			Cn.ConnectionString = String.Format
+					("Driver={{Microsoft Access Driver (*.mdb)}};Dbq={0};Uid=Admin;Pwd={1};", File, Password);
+			Cn.Open();
 		}
 		
 		
@@ -126,10 +124,10 @@ namespace PlaneDisaster.Dba
 		public override DataTable GetTableAsDataTable (string Table) {
 			DataTable ret = new DataTable();
 			OdbcCommand cmd = (OdbcCommand)Cn.CreateCommand();
-			cmd.CommandType = CommandType.TableDirect;
-			cmd.CommandText = Table;
+			cmd.CommandText = String.Format("SELECT * FROM [{0}]", Table);
 			OdbcDataAdapter da = new OdbcDataAdapter(cmd);
 			da.Fill(ret);
+			ret.TableName = Table;
 			return ret;
 		}
 		

@@ -84,6 +84,7 @@ namespace PlaneDisaster
 			this.lblProcedures = new System.Windows.Forms.Label();
 			this.lstProcedures = new System.Windows.Forms.ListBox();
 			this.radInsert = new System.Windows.Forms.RadioButton();
+			this.cmdRefresh = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.gridResults)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -123,7 +124,7 @@ namespace PlaneDisaster
 			this.cmdSQL.ForeColor = System.Drawing.Color.Red;
 			this.cmdSQL.Location = new System.Drawing.Point(537, 24);
 			this.cmdSQL.Name = "cmdSQL";
-			this.cmdSQL.Size = new System.Drawing.Size(23, 35);
+			this.cmdSQL.Size = new System.Drawing.Size(35, 35);
 			this.cmdSQL.TabIndex = 2;
 			this.cmdSQL.Text = "!";
 			this.cmdSQL.Click += new System.EventHandler(this.CmdSQLClick);
@@ -359,10 +360,22 @@ namespace PlaneDisaster
 			this.radInsert.Text = "Text (INSERTS)";
 			this.radInsert.CheckedChanged += new System.EventHandler(this.RadInsertCheckedChanged);
 			// 
+			// cmdRefresh
+			// 
+			this.cmdRefresh.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cmdRefresh.ForeColor = System.Drawing.Color.Red;
+			this.cmdRefresh.Location = new System.Drawing.Point(537, 60);
+			this.cmdRefresh.Name = "cmdRefresh";
+			this.cmdRefresh.Size = new System.Drawing.Size(35, 35);
+			this.cmdRefresh.TabIndex = 20;
+			this.cmdRefresh.Text = "&R";
+			this.cmdRefresh.Click += new System.EventHandler(this.CmdRefreshClick);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(876, 464);
+			this.Controls.Add(this.cmdRefresh);
 			this.Controls.Add(this.radInsert);
 			this.Controls.Add(this.lblProcedures);
 			this.Controls.Add(this.lstProcedures);
@@ -394,6 +407,7 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.Button cmdRefresh;
 		private System.Windows.Forms.RadioButton radInsert;
 		private System.Windows.Forms.RadioButton radCSV;
 		private System.Windows.Forms.ToolStripMenuItem openRecentToolStripMenuItem;

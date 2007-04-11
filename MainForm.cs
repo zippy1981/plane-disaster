@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
+using System.Data.Odbc;
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
@@ -117,6 +117,12 @@ namespace PlaneDisaster
 		
 		#region Button Events
 		
+		void CmdRefreshClick(object sender, EventArgs e)
+		{
+			DisplayDataSource();
+		}
+		
+		
 		void CmdSaveCsvClick(object sender, System.EventArgs e)
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
@@ -164,8 +170,9 @@ namespace PlaneDisaster
 			//Width
 			this.gridResults.Width = this.Width - 15;
 			this.txtResults.Width = this.Width - 15;
-			this.cmdSQL.Left = this.Width - 35;
-			this.txtSQL.Width = this.Width - 45;
+			this.cmdSQL.Left = this.Width - 45;
+			this.cmdRefresh.Left = this.Width - 45;
+			this.txtSQL.Width = this.Width - 55;
 			
 			// Height
 			// Output display controls
@@ -209,7 +216,7 @@ namespace PlaneDisaster
 						string Message;
 						string SQL;
 						
-						if (this.dbcon is OleDba) {
+						if (this.dbcon is OdbcDba) {
 							SQL = String.Format
 								("SELECT TOP {1} * FROM {0}",
 								 lst.Text, MaxRowDisplayCount);
@@ -410,7 +417,6 @@ namespace PlaneDisaster
 			FileDialog dlg = new OpenFileDialog();
 			FileFilter.Append("All supported database types|*.mdb;*.mde;*.db;*.db3;*.sqlite");
 			FileFilter.Append("|Microsoft Access (*.mdb;*.mde)|*.mdb;*.mde");
-			FileFilter.Append("|Microsoft Access via ODBC (*.mdb;*.mde)|*.mdb;*.mde");
 			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
 			dlg.Filter = FileFilter.ToString();
 			
@@ -426,12 +432,9 @@ namespace PlaneDisaster
 						} else {throw new ApplicationException("Unknown file type.");}
 						break;
 					case 2:
-						OpenMDBodbc(dlg.FileName);
-						break;
-					case 3:
 						OpenMDB(dlg.FileName);
 						break;
-					case 4:
+					case 3:
 						OpenSQLite(dlg.FileName);
 						break;
 				}
@@ -657,12 +660,12 @@ namespace PlaneDisaster
 		internal string GetFileName() {
 			DbConnectionStringBuilder ConStr;
 			
-			if (dbcon is OleDba) {
-				ConStr = new OleDbConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
+			if (dbcon is OdbcDba) {
+				ConStr = new OdbcConnectionStringBuilder(((OdbcDba)dbcon).ConnectionString);
 				//For some reason FileName is blank.
-				return ((OleDbConnectionStringBuilder)ConStr).DataSource;
+				return (string)((OdbcConnectionStringBuilder)ConStr)["Dbq"];
 			} else if (dbcon is SQLiteDba) {
-				ConStr = new SQLiteConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
+				ConStr = new SQLiteConnectionStringBuilder(((SQLiteDba)dbcon).ConnectionString);
 				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
 			} else { return ""; }
 		}
@@ -849,58 +852,20 @@ namespace PlaneDisaster
 		internal void OpenMDB (string FileName) {
 			DialogResult Result;
 			
-			this.dbcon = new OleDba();
-			
-			try {
-				((OleDba) dbcon).ConnectMDB(FileName);
-			} catch (OleDbException ex) {
-				//TODO: this is the error code for incorrect access password. Make this a constant.
-				if (ex.ErrorCode == -2147217843) {
-					InputDialog GetPassword = new InputDialog();
-					Result = GetPassword.ShowDialog("Enter the password for the database");
-					if (Result == DialogResult.OK) {
-						try {
-							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
-						} catch (OleDbException exSecond) {
-							if (exSecond.ErrorCode == -2147217843) {
-								MessageBox.Show("Incorrect Password");
-							} else {
-								throw exSecond;
-							}
-							return;
-						} finally { GetPassword.Dispose(); }
-					}
-				} else if (ex.ErrorCode == -2147467259) {
-					Text = "PlaneDisaster.NET";
-					string Msg = String.Format("File [{0}] not found.", FileName);
-					MessageBox.Show(Msg, "Error Opening File");
-					return;
-				} else {
-					throw ex;
-				}
-			}
-			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
-			this.DisplayDataSource();
-		}
-		
-		
-		internal void OpenMDBodbc (string FileName) {
-			DialogResult Result;
-			
 			this.dbcon = new OdbcDba();
 			
 			try {
 				((OdbcDba) dbcon).ConnectMDB(FileName);
-			} catch (OleDbException ex) {
+			} catch (OdbcException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
-				if (ex.ErrorCode == -2147217843) {
+				if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {
 					InputDialog GetPassword = new InputDialog();
 					Result = GetPassword.ShowDialog("Enter the password for the database");
 					if (Result == DialogResult.OK) {
 						try {
-							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
-						} catch (OleDbException exSecond) {
-							if (exSecond.ErrorCode == -2147217843) {
+							((OdbcDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
+						} catch (OdbcException exSecond) {
+							if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {
 								MessageBox.Show("Incorrect Password");
 							} else {
 								throw exSecond;
