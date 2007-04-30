@@ -62,9 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Configuration\PlaneDisasterSettings.cs" />
     <Compile Include="Configuration\RecentFileElement.cs" />
     <Compile Include="Configuration\RecentFilesCollection.cs" />
-    <Compile Include="Configuration\PlaneDisasterSection.cs" />
     <None Include="Changelog.txt" />
     <None Include="README.txt" />
     <Compile Include="ConnectionStringDialog.cs" />

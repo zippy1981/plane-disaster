@@ -46,8 +46,7 @@ namespace PlaneDisaster
 	/// </summary>
 	public sealed partial class MainForm
 	{
-		private System.Configuration.Configuration Config;
-		private PlaneDisasterSection oPlaneDisasterSection;
+		private PlaneDisasterSettings oPlaneDisasterSettings;
 		private dba dbcon = null;
 		private string _CSV;
 		private string _InsertStatements;
@@ -100,15 +99,8 @@ namespace PlaneDisaster
 			
 			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
 			
-			Config = ConfigurationManager.OpenExeConfiguration
-				(ConfigurationUserLevel.PerUserRoaming);
-			oPlaneDisasterSection = (PlaneDisasterSection)Config.GetSection("planeDisaster");
-			if (oPlaneDisasterSection == null) {
-				oPlaneDisasterSection = new PlaneDisasterSection();
-				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
-			}
-			
-			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+			oPlaneDisasterSettings = PlaneDisasterSettings.GetSection(ConfigurationUserLevel.PerUserRoamingAndLocal);
+			oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 		}
@@ -403,7 +395,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -439,7 +431,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+				oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -570,15 +562,8 @@ namespace PlaneDisaster
 		private void AddRecentFile (string FileName) {
 			FileName = Path.GetFullPath(FileName);
 			
-			try {
-				oPlaneDisasterSection.RecentFiles.Add(FileName);
-			} catch (NullReferenceException) {
-				oPlaneDisasterSection = new PlaneDisasterSection();
-				Config.Sections.Remove("planeDisaster");
-				Config.Sections.Add("planeDisaster", oPlaneDisasterSection);
-				oPlaneDisasterSection.RecentFiles.Add(FileName);
-			}
-			Config.Save();
+			oPlaneDisasterSettings.RecentFiles.Add(FileName);
+			oPlaneDisasterSettings.Save();
 		}
 		
 		
@@ -843,7 +828,7 @@ namespace PlaneDisaster
 				this.OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
-			oPlaneDisasterSection.RecentFiles.GenerateOpenRecentMenu
+			oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 		}
