@@ -194,6 +194,12 @@ namespace PlaneDisaster.Jet2SQLite
 			}
 		}
 		
+		
+		void ExitToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+		
 		#endregion
 	}
 }

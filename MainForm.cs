@@ -765,7 +765,7 @@ namespace PlaneDisaster
 			if (SQL == "" || dbcon == null) { return; }
 			
 			try {
-				dt = dbcon.ExecuteSql(SQL);
+				dt = dbcon.ExecuteScript(SQL);
 				if (TableName != null ) {
 					dt.TableName = TableName;
 				}

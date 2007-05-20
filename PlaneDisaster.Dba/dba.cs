@@ -188,7 +188,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
-		public DataTable ExecuteSql(string SQL) {
+		public DataTable ExecuteScript(string SQL) {
 			DataTable ret;
 			DbCommand cmd = Cn.CreateCommand();
 			SQL = SQL.Trim();
@@ -201,8 +201,22 @@ namespace PlaneDisaster.Dba
 					cmd.ExecuteNonQuery();
 				}
 			}
+			cmd.Dispose();
 			ret = this.GetSqlAsDataTable(Statements[Statements.Length - 1]);
 			return ret;
+		}
+		
+		
+		/// <summary>
+		/// Executes the SQL command passed as a string.
+		/// </summary>
+		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
+		/// <returns>A dataset generated from the last SQL command in the script.</returns>
+		public void ExecuteSqloOmmand (string SQL) {
+			using (DbCommand cmd = Cn.CreateCommand()) {
+				cmd.CommandText = SQL;
+				cmd.ExecuteNonQuery();
+			}
 		}
 		
 		
@@ -214,7 +228,7 @@ namespace PlaneDisaster.Dba
 		/// </param>
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
 		public DataTable ExecuteSqlFile(string Script) {
-			return this.ExecuteSql(System.IO.File.ReadAllText(Script));
+			return this.ExecuteScript(System.IO.File.ReadAllText(Script));
 		}
 		
 		

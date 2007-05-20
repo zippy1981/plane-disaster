@@ -14,10 +14,11 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;TEST</DefineConstants>
+    <Optimize>False</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -36,6 +37,8 @@
   </PropertyGroup>
   <Import Project="$(SharpDevelopBinPath)\SharpDevelop.Build.CSharp.targets" />
   <ItemGroup>
+    <Reference Include="nunit.core" />
+    <Reference Include="nunit.framework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite">
@@ -50,5 +53,9 @@
     <Compile Include="JetSqlUtil.cs" />
     <Compile Include="OdbcDba.cs" />
     <Compile Include="SQLiteDba.cs" />
+    <Compile Include="Tests\DataAccessTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tests" />
   </ItemGroup>
 </Project>
