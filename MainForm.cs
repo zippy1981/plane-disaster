@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Data.SQLite;
 using System.IO;
 using System.Text;
@@ -484,11 +484,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuProcedureSchema") {
-				this.gridResults.DataSource = dbcon.GetColumnSchema(lstProcedures.Text);
+				gridResults.DataSource = dbcon.GetColumnSchema(lstProcedures.Text);
 			} else if (mnu.Name == "menuTableSchema") {
-				this.gridResults.DataSource = dbcon.GetColumnSchema(lstTables.Text);
+				gridResults.DataSource = dbcon.GetColumnSchema(lstTables.Text);
 			} else if (mnu.Name == "menuViewSchema") {
-				this.gridResults.DataSource = dbcon.GetColumnSchema(lstViews.Text);
+				gridResults.DataSource = dbcon.GetColumnSchema(lstViews.Text);
 			} else {
 				throw new ArgumentException
 					("sender for menu_Click must be one of " +
@@ -501,11 +501,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuScriptProcedure") {
-				this.Query = dbcon.GetProcedureSQL(lstProcedures.Text);
+				Query = dbcon.GetProcedureSQL(lstProcedures.Text);
 			} else if (mnu.Name == "menuScriptTable") {
-				this.Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
+				Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
 			} else if (mnu.Name == "menuScriptView") {
-				this.Query = dbcon.GetViewSQL(lstViews.Text);
+				Query = dbcon.GetViewSQL(lstViews.Text);
 			}
 		}
 		
@@ -514,11 +514,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuShowProcedure") {
-				this.lst_DblClick(lstProcedures, e);
+				lst_DblClick(lstProcedures, e);
 			} else if (mnu.Name == "menuShowTable") {
-				this.lst_DblClick(lstTables, e);
+				lst_DblClick(lstTables, e);
 			} else if (mnu.Name == "menuShowView") {
-				this.lst_DblClick(lstViews, e);
+				lst_DblClick(lstViews, e);
 			} else {
 				throw new ArgumentException
 					("sender for menuShow_Click must be one of " +
@@ -568,7 +568,7 @@ namespace PlaneDisaster
 		
 		
 		private void ClearRecentFileMenu() {
-			this.openRecentToolStripMenuItem.DropDownItems.Clear();
+			openRecentToolStripMenuItem.DropDownItems.Clear();
 		}
 		
 		
@@ -645,10 +645,10 @@ namespace PlaneDisaster
 		internal string GetFileName() {
 			DbConnectionStringBuilder ConStr;
 			
-			if (dbcon is OdbcDba) {
-				ConStr = new OdbcConnectionStringBuilder(((OdbcDba)dbcon).ConnectionString);
+			if (dbcon is OleDba) {
+				ConStr = new OleDbConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
 				//For some reason FileName is blank.
-				return (string)((OdbcConnectionStringBuilder)ConStr)["Dbq"];
+				return (string)((OleDbConnectionStringBuilder)ConStr)["Dbq"];
 			} else if (dbcon is SQLiteDba) {
 				ConStr = new SQLiteConnectionStringBuilder(((SQLiteDba)dbcon).ConnectionString);
 				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
@@ -751,7 +751,11 @@ namespace PlaneDisaster
 		
 		
 		private void LoadQueryResults() {
-			this.LoadQueryResults(this.Query, null);
+			if (txtSQL.SelectionLength > 1) {
+				LoadQueryResults(txtSQL.SelectedText, null);
+			} else {
+				LoadQueryResults(txtSQL.Text, null);
+			}
 		}
 		
 		
@@ -834,23 +838,23 @@ namespace PlaneDisaster
 		}
 		
 		
-		internal void OpenMDB (string FileName) {
-			DialogResult Result;
-			
-			this.dbcon = new OdbcDba();
+ 		internal void OpenMDB (string FileName) {
+ 			DialogResult Result;
+ 			
+			this.dbcon = new OleDba();
 			
 			try {
-				((OdbcDba) dbcon).ConnectMDB(FileName);
-			} catch (OdbcException ex) {
+				((OleDba) dbcon).ConnectMDB(FileName);
+			} catch (OleDbException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
-				if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {
+				if (ex.ErrorCode == -2147217843) {
 					InputDialog GetPassword = new InputDialog();
 					Result = GetPassword.ShowDialog("Enter the password for the database");
 					if (Result == DialogResult.OK) {
 						try {
-							((OdbcDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
-						} catch (OdbcException exSecond) {
-							if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {
+							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
+						} catch (OleDbException exSecond) {
+							if (exSecond.ErrorCode == -2147217843) {
 								MessageBox.Show("Incorrect Password");
 							} else {
 								throw exSecond;

@@ -52,10 +52,7 @@
     <Compile Include="dba.cs" />
     <Compile Include="JetSqlUtil.cs" />
     <Compile Include="OdbcDba.cs" />
+    <Compile Include="OleDba.cs" />
     <Compile Include="SQLiteDba.cs" />
-    <Compile Include="Tests\DataAccessTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tests" />
   </ItemGroup>
 </Project>

@@ -64,7 +64,7 @@ namespace PlaneDisaster.Dba
 		}
 		
 		
-		/// <summary>The OleDb Connection string</summary>
+		/// <summary>The Database Connection string</summary>
 		public string ConnectionString {
 			get { return this.Cn.ConnectionString; }
 		}
