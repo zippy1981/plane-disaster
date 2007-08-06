@@ -444,7 +444,6 @@ namespace PlaneDisaster
 			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);
 			
 			OpenDatabaseFile(FileName);
-			//TODO: If the call to OpenDatatabatse fails 
 			InitContextMenues();
 		}
 
@@ -598,7 +597,7 @@ namespace PlaneDisaster
 			lstViews.ContextMenu = null;
 			
 			txtResults.Text = "";
-			this.CSV = "";
+			CSV = "";
 			gridResults.DataSource = null;
 			
 			databaseSchemaToolStripMenuItem.Enabled = false;
@@ -606,7 +605,8 @@ namespace PlaneDisaster
 			dbcon = null;
 			Text = "PlaneDisaster.NET";
 			databaseSchemaToolStripMenuItem.Enabled = false;
-			this.closeToolStripMenuItem.Enabled = false;
+			closeToolStripMenuItem.Enabled = false;
+			queryToolStripMenuItem.Enabled = true;
 			
 		}
 		
@@ -815,6 +815,7 @@ namespace PlaneDisaster
 					this.OpenSQLite(FileName);
 					break;
 			}
+			this.queryToolStripMenuItem.Enabled = true;
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 		}
 		
@@ -827,14 +828,15 @@ namespace PlaneDisaster
 			string Extension =
 				System.IO.Path.GetExtension(FileName).ToLower();
 			if (Extension == ".mdb" || Extension == ".mde") {
-				this.OpenMDB(FileName);
+				OpenMDB(FileName);
 			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
-				this.OpenSQLite(FileName);
+				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
 			oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
+			this.queryToolStripMenuItem.Enabled = true;
 		}
 		
 		

@@ -72,6 +72,8 @@ namespace PlaneDisaster
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.queryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.executeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.utilitiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.microsoftAccessJetSQLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.compactJetSQLmdbFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -91,9 +93,10 @@ namespace PlaneDisaster
 			// 
 			// lstTables
 			// 
+			this.lstTables.ItemHeight = 16;
 			this.lstTables.Location = new System.Drawing.Point(336, 400);
 			this.lstTables.Name = "lstTables";
-			this.lstTables.Size = new System.Drawing.Size(160, 56);
+			this.lstTables.Size = new System.Drawing.Size(160, 52);
 			this.lstTables.TabIndex = 5;
 			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
@@ -131,9 +134,10 @@ namespace PlaneDisaster
 			// 
 			// lstColumns
 			// 
+			this.lstColumns.ItemHeight = 16;
 			this.lstColumns.Location = new System.Drawing.Point(502, 400);
 			this.lstColumns.Name = "lstColumns";
-			this.lstColumns.Size = new System.Drawing.Size(160, 56);
+			this.lstColumns.Size = new System.Drawing.Size(160, 52);
 			this.lstColumns.TabIndex = 6;
 			// 
 			// txtSQL
@@ -186,10 +190,11 @@ namespace PlaneDisaster
 			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.fileToolStripMenuItem,
 									this.helpToolStripMenuItem,
+									this.queryToolStripMenuItem,
 									this.utilitiesToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(876, 24);
+			this.menuStrip1.Size = new System.Drawing.Size(876, 26);
 			this.menuStrip1.TabIndex = 13;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
@@ -203,14 +208,14 @@ namespace PlaneDisaster
 									this.toolStripSeparator1,
 									this.exitToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+			this.fileToolStripMenuItem.Size = new System.Drawing.Size(40, 22);
 			this.fileToolStripMenuItem.Text = "&File";
 			// 
 			// newToolStripMenuItem
 			// 
 			this.newToolStripMenuItem.Name = "newToolStripMenuItem";
 			this.newToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-			this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.newToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
 			this.newToolStripMenuItem.Text = "&New";
 			this.newToolStripMenuItem.Click += new System.EventHandler(this.menuNew_Click);
 			// 
@@ -218,7 +223,7 @@ namespace PlaneDisaster
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
 			this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.menuOpen_Click);
 			// 
@@ -226,26 +231,26 @@ namespace PlaneDisaster
 			// 
 			this.openRecentToolStripMenuItem.Enabled = false;
 			this.openRecentToolStripMenuItem.Name = "openRecentToolStripMenuItem";
-			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
 			this.openRecentToolStripMenuItem.Text = "Open &Recent";
 			// 
 			// closeToolStripMenuItem
 			// 
 			this.closeToolStripMenuItem.Enabled = false;
 			this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-			this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.closeToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
 			this.closeToolStripMenuItem.Text = "&Close";
 			this.closeToolStripMenuItem.Click += new System.EventHandler(this.menuClose_Click);
 			// 
 			// toolStripSeparator1
 			// 
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripSeparator1.Size = new System.Drawing.Size(174, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.menuExit_Click);
 			// 
@@ -255,15 +260,32 @@ namespace PlaneDisaster
 			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.aboutToolStripMenuItem});
 			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+			this.helpToolStripMenuItem.Size = new System.Drawing.Size(48, 22);
 			this.helpToolStripMenuItem.Text = "Help";
 			// 
 			// aboutToolStripMenuItem
 			// 
 			this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
 			this.aboutToolStripMenuItem.Text = "&About";
 			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.menuAbout_Click);
+			// 
+			// queryToolStripMenuItem
+			// 
+			this.queryToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+									this.executeToolStripMenuItem});
+			this.queryToolStripMenuItem.Enabled = false;
+			this.queryToolStripMenuItem.Name = "queryToolStripMenuItem";
+			this.queryToolStripMenuItem.Size = new System.Drawing.Size(60, 22);
+			this.queryToolStripMenuItem.Text = "&Query";
+			// 
+			// executeToolStripMenuItem
+			// 
+			this.executeToolStripMenuItem.Name = "executeToolStripMenuItem";
+			this.executeToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+			this.executeToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+			this.executeToolStripMenuItem.Text = "&Execute";
+			this.executeToolStripMenuItem.Click += new System.EventHandler(this.CmdSQLClick);
 			// 
 			// utilitiesToolStripMenuItem
 			// 
@@ -271,7 +293,7 @@ namespace PlaneDisaster
 									this.microsoftAccessJetSQLToolStripMenuItem,
 									this.databaseSchemaToolStripMenuItem});
 			this.utilitiesToolStripMenuItem.Name = "utilitiesToolStripMenuItem";
-			this.utilitiesToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
+			this.utilitiesToolStripMenuItem.Size = new System.Drawing.Size(63, 22);
 			this.utilitiesToolStripMenuItem.Text = "&Utilities";
 			// 
 			// microsoftAccessJetSQLToolStripMenuItem
@@ -280,20 +302,20 @@ namespace PlaneDisaster
 									this.compactJetSQLmdbFileToolStripMenuItem,
 									this.repairDatabaseToolStripMenuItem});
 			this.microsoftAccessJetSQLToolStripMenuItem.Name = "microsoftAccessJetSQLToolStripMenuItem";
-			this.microsoftAccessJetSQLToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+			this.microsoftAccessJetSQLToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
 			this.microsoftAccessJetSQLToolStripMenuItem.Text = "Microsoft Access (JetSQL)";
 			// 
 			// compactJetSQLmdbFileToolStripMenuItem
 			// 
 			this.compactJetSQLmdbFileToolStripMenuItem.Name = "compactJetSQLmdbFileToolStripMenuItem";
-			this.compactJetSQLmdbFileToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+			this.compactJetSQLmdbFileToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
 			this.compactJetSQLmdbFileToolStripMenuItem.Text = "&Compact Database";
 			this.compactJetSQLmdbFileToolStripMenuItem.Click += new System.EventHandler(this.menuCompactDatabase_Click);
 			// 
 			// repairDatabaseToolStripMenuItem
 			// 
 			this.repairDatabaseToolStripMenuItem.Name = "repairDatabaseToolStripMenuItem";
-			this.repairDatabaseToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+			this.repairDatabaseToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
 			this.repairDatabaseToolStripMenuItem.Text = "&Repair Database";
 			this.repairDatabaseToolStripMenuItem.Click += new System.EventHandler(this.menuRepairDatabase_Click);
 			// 
@@ -301,15 +323,16 @@ namespace PlaneDisaster
 			// 
 			this.databaseSchemaToolStripMenuItem.Enabled = false;
 			this.databaseSchemaToolStripMenuItem.Name = "databaseSchemaToolStripMenuItem";
-			this.databaseSchemaToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+			this.databaseSchemaToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
 			this.databaseSchemaToolStripMenuItem.Text = "Database &Schema";
 			this.databaseSchemaToolStripMenuItem.Click += new System.EventHandler(this.menuDatabaseSchema_Click);
 			// 
 			// lstViews
 			// 
+			this.lstViews.ItemHeight = 16;
 			this.lstViews.Location = new System.Drawing.Point(4, 400);
 			this.lstViews.Name = "lstViews";
-			this.lstViews.Size = new System.Drawing.Size(160, 56);
+			this.lstViews.Size = new System.Drawing.Size(160, 52);
 			this.lstViews.TabIndex = 14;
 			this.lstViews.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
@@ -347,9 +370,10 @@ namespace PlaneDisaster
 			// 
 			// lstProcedures
 			// 
+			this.lstProcedures.ItemHeight = 16;
 			this.lstProcedures.Location = new System.Drawing.Point(170, 400);
 			this.lstProcedures.Name = "lstProcedures";
-			this.lstProcedures.Size = new System.Drawing.Size(160, 56);
+			this.lstProcedures.Size = new System.Drawing.Size(160, 52);
 			this.lstProcedures.TabIndex = 18;
 			// 
 			// radInsert
@@ -409,6 +433,8 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.ToolStripMenuItem executeToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem queryToolStripMenuItem;
 		private System.Windows.Forms.Button cmdRefresh;
 		private System.Windows.Forms.RadioButton radInsert;
 		private System.Windows.Forms.RadioButton radCSV;

@@ -211,10 +211,23 @@ namespace PlaneDisaster.Dba
 		/// Executes the SQL command passed as a string.
 		/// </summary>
 		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
-		/// <returns>A dataset generated from the last SQL command in the script.</returns>
-		public void ExecuteSqloOmmand (string SQL) {
+		public void ExecuteSqlCommand (string SQL) {
 			using (DbCommand cmd = Cn.CreateCommand()) {
 				cmd.CommandText = SQL;
+				cmd.ExecuteNonQuery();
+			}
+		}
+		
+		
+		/// <summary>
+		/// Executes the SQL command passed as a string.
+		/// </summary>
+		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
+		/// <param name="paramaters">The parameters to pass to the SQL.</param>
+		public void ExecuteSqlCommand (string SQL, DbParameter [] parameters) {
+			using (DbCommand cmd = Cn.CreateCommand()) {
+				cmd.CommandText = SQL;
+				cmd.Parameters.AddRange(parameters);
 				cmd.ExecuteNonQuery();
 			}
 		}
