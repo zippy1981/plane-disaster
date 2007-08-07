@@ -29,13 +29,14 @@ using PlaneDisaster.Dba;
 using System;
 using System.Data.Common;
 using System.Data.OleDb;
+using System.Data.SQLite;
 using System.IO;
 
 
 namespace UnitTests
 {
 	[TestFixture]
-	public class Tests
+	public sealed class Tests
 	{
 		private struct tblTestRow {
 			internal int Id;
@@ -47,31 +48,97 @@ namespace UnitTests
 			}
 		}
 			
-		private readonly string _tempDirectory = Path.GetTempPath();
-		private readonly string _tempFilePrefix = string.Format("PlaneDIsaster-unittest-{0}", Guid.NewGuid());
+		private static readonly string _tempDirectory = Path.GetTempPath();
+		private static readonly string _tempFilePrefix = string.Format("PlaneDIsaster-unittest-{0}", Guid.NewGuid());
 		
-		private readonly string _sqlCreateTable = "CREATE TABLE tblTest (id INTEGER PRIMARY KEY, description varchar(255))";
-		private readonly string _sqlDropTable = "DROP TABLE tblTest";
-		private readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@id, @description)";
+		#region SQL Strings
+		
+		//tblTest SQL
+		private static readonly string _sqlCreateTable = "CREATE TABLE tblTest (id INTEGER PRIMARY KEY, description varchar(255))";
+		private static readonly string _sqlDropTable = "DROP TABLE tblTest";
+		private static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@id, @description)";
+		//v_test SQL
+		//TODO: Create a test where views are created selected, dropped etc.
+		private static readonly string _sqlCreateView = "CREATE VIEW v_test SELECT id, description FROM tblTest";
+		private static readonly string _sqlDropView = "DROP VIEW v_test";
+		
+		#endregion SQL Strings
 		
 		/// <summary>
 		/// Creates a JetSQL database, creates a table, inserts some rows,
 		/// deletes some rows, and deletes the database.
 		/// </summary>
 		[Test]
-		public void CreateMdb ()
+		public void TestMdb ()
 		{
 			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+			try {
+				CreateMdb(fileName);
+				
+				OleDba oleDba = new OleDba();
+				oleDba.ConnectMDB(fileName);
+				
+				PopulateOleDba(oleDba);
+				
+				oleDba.ExecuteSqlCommand(_sqlDropTable);
+				
+				oleDba.Disconnect();
+			}
+			finally 
+			{
+				File.Delete(fileName);
+				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+			}
+			
+		}
+		
+		
+		/// <summary>
+		/// Creates a SQLite database, creates a table, inserts some rows,
+		/// deletes some rows, and deletes the database.
+		/// </summary>
+		[Test]
+		public void TestSQLite ()
+		{
+			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".sqlite");
+			try {	
+				CreateSQLite(fileName);
+				
+				SQLiteDba sqliteDba = new SQLiteDba();
+				sqliteDba.Connect(fileName);
+				
+				PopulateSQLite(sqliteDba);
+				
+				sqliteDba.ExecuteSqlCommand(_sqlDropTable);
+				
+				sqliteDba.Disconnect();
+			}
+			finally 
+			{
+				File.Delete(fileName);
+				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+			}
+		}
+		
+		
+		private static void CreateMdb(string fileName) {
+			JetSqlUtil.CreateMDB(fileName);
+			Assert.IsTrue(File.Exists(fileName), "Failed to create " + fileName);
+		}
+		
+		
+		private static void CreateSQLite(string fileName) {
+			SQLiteConnection.CreateFile(fileName);
+			Assert.IsTrue(File.Exists(fileName), "Failed to create " + fileName);
+		}
+		
+		
+		private static void PopulateOleDba(OleDba oleDba) {
 			tblTestRow [] rows = new tblTestRow [] {
 				new tblTestRow(1, "Number one."),
 				new tblTestRow(2, "Number two."),
 				new tblTestRow(3, "Number three.")
 			};
-			
-			JetSqlUtil.CreateMDB(fileName);
-			
-			OleDba oleDba = new OleDba();
-			oleDba.ConnectMDB(fileName);
 			
 			oleDba.ExecuteSqlCommand(_sqlCreateTable);
 			
@@ -84,12 +151,27 @@ namespace UnitTests
 			}
 			string [] columnData = oleDba.GetColumnAsStringArray("tblTest", "description");
 			Assert.AreEqual(columnData.Length, 3, "Inserted 3 rows and retrieved {0}", new object[] {columnData.Length});
+		}
+		
+		
+		private static void PopulateSQLite(SQLiteDba sqliteDba) {
+			tblTestRow [] rows = new tblTestRow [] {
+				new tblTestRow(1, "Number one."),
+				new tblTestRow(2, "Number two."),
+				new tblTestRow(3, "Number three.")
+			};
 			
-			oleDba.ExecuteSqlCommand(_sqlDropTable);
+			sqliteDba.ExecuteSqlCommand(_sqlCreateTable);
 			
-			oleDba.Disconnect();
-			File.Delete(fileName);
-			
+			foreach(tblTestRow row in rows) {
+				DbParameter[] parameters = new DbParameter [] {
+					new SQLiteParameter("@id", row.Id),
+					new SQLiteParameter("@description", row.Description)
+				};
+				sqliteDba.ExecuteSqlCommand(_sqlInsertRow, parameters);
+			}
+			string [] columnData = sqliteDba.GetColumnAsStringArray("tblTest", "description");
+			Assert.AreEqual(columnData.Length, 3, "Inserted 3 rows and retrieved {0}", new object[] {columnData.Length});
 		}
 	}
 }

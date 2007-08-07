@@ -8,8 +8,8 @@ using System.Runtime.InteropServices;
 // change them to the information which is associated with the assembly
 // you compile.
 
-[assembly: AssemblyTitle("Jet2SQLite")]
-[assembly: AssemblyDescription("Utility to convert a JetSQL Database to SQLite.")]
+[assembly: AssemblyTitle("UnitTests")]
+[assembly: AssemblyDescription("Unit tests for the PlaneDisaster.NET suite.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ZippySoft")]
 [assembly: AssemblyProduct("Plane Disaster")]
