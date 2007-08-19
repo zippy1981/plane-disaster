@@ -26,7 +26,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
@@ -46,10 +45,12 @@ namespace PlaneDisaster
 	/// </summary>
 	public sealed partial class MainForm
 	{
-		private PlaneDisasterSettings oPlaneDisasterSettings;
-		private dba dbcon = null;
+		private PlaneDisasterSettings _oPlaneDisasterSettings;
+		private dba _dbcon = null;
 		private string _CSV;
 		private string _InsertStatements;
+		private const int _MinClientHeight = 464;
+		private const int _MinClientWidth = 902;
 		
 		#region Properties
 		
@@ -99,8 +100,8 @@ namespace PlaneDisaster
 			
 			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
 			
-			oPlaneDisasterSettings = PlaneDisasterSettings.GetSection(ConfigurationUserLevel.PerUserRoamingAndLocal);
-			oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+			_oPlaneDisasterSettings = PlaneDisasterSettings.GetSection(ConfigurationUserLevel.PerUserRoamingAndLocal);
+			_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 		}
@@ -125,7 +126,23 @@ namespace PlaneDisaster
 				FileName = dlg.FileName;
 				using (StreamWriter sw = File.CreateText(FileName))
 				{
-					sw.Write(this.CSV);
+					sw.Write(CSV);
+				}
+			}
+		}
+		
+		
+		void CmdSavSqlClick(object sender, EventArgs e)
+		{
+			SaveFileDialog dlg = new SaveFileDialog();
+			string FileName;
+			dlg.Filter = "SQL Scripts (*.sql)|*.sql|All Files|";
+			
+			if(dlg.ShowDialog() == DialogResult.OK ) {
+				FileName = dlg.FileName;
+				using (StreamWriter sw = File.CreateText(FileName))
+				{
+					sw.Write(InsertStatements);
 				}
 			}
 		}
@@ -159,17 +176,6 @@ namespace PlaneDisaster
 		void MainFormResize(object sender, System.EventArgs e) {
 			this.SuspendLayout();
 			
-			//Width
-			this.gridResults.Width = this.Width - 15;
-			this.txtResults.Width = this.Width - 15;
-			this.cmdSQL.Left = this.Width - 45;
-			this.cmdRefresh.Left = this.Width - 45;
-			this.txtSQL.Width = this.Width - 55;
-			
-			// Height
-			// Output display controls
-			this.gridResults.Height = this.ClientSize.Height - 185;
-			this.txtResults.Height = this.ClientSize.Height - 185;
 			// The Labels
 			this.lblColumns.Top = this.ClientSize.Height - 85;
 			this.lblProcedures.Top = this.ClientSize.Height - 85;
@@ -187,6 +193,7 @@ namespace PlaneDisaster
 			// Buttons
 			this.cmdStatus.Top = this.ClientSize.Height - 85;
 			this.cmdSaveCsv.Top = this.ClientSize.Height -60;
+			this.cmdSavSql.Top = this.ClientSize.Height -35;
 			
 			this.ResumeLayout();
 		}
@@ -203,12 +210,12 @@ namespace PlaneDisaster
 				//I dont know what the default action for the columm list should be
 			} else if (lst.Text != ""){
 				try {
-					int RowCount = dbcon.GetTableRowCount(lst.Text);
+					int RowCount = _dbcon.GetTableRowCount(lst.Text);
 					if (RowCount > this.MaxRowDisplayCount) {
 						string Message;
 						string SQL;
 						
-						if (this.dbcon is OdbcDba) {
+						if (this._dbcon is OdbcDba) {
 							SQL = String.Format
 								("SELECT TOP {1} * FROM {0}",
 								 lst.Text, MaxRowDisplayCount);
@@ -219,7 +226,7 @@ namespace PlaneDisaster
 						}
 						Message = String.Format
 							("Row count is {0}. Displaying the first {1} rows.",
-							 dbcon.GetTableRowCount(lst.Text),
+							 _dbcon.GetTableRowCount(lst.Text),
 							 MaxRowDisplayCount);
 						MessageBox.Show(Message, "Too Many Rows!");
 						LoadQueryResults(SQL, lst.Text);
@@ -271,7 +278,7 @@ namespace PlaneDisaster
 		{
 			ListBox lst = (ListBox) sender;
 			try {
-				lstColumns.DataSource = dbcon.GetColumnNames(lst.Text);
+				lstColumns.DataSource = _dbcon.GetColumnNames(lst.Text);
 			}
 			catch (System.Data.OleDb.OleDbException ex) {
 				MessageBox.Show ("OleDbException: " + ex.Message + "\r\nCode: " + ex.ErrorCode);
@@ -334,7 +341,7 @@ namespace PlaneDisaster
 		
 		void menuDatabaseSchema_Click(object sender, System.EventArgs e)
 		{
-			this.gridResults.DataSource = dbcon.GetSchema();
+			this.gridResults.DataSource = _dbcon.GetSchema();
 		}
 		
 		
@@ -342,14 +349,14 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuDropProcedure") {
-				dbcon.DropProcedure('[' + (string) lstProcedures.SelectedItem + ']');
-				lstProcedures.DataSource = dbcon.GetProcedures();
+				_dbcon.DropProcedure('[' + (string) lstProcedures.SelectedItem + ']');
+				lstProcedures.DataSource = _dbcon.GetProcedures();
 			} else if (mnu.Name == "menuDropTable") {
-				dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
-				lstTables.DataSource = dbcon.GetTables();
+				_dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
+				lstTables.DataSource = _dbcon.GetTables();
 			} else if (mnu.Name == "menuDropView") {
-				dbcon.DropView('[' + (string) lstViews.SelectedItem + ']');
-				lstViews.DataSource = dbcon.GetViews();
+				_dbcon.DropView('[' + (string) lstViews.SelectedItem + ']');
+				lstViews.DataSource = _dbcon.GetViews();
 			} else {
 				throw new ArgumentException
 					("sender for menuDrop_Click must be one of " +
@@ -395,7 +402,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+				_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -431,7 +438,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+				_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -483,11 +490,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuProcedureSchema") {
-				gridResults.DataSource = dbcon.GetColumnSchema(lstProcedures.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(lstProcedures.Text);
 			} else if (mnu.Name == "menuTableSchema") {
-				gridResults.DataSource = dbcon.GetColumnSchema(lstTables.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(lstTables.Text);
 			} else if (mnu.Name == "menuViewSchema") {
-				gridResults.DataSource = dbcon.GetColumnSchema(lstViews.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(lstViews.Text);
 			} else {
 				throw new ArgumentException
 					("sender for menu_Click must be one of " +
@@ -500,11 +507,11 @@ namespace PlaneDisaster
 			MenuItem mnu = (MenuItem) sender;
 			
 			if (mnu.Name == "menuScriptProcedure") {
-				Query = dbcon.GetProcedureSQL(lstProcedures.Text);
+				Query = _dbcon.GetProcedureSQL(lstProcedures.Text);
 			} else if (mnu.Name == "menuScriptTable") {
-				Query = ((SQLiteDba)dbcon).GetTableSQL(lstTables.Text);
+				Query = ((SQLiteDba)_dbcon).GetTableSQL(lstTables.Text);
 			} else if (mnu.Name == "menuScriptView") {
-				Query = dbcon.GetViewSQL(lstViews.Text);
+				Query = _dbcon.GetViewSQL(lstViews.Text);
 			}
 		}
 		
@@ -561,8 +568,8 @@ namespace PlaneDisaster
 		private void AddRecentFile (string FileName) {
 			FileName = Path.GetFullPath(FileName);
 			
-			oPlaneDisasterSettings.RecentFiles.Add(FileName);
-			oPlaneDisasterSettings.Save();
+			_oPlaneDisasterSettings.RecentFiles.Add(FileName);
+			_oPlaneDisasterSettings.Save();
 		}
 		
 		
@@ -601,8 +608,8 @@ namespace PlaneDisaster
 			gridResults.DataSource = null;
 			
 			databaseSchemaToolStripMenuItem.Enabled = false;
-			dbcon.Disconnect();
-			dbcon = null;
+			_dbcon.Disconnect();
+			_dbcon = null;
 			Text = "PlaneDisaster.NET";
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			closeToolStripMenuItem.Enabled = false;
@@ -621,9 +628,9 @@ namespace PlaneDisaster
 		/// </remarks>
 		private void DisplayDataSource() {
 			lstColumns.DataSource = null;
-			lstProcedures.DataSource = dbcon.GetProcedures();
-			lstTables.DataSource = dbcon.GetTables();
-			lstViews.DataSource = dbcon.GetViews();
+			lstProcedures.DataSource = _dbcon.GetProcedures();
+			lstTables.DataSource = _dbcon.GetTables();
+			lstViews.DataSource = _dbcon.GetViews();
 			
 			txtResults.Text = "";
 			gridResults.DataSource = null;
@@ -634,7 +641,7 @@ namespace PlaneDisaster
 		
 		
 		private string GetDatabaseStatus() {
-			return dbcon.GetStatus();
+			return _dbcon.GetStatus();
 		}
 		
 		
@@ -645,12 +652,12 @@ namespace PlaneDisaster
 		internal string GetFileName() {
 			DbConnectionStringBuilder ConStr;
 			
-			if (dbcon is OleDba) {
-				ConStr = new OleDbConnectionStringBuilder(((OleDba)dbcon).ConnectionString);
+			if (_dbcon is OleDba) {
+				ConStr = new OleDbConnectionStringBuilder(((OleDba)_dbcon).ConnectionString);
 				//For some reason FileName is blank.
 				return (string)((OleDbConnectionStringBuilder)ConStr)["Dbq"];
-			} else if (dbcon is SQLiteDba) {
-				ConStr = new SQLiteConnectionStringBuilder(((SQLiteDba)dbcon).ConnectionString);
+			} else if (_dbcon is SQLiteDba) {
+				ConStr = new SQLiteConnectionStringBuilder(((SQLiteDba)_dbcon).ConnectionString);
 				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
 			} else { return ""; }
 		}
@@ -663,7 +670,7 @@ namespace PlaneDisaster
 			MenuItem menuShowProcedure, menuShowTable, menuShowView;
 			MenuItem menuTableSchema, menuViewSchema;
 			
-			if (!(dbcon is SQLiteDba)) {	
+			if (!(_dbcon is SQLiteDba)) {	
 				lstProcedures.DoubleClick += new EventHandler(this.lst_DblClick);
 				
 				menuDropProcedure = new MenuItem("Drop");
@@ -700,7 +707,7 @@ namespace PlaneDisaster
 			menuTableSchema.Click += new System.EventHandler(this.menuSchema_Click);
 			menuTableSchema.Name = "menuTableSchema";
 			
-			if (dbcon is SQLiteDba) {
+			if (_dbcon is SQLiteDba) {
 				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuScriptTable, menuTableSchema, menuDropTable});
 			} else {
 				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuTableSchema, menuDropTable});
@@ -766,10 +773,10 @@ namespace PlaneDisaster
 			 * Don't do anything if the query window is empty or we
 			 * are not connected to a database.
 			 */
-			if (SQL == "" || dbcon == null) { return; }
+			if (SQL == "" || _dbcon == null) { return; }
 			
 			try {
-				dt = dbcon.ExecuteScript(SQL);
+				dt = _dbcon.ExecuteScript(SQL);
 				if (TableName != null ) {
 					dt.TableName = TableName;
 				}
@@ -787,10 +794,10 @@ namespace PlaneDisaster
 			System.Data.DataTable dt;
 			
 			//Don't do anything if we are not connected to a database or no table is specified.
-			if (Table == "" || dbcon == null) { return; }
+			if (Table == "" || _dbcon == null) { return; }
 			
 			try {
-				dt = dbcon.GetTableAsDataTable(Table);
+				dt = _dbcon.GetTableAsDataTable(Table);
 			} catch (System.Data.Common.DbException ex) {
 				MessageBox.Show
 					(String.Format("Problem loading table {0}\r\nError Message: {1}", Table, ex.Message));
@@ -833,7 +840,7 @@ namespace PlaneDisaster
 				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
-			oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+			_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 			this.queryToolStripMenuItem.Enabled = true;
@@ -843,10 +850,10 @@ namespace PlaneDisaster
  		internal void OpenMDB (string FileName) {
  			DialogResult Result;
  			
-			this.dbcon = new OleDba();
+			this._dbcon = new OleDba();
 			
 			try {
-				((OleDba) dbcon).ConnectMDB(FileName);
+				((OleDba) _dbcon).ConnectMDB(FileName);
 			} catch (OleDbException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
 				if (ex.ErrorCode == -2147217843) {
@@ -854,7 +861,7 @@ namespace PlaneDisaster
 					Result = GetPassword.ShowDialog("Enter the password for the database");
 					if (Result == DialogResult.OK) {
 						try {
-							((OleDba) dbcon).ConnectMDB(FileName, GetPassword.Input);
+							((OleDba) _dbcon).ConnectMDB(FileName, GetPassword.Input);
 						} catch (OleDbException exSecond) {
 							if (exSecond.ErrorCode == -2147217843) {
 								MessageBox.Show("Incorrect Password");
@@ -879,9 +886,9 @@ namespace PlaneDisaster
 		
 		
 		internal void OpenSQLite (string FileName) {
-			this.dbcon = new SQLiteDba();
+			this._dbcon = new SQLiteDba();
 			
-			((SQLiteDba) dbcon).Connect(FileName);
+			((SQLiteDba) _dbcon).Connect(FileName);
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 			this.DisplayDataSource();
 		}

@@ -42,6 +42,7 @@ namespace PlaneDisaster.Dba
 		private SQLiteConnection _Cn;
 		private string _ConnStr;
 		
+		#region Properties
 		
 		/// <summary>The SQLite Connection string.</summary>
 		protected string ConnStr {
@@ -59,6 +60,24 @@ namespace PlaneDisaster.Dba
 				this._Cn = (SQLiteConnection) value;
 			}
 		}
+		
+		
+		/// <summary>
+		/// Returns false as SQLite does not support procedures.
+		/// </summary>
+		public override bool SupportsProcedures {
+			get { return false; }
+		}
+		
+
+		/// <summary>
+		/// Returns false as SQLite does support views.
+		/// </summary>
+		public override bool SupportsViews {
+			get { return true; }
+		}
+		
+		#endregion Properties
 		
 		
 		/// <summary>

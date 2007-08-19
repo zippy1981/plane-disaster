@@ -40,7 +40,10 @@ namespace PlaneDisaster.Dba
 		private OleDbConnection _Cn;
 		private string _ConnectionString;
 		private string MDB;
+		//private bool _supportsProcedures;
+		//private bool _supportsViews;
 		
+		#region Properties
 		
 		/// <summary>The OleDb database connection</summary>
 		protected override System.Data.Common.DbConnection Cn {
@@ -58,6 +61,53 @@ namespace PlaneDisaster.Dba
 			get { return this._ConnectionString; }
 		}
 		
+		
+		/// <summary>
+		/// Returns true if the connected database provider supports procedures.
+		/// </summary>
+		/// <exception cref="NotImplementedException">
+		/// Thrown for databases whose procedure support is not explicitly known.
+		/// Currently this mean everything but MS Access databases.
+		/// </exception>
+		public override bool SupportsProcedures {
+			get {
+				if (Connected) {
+					if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB")) {
+						string msg = string.Format ("Currently the OleDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
+						throw new NotImplementedException(msg);
+					}
+					return true;
+					//return _supportsProcedures;
+				} else {
+					throw new InvalidOperationException("The value of OleDba.SupportsProcedures depends on the database that it is connected to.");
+				}
+			}
+		}
+		
+
+		/// <summary>
+		/// Returns true if the connected database provider supports views.
+		/// </summary>
+		/// <exception cref="NotImplementedException">
+		/// Thrown for databases whose view support is not explicitly known.
+		/// Currently this mean everything but MS Access databases.
+		/// </exception>
+		public override bool SupportsViews {
+			get {
+				if (Connected) {
+					if (_Cn.Provider != "Microsoft.Jet.OLEDB") {
+						string msg = string.Format ("Currently the OleDba.SupportsViews property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
+						throw new NotImplementedException(msg);
+					}
+					return true;
+					//return _supportsViews;
+				} else {
+					throw new InvalidOperationException("The value of OleDba.SupportsViews depends on the database that it is connected to.");
+				}
+			}
+		}
+		
+		#endregion Properties
 		
 		/// <summary>
 		/// Connect to the previously defined connection string.

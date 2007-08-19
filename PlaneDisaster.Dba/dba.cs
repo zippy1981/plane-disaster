@@ -40,16 +40,26 @@ namespace PlaneDisaster.Dba
 	/// dba stands for database access. This is the data access layer for 
 	/// the PlaneDisaster project.
 	/// </summary>
-	public abstract class dba
+	public abstract class dba : IDisposable
 	{
-		private DbConnection _Cn;
+		private DbConnection _Cn = null;
 		
+		#region Properties
 		
 		/// <summary>
 		/// Returns true if there is an active database connection.
 		/// </summary>
 		public bool Connected {
-			get { return Cn.State == ConnectionState.Open; }
+			get {
+				if (Cn == null)
+				{
+					return false;
+				} 
+				else
+				{
+					return Cn.State == ConnectionState.Open;
+				}
+			}
 		}
 		
 		
@@ -69,6 +79,19 @@ namespace PlaneDisaster.Dba
 			get { return this.Cn.ConnectionString; }
 		}
 		
+		
+		/// <summary>
+		/// Returns true if the underlying database provider supports procedures.
+		/// </summary>
+		public abstract bool SupportsProcedures { get; }
+		
+		
+		/// <summary>
+		/// Returns true if the underlying database provider supports views.
+		/// </summary>
+		public abstract bool SupportsViews { get; }
+		
+		#endregion Properties
 		
 		/// <summary>
 		/// Factory method to create a new DataAdapter of the appropiate type.
@@ -182,6 +205,13 @@ namespace PlaneDisaster.Dba
 			this.Cn.Close();
 		}
 		
+
+		/// <summary>
+		/// Performs disposal.
+		/// </summary>
+		public void Dispose() {
+			Cn.Dispose();
+		}
 		
 		/// <summary>
 		/// Executes the SQL command(s) passed as a string.
@@ -224,7 +254,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
 		/// <param name="paramaters">The parameters to pass to the SQL.</param>
-		public void ExecuteSqlCommand (string SQL, DbParameter [] parameters) {
+		public virtual void ExecuteSqlCommand (string SQL, DbParameter [] parameters) {
 			using (DbCommand cmd = Cn.CreateCommand()) {
 				cmd.CommandText = SQL;
 				cmd.Parameters.AddRange(parameters);

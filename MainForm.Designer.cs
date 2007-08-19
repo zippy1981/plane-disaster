@@ -87,6 +87,7 @@ namespace PlaneDisaster
 			this.lstProcedures = new System.Windows.Forms.ListBox();
 			this.radInsert = new System.Windows.Forms.RadioButton();
 			this.cmdRefresh = new System.Windows.Forms.Button();
+			this.cmdSavSql = new System.Windows.Forms.Button();
 			((System.ComponentModel.ISupportInitialize)(this.gridResults)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -97,15 +98,15 @@ namespace PlaneDisaster
 			this.lstTables.Location = new System.Drawing.Point(336, 400);
 			this.lstTables.Name = "lstTables";
 			this.lstTables.Size = new System.Drawing.Size(160, 52);
-			this.lstTables.TabIndex = 5;
+			this.lstTables.TabIndex = 10;
 			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
 			// radCSV
 			// 
-			this.radCSV.Location = new System.Drawing.Point(681, 404);
+			this.radCSV.Location = new System.Drawing.Point(668, 400);
 			this.radCSV.Name = "radCSV";
-			this.radCSV.Size = new System.Drawing.Size(95, 25);
-			this.radCSV.TabIndex = 8;
+			this.radCSV.Size = new System.Drawing.Size(130, 25);
+			this.radCSV.TabIndex = 14;
 			this.radCSV.TabStop = true;
 			this.radCSV.Text = "Text (CSV)";
 			this.radCSV.CheckedChanged += new System.EventHandler(this.RadCSVCheckedChanged);
@@ -113,19 +114,20 @@ namespace PlaneDisaster
 			// radGrid
 			// 
 			this.radGrid.Checked = true;
-			this.radGrid.Location = new System.Drawing.Point(681, 377);
+			this.radGrid.Location = new System.Drawing.Point(668, 377);
 			this.radGrid.Name = "radGrid";
-			this.radGrid.Size = new System.Drawing.Size(95, 25);
-			this.radGrid.TabIndex = 7;
+			this.radGrid.Size = new System.Drawing.Size(130, 25);
+			this.radGrid.TabIndex = 13;
 			this.radGrid.TabStop = true;
 			this.radGrid.Text = "DataGridView";
 			this.radGrid.CheckedChanged += new System.EventHandler(this.RadGridCheckedChanged);
 			// 
 			// cmdSQL
 			// 
+			this.cmdSQL.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdSQL.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cmdSQL.ForeColor = System.Drawing.Color.Red;
-			this.cmdSQL.Location = new System.Drawing.Point(537, 24);
+			this.cmdSQL.Location = new System.Drawing.Point(855, 29);
 			this.cmdSQL.Name = "cmdSQL";
 			this.cmdSQL.Size = new System.Drawing.Size(35, 35);
 			this.cmdSQL.TabIndex = 2;
@@ -138,50 +140,61 @@ namespace PlaneDisaster
 			this.lstColumns.Location = new System.Drawing.Point(502, 400);
 			this.lstColumns.Name = "lstColumns";
 			this.lstColumns.Size = new System.Drawing.Size(160, 52);
-			this.lstColumns.TabIndex = 6;
+			this.lstColumns.TabIndex = 12;
 			// 
 			// txtSQL
 			// 
-			this.txtSQL.Location = new System.Drawing.Point(4, 24);
+			this.txtSQL.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+									| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSQL.Location = new System.Drawing.Point(4, 29);
 			this.txtSQL.Multiline = true;
 			this.txtSQL.Name = "txtSQL";
 			this.txtSQL.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.txtSQL.Size = new System.Drawing.Size(527, 71);
+			this.txtSQL.Size = new System.Drawing.Size(845, 71);
 			this.txtSQL.TabIndex = 1;
 			// 
 			// txtResults
 			// 
-			this.txtResults.Location = new System.Drawing.Point(4, 96);
+			this.txtResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+									| System.Windows.Forms.AnchorStyles.Left) 
+									| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtResults.Location = new System.Drawing.Point(4, 102);
 			this.txtResults.Multiline = true;
 			this.txtResults.Name = "txtResults";
 			this.txtResults.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.txtResults.Size = new System.Drawing.Size(583, 275);
-			this.txtResults.TabIndex = 3;
+			this.txtResults.Size = new System.Drawing.Size(886, 275);
+			this.txtResults.TabIndex = 4;
 			this.txtResults.Visible = false;
 			// 
 			// cmdStatus
 			// 
-			this.cmdStatus.Location = new System.Drawing.Point(782, 375);
+			this.cmdStatus.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdStatus.Location = new System.Drawing.Point(804, 383);
 			this.cmdStatus.Name = "cmdStatus";
-			this.cmdStatus.Size = new System.Drawing.Size(82, 21);
-			this.cmdStatus.TabIndex = 10;
+			this.cmdStatus.Size = new System.Drawing.Size(86, 21);
+			this.cmdStatus.TabIndex = 16;
 			this.cmdStatus.Text = "&Status";
 			this.cmdStatus.Click += new System.EventHandler(this.CmdStatusClick);
 			// 
 			// gridResults
 			// 
+			this.gridResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+									| System.Windows.Forms.AnchorStyles.Left) 
+									| System.Windows.Forms.AnchorStyles.Right)));
 			this.gridResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.gridResults.Location = new System.Drawing.Point(4, 96);
+			this.gridResults.Location = new System.Drawing.Point(4, 102);
 			this.gridResults.Name = "gridResults";
-			this.gridResults.Size = new System.Drawing.Size(535, 19);
+			this.gridResults.RowTemplate.Height = 24;
+			this.gridResults.Size = new System.Drawing.Size(886, 275);
 			this.gridResults.TabIndex = 3;
 			// 
 			// cmdSaveCsv
 			// 
-			this.cmdSaveCsv.Location = new System.Drawing.Point(782, 402);
+			this.cmdSaveCsv.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdSaveCsv.Location = new System.Drawing.Point(804, 410);
 			this.cmdSaveCsv.Name = "cmdSaveCsv";
-			this.cmdSaveCsv.Size = new System.Drawing.Size(82, 21);
-			this.cmdSaveCsv.TabIndex = 11;
+			this.cmdSaveCsv.Size = new System.Drawing.Size(86, 21);
+			this.cmdSaveCsv.TabIndex = 17;
 			this.cmdSaveCsv.Text = "Save &CSV";
 			this.cmdSaveCsv.Click += new System.EventHandler(this.CmdSaveCsvClick);
 			// 
@@ -194,8 +207,9 @@ namespace PlaneDisaster
 									this.utilitiesToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(876, 26);
-			this.menuStrip1.TabIndex = 13;
+			this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+			this.menuStrip1.Size = new System.Drawing.Size(902, 26);
+			this.menuStrip1.TabIndex = 0;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
 			// fileToolStripMenuItem
@@ -333,7 +347,7 @@ namespace PlaneDisaster
 			this.lstViews.Location = new System.Drawing.Point(4, 400);
 			this.lstViews.Name = "lstViews";
 			this.lstViews.Size = new System.Drawing.Size(160, 52);
-			this.lstViews.TabIndex = 14;
+			this.lstViews.TabIndex = 6;
 			this.lstViews.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
 			// lblViews
@@ -341,7 +355,7 @@ namespace PlaneDisaster
 			this.lblViews.Location = new System.Drawing.Point(4, 379);
 			this.lblViews.Name = "lblViews";
 			this.lblViews.Size = new System.Drawing.Size(100, 19);
-			this.lblViews.TabIndex = 15;
+			this.lblViews.TabIndex = 5;
 			this.lblViews.Text = "Views";
 			// 
 			// lblTables
@@ -349,7 +363,7 @@ namespace PlaneDisaster
 			this.lblTables.Location = new System.Drawing.Point(336, 381);
 			this.lblTables.Name = "lblTables";
 			this.lblTables.Size = new System.Drawing.Size(100, 19);
-			this.lblTables.TabIndex = 16;
+			this.lblTables.TabIndex = 9;
 			this.lblTables.Text = "Tables";
 			// 
 			// lblColumns
@@ -357,7 +371,7 @@ namespace PlaneDisaster
 			this.lblColumns.Location = new System.Drawing.Point(502, 379);
 			this.lblColumns.Name = "lblColumns";
 			this.lblColumns.Size = new System.Drawing.Size(100, 19);
-			this.lblColumns.TabIndex = 17;
+			this.lblColumns.TabIndex = 11;
 			this.lblColumns.Text = "Columns";
 			// 
 			// lblProcedures
@@ -365,7 +379,7 @@ namespace PlaneDisaster
 			this.lblProcedures.Location = new System.Drawing.Point(170, 379);
 			this.lblProcedures.Name = "lblProcedures";
 			this.lblProcedures.Size = new System.Drawing.Size(100, 19);
-			this.lblProcedures.TabIndex = 19;
+			this.lblProcedures.TabIndex = 7;
 			this.lblProcedures.Text = "Procedures";
 			// 
 			// lstProcedures
@@ -374,33 +388,45 @@ namespace PlaneDisaster
 			this.lstProcedures.Location = new System.Drawing.Point(170, 400);
 			this.lstProcedures.Name = "lstProcedures";
 			this.lstProcedures.Size = new System.Drawing.Size(160, 52);
-			this.lstProcedures.TabIndex = 18;
+			this.lstProcedures.TabIndex = 8;
 			// 
 			// radInsert
 			// 
-			this.radInsert.Location = new System.Drawing.Point(681, 431);
+			this.radInsert.Location = new System.Drawing.Point(668, 427);
 			this.radInsert.Name = "radInsert";
-			this.radInsert.Size = new System.Drawing.Size(107, 25);
-			this.radInsert.TabIndex = 9;
+			this.radInsert.Size = new System.Drawing.Size(130, 25);
+			this.radInsert.TabIndex = 15;
 			this.radInsert.TabStop = true;
 			this.radInsert.Text = "Text (INSERTS)";
 			this.radInsert.CheckedChanged += new System.EventHandler(this.RadInsertCheckedChanged);
 			// 
 			// cmdRefresh
 			// 
+			this.cmdRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdRefresh.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cmdRefresh.ForeColor = System.Drawing.Color.Red;
-			this.cmdRefresh.Location = new System.Drawing.Point(537, 60);
+			this.cmdRefresh.Location = new System.Drawing.Point(855, 65);
 			this.cmdRefresh.Name = "cmdRefresh";
 			this.cmdRefresh.Size = new System.Drawing.Size(35, 35);
-			this.cmdRefresh.TabIndex = 20;
+			this.cmdRefresh.TabIndex = 3;
 			this.cmdRefresh.Text = "&R";
 			this.cmdRefresh.Click += new System.EventHandler(this.CmdRefreshClick);
+			// 
+			// cmdSavSql
+			// 
+			this.cmdSavSql.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdSavSql.Location = new System.Drawing.Point(804, 437);
+			this.cmdSavSql.Name = "cmdSavSql";
+			this.cmdSavSql.Size = new System.Drawing.Size(86, 21);
+			this.cmdSavSql.TabIndex = 18;
+			this.cmdSavSql.Text = "Save &SQL";
+			this.cmdSavSql.Click += new System.EventHandler(this.CmdSavSqlClick);
 			// 
 			// MainForm
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.ClientSize = new System.Drawing.Size(876, 464);
+			this.ClientSize = new System.Drawing.Size(902, 464);
+			this.Controls.Add(this.cmdSavSql);
 			this.Controls.Add(this.cmdRefresh);
 			this.Controls.Add(this.radInsert);
 			this.Controls.Add(this.lblProcedures);
@@ -422,7 +448,7 @@ namespace PlaneDisaster
 			this.Controls.Add(this.menuStrip1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MainMenuStrip = this.menuStrip1;
-			this.MinimumSize = new System.Drawing.Size(884, 300);
+			this.MinimumSize = new System.Drawing.Size(910, 300);
 			this.Name = "MainForm";
 			this.Text = "Plane Disaster.NET";
 			this.SizeChanged += new System.EventHandler(this.MainFormResize);
@@ -433,6 +459,7 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.Button cmdSavSql;
 		private System.Windows.Forms.ToolStripMenuItem executeToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem queryToolStripMenuItem;
 		private System.Windows.Forms.Button cmdRefresh;

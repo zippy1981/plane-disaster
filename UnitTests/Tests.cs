@@ -24,17 +24,19 @@
  * Time: 11:43 AM
  */
 
-using NUnit.Framework;
-using PlaneDisaster.Dba;
 using System;
 using System.Data.Common;
 using System.Data.OleDb;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 
+using NUnit.Framework;
+using PlaneDisaster.Dba;
 
 namespace UnitTests
 {
+	//TODO: Refactor This tests class into an abstract base class that gets inherited once per DBA type. 
 	[TestFixture]
 	public sealed class Tests
 	{
@@ -49,7 +51,7 @@ namespace UnitTests
 		}
 			
 		private static readonly string _tempDirectory = Path.GetTempPath();
-		private static readonly string _tempFilePrefix = string.Format("PlaneDIsaster-unittest-{0}", Guid.NewGuid());
+		private static readonly string _tempFilePrefix = string.Format("PlaneDisaster-UnitTest-{0}", Guid.NewGuid());
 		
 		#region SQL Strings
 		
@@ -117,6 +119,33 @@ namespace UnitTests
 			{
 				File.Delete(fileName);
 				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+			}
+		}
+		
+		
+		[Test]
+		public void TestProcedureSupport()
+		{
+			string fileBaseName = Path.Combine(_tempDirectory, _tempFilePrefix);
+			
+			try {
+				CreateMdb(fileBaseName + ".mdb");
+				
+				OleDba oleDba = new OleDba();
+				try {
+					Assert.IsTrue(oleDba.SupportsProcedures);
+					Assert.Fail("OleDba.SupportsProcedures should throw a InvalidOperationException if no database is connected.");
+				}
+				catch(InvalidOperationException) {}
+					
+				oleDba.ConnectMDB(fileBaseName + ".mdb");
+				Assert.IsTrue(oleDba.SupportsProcedures);
+				oleDba.Disconnect();
+			}
+			finally 
+			{
+				File.Delete(fileBaseName + ".mdb");
+				Assert.IsFalse(File.Exists(fileBaseName + ".mdb"), "Failed to delete " + fileBaseName + ".mdb");
 			}
 		}
 		

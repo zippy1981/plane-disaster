@@ -38,7 +38,10 @@ namespace PlaneDisaster.Dba
 	public class OdbcDba : dba
 	{	
 		private OdbcConnection _Cn;
-
+		//private bool _supportsProcedures;
+		//private bool _supportsViews;
+		
+		#region Properties
 		
 		/// <summary>The Odbc database connection</summary>
 		protected override System.Data.Common.DbConnection Cn {
@@ -49,6 +52,54 @@ namespace PlaneDisaster.Dba
 				this._Cn = (OdbcConnection) value;
 			}
 		}
+		
+		
+		/// <summary>
+		/// Returns true if the connected database provider supports procedures.
+		/// </summary>
+		/// <exception cref="NotImplementedException">
+		/// Thrown for databases whose procedure support is not explicitly known.
+		/// Currently this mean everything but MS Access databases.
+		/// </exception>
+		public override bool SupportsProcedures {
+			get {
+				if (Connected) {
+					if (_Cn.Driver != "odbcjt32.dll") {
+						string msg = string.Format ("Currently the OdbcDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Driver);
+						throw new NotImplementedException(msg);
+					}
+					return true;
+					//return _supportsProcedures;
+				} else {
+					throw new InvalidOperationException("The value of OdbcDba.SupportsProcedures depends on the database that it is connected to.");
+				}
+			}
+		}
+		
+
+		/// <summary>
+		/// Returns true if the connected database provider supports views.
+		/// </summary>
+		/// <exception cref="NotImplementedException">
+		/// Thrown for databases whose view support is not explicitly known.
+		/// Currently this mean everything but MS Access databases.
+		/// </exception>
+		public override bool SupportsViews {
+			get {
+				if (Connected) {
+					if (_Cn.Driver != "odbcjt32.dll") {
+						string msg = string.Format ("Currently the OdbcDba.SupportsViews property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Driver);
+						throw new NotImplementedException(msg);
+					}
+					return true;
+					//return _supportsViews;
+				} else {
+					throw new InvalidOperationException("The value of OdbcDba.SupportsViews depends on the database that it is connected to.");
+				}
+			}
+		}
+		
+		#endregion Properties
 
 		/// <summary>
 		/// Connect to the specified DSN
