@@ -1,5 +1,5 @@
 /* 
- * Copyright 2006 Justin Dearing
+ * Copyright 2006-2007 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 

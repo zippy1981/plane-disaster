@@ -1,5 +1,5 @@
 /* 
- * Copyright 2006 Justin Dearing
+ * Copyright 2007 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 
@@ -74,16 +74,19 @@ namespace UnitTests
 		public void TestMdb ()
 		{
 			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+			
 			try {
 				CreateMdb(fileName);
 				
 				OleDba oleDba = new OleDba();
 				oleDba.ConnectMDB(fileName);
-				
 				PopulateOleDba(oleDba);
+				oleDba.Disconnect();
 				
+				CompactAndRepairMdb(fileName);
+				
+				oleDba.ConnectMDB(fileName);
 				oleDba.ExecuteSqlCommand(_sqlDropTable);
-				
 				oleDba.Disconnect();
 			}
 			finally 
@@ -147,6 +150,12 @@ namespace UnitTests
 				File.Delete(fileBaseName + ".mdb");
 				Assert.IsFalse(File.Exists(fileBaseName + ".mdb"), "Failed to delete " + fileBaseName + ".mdb");
 			}
+		}
+		
+		
+		private static void CompactAndRepairMdb(string fileName) {
+			JetSqlUtil.CompactMDB(fileName);
+			JetSqlUtil.RepairMDB(fileName);
 		}
 		
 		

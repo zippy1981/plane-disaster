@@ -1,5 +1,5 @@
 /* 
- * Copyright 2006 Justin Dearing
+ * Copyright 2006-2007 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 
@@ -190,10 +190,6 @@ namespace PlaneDisaster
 			this.radGrid.Top = this.ClientSize.Height -85;
 			this.radCSV.Top = this.ClientSize.Height -65;
 			this.radInsert.Top = this.ClientSize.Height -45;
-			// Buttons
-			this.cmdStatus.Top = this.ClientSize.Height - 85;
-			this.cmdSaveCsv.Top = this.ClientSize.Height -60;
-			this.cmdSavSql.Top = this.ClientSize.Height -35;
 			
 			this.ResumeLayout();
 		}

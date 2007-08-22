@@ -26,11 +26,11 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="nunit.core">
-      <HintPath>..\..\..\..\..\..\Program Files\NUnit 2.4.1\bin\nunit.core.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\SharpDevelop\2.2\bin\Tools\NUnit\nunit.core.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\..\..\..\Program Files\NUnit 2.4.1\bin\nunit.framework.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files\SharpDevelop\2.2\bin\Tools\NUnit\nunit.framework.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />

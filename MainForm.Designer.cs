@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2006 Justin Dearing
+ * Copyright 2006-2007 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 
@@ -168,7 +168,7 @@ namespace PlaneDisaster
 			// 
 			// cmdStatus
 			// 
-			this.cmdStatus.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdStatus.Location = new System.Drawing.Point(804, 383);
 			this.cmdStatus.Name = "cmdStatus";
 			this.cmdStatus.Size = new System.Drawing.Size(86, 21);
@@ -190,7 +190,7 @@ namespace PlaneDisaster
 			// 
 			// cmdSaveCsv
 			// 
-			this.cmdSaveCsv.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdSaveCsv.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdSaveCsv.Location = new System.Drawing.Point(804, 410);
 			this.cmdSaveCsv.Name = "cmdSaveCsv";
 			this.cmdSaveCsv.Size = new System.Drawing.Size(86, 21);
@@ -414,7 +414,7 @@ namespace PlaneDisaster
 			// 
 			// cmdSavSql
 			// 
-			this.cmdSavSql.Anchor = System.Windows.Forms.AnchorStyles.Right;
+			this.cmdSavSql.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdSavSql.Location = new System.Drawing.Point(804, 437);
 			this.cmdSavSql.Name = "cmdSavSql";
 			this.cmdSavSql.Size = new System.Drawing.Size(86, 21);
