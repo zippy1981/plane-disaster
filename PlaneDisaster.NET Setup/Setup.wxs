@@ -8,7 +8,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
 	<Product 
 		Id="01B81090-F2A1-4BAE-91F8-353E84DD3760"
-		Name="PlaneDisaster.NET 0.9.4 RC1" 
+		Name="PlaneDisaster.NET 0.9.4" 
 		Language="1033"
 		Codepage="1252"
 		Version="0.9.4" 
@@ -26,10 +26,10 @@
 			<UpgradeVersion
 				Property="PREVIOUSVERSIONFOUND"
 				IncludeMinimum='yes' Minimum='0.9.0'
-				IncludeMaximum='yes' Maximum='0.9.2' />
+				IncludeMaximum='yes' Maximum='0.9.3' />
 			<UpgradeVersion
 				Property="NEWERVERSIONFOUND"
-				IncludeMinimum='no' Minimum='0.9.3' />
+				IncludeMinimum='no' Minimum='0.9.4' />
 
 		</Upgrade>
 		
@@ -49,7 +49,7 @@
 			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/msinetassemblysupport.asp
 		-->
 		<Condition Message="This setup requires the .NET Framework 2.0 or higher.">
-			Installed OR MsiNetAssemblySupport &gt;= "2.0.40607"
+			Installed OR MsiNetAssemblySupport &gt;= "2.0.50727"
 		</Condition>
 		
 		<!-- 

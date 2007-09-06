@@ -609,7 +609,7 @@ namespace PlaneDisaster
 			Text = "PlaneDisaster.NET";
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			closeToolStripMenuItem.Enabled = false;
-			queryToolStripMenuItem.Enabled = true;
+			queryToolStripMenuItem.Enabled = false;
 			cmdRefresh.Enabled = false;
 		}
 		
@@ -633,6 +633,7 @@ namespace PlaneDisaster
 			
 			databaseSchemaToolStripMenuItem.Enabled = true;
 			this.closeToolStripMenuItem.Enabled = true;
+			queryToolStripMenuItem.Enabled = true;
 			cmdRefresh.Enabled = true;
 		}
 		
