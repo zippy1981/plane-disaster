@@ -189,6 +189,15 @@ Future release plans are outlined below.
 Feel free to create a source forge account and use the feedback
 mechanisms provided.
 </p>
+
+<p>
+The project is browseable on <a href="http://www.koders.com/">koders.com</a>. YOu may search for the project directly via its <a href="http://www.koders.com/info.aspx?c=ProjectInfo&pid=BDQVK39ZFD214VBWEFDAKYQE6C">Project Page</a> or search for search the PlaneDisaster.NET source code below:</p>
+<script type="text/javascript"><!--
+koders_search_format = "vertical";
+koders_search_scope = "BDQVK39ZFD214VBWEFDAKYQE6C";
+//--></script>
+<script type="text/javascript" src="http://www.koders.com/Special/Tools/searchbox.js">
+</script>
 <h2><a name="Feature_Requests">Feature Requests</a></h2>
 <p><a href="http://sourceforge.net/tracker/?group_id=175298&amp;atid=872673"
  class="external text"
@@ -221,40 +230,24 @@ state and declared the release <b>0.9</b>. The 0.9 series will
 continue until I release 1.0. I will probably be releasing version 1.0
 shortly.
 </p>
-<h3> Previous Release (0.9.2) </h3>
-<ul>
-  <li> New Database creation
-    <ul>
-      <li> SQLite
-        <ul>
-          <li> The ability to specify SQLite version 2 or three and to
-specify compression.
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li> Database Utilities
-    <ul>
-      <li> JetSQL
-        <ul>
-          <li> The ability to create and remove linked tables.
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-<h3> Current Release (0.9.3) </h3>
+<h3> Previous Release (0.9.3) </h3>
 <ul>
   <li> I catch an exception for when you attempt to display a table you lack permission to display. An error message is displayed. </li>
   <li> Added Jet2SQLite utility to convert a JetSQL database to SQLite. </li>
 </ul>
-<h3> Upcoming Release (0.9.4) </h3>
+<h3> Current Release (0.9.4) </h3>
 <ul>
-  <li> No work done yet. </li>
+  <li>Reverted changes that severely broke 0.9.3.</li>
+  <li>You can execute the contents of the query window by Hitting F5.</li>
+  <li>When you highlight text in the query window and hit execute, only the 
+hightlighted text will be executed.</li>
+  <li>The form will now render properly under Vista's default theme.</li>
 </ul>
-<h3> Version 1.0 </h3>
+<h3> Upcoming Release (0.9.5) </h3>
+<ul>
+  <li>Jet2SQLite has an icon.</li>
+</ul>
+<h3> Beyond 1.0 </h3>
 <ul>
   <li> Database utilities
     <ul>
@@ -270,6 +263,9 @@ deal with different databases that have different types of objects. For
 example I could make a category for System Tables, Linked tables and
 Notmal tables for JetSQL databases.
       </li>
+      <li>I want to replace the text box that serves as the query editor
+with the text editor component that is part of <a href="http://laputa.sharpdevelop.net/AnnouncingSharpDevelopForApplicationsSDA.aspx">SharpDevelop for Applications (SDA)</a> or perhaps <a href="http://www.scintilla.org/">Scintilla</a> if I can find an appropiate .NET wrapper.
+      </li>
     </ul>
   </li>
 </ul>
@@ -281,6 +277,8 @@ page.
 <ul>
   <li> User Rasha on the SQLite.NET forums showed me how to retrieve
 the DDL of a table in SQLite.NET
+  </li>
+  <li> Dmitri Arkhangelski, author of  <a href="http://ultradefrag.sourceforge.net">UltraDefrag</a> has provided me with valueable feedback that improved the gui resizing code.
   </li>
 </ul>
 <dl>
