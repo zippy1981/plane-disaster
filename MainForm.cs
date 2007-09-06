@@ -610,7 +610,7 @@ namespace PlaneDisaster
 			databaseSchemaToolStripMenuItem.Enabled = false;
 			closeToolStripMenuItem.Enabled = false;
 			queryToolStripMenuItem.Enabled = true;
-			
+			cmdRefresh.Enabled = false;
 		}
 		
 		
@@ -633,6 +633,7 @@ namespace PlaneDisaster
 			
 			databaseSchemaToolStripMenuItem.Enabled = true;
 			this.closeToolStripMenuItem.Enabled = true;
+			cmdRefresh.Enabled = true;
 		}
 		
 		

@@ -31,7 +31,6 @@ using PlaneDisaster.Dba;
 
 namespace UnitTests
 {
-	[TestFixture]
 	public abstract class TestDbaBase
 	{
 		protected struct tblTestRow {
@@ -60,13 +59,10 @@ namespace UnitTests
 		
 		#endregion SQL Strings
 		
-		//[Test]
 		public abstract void TestDbOperations();
 		
-		[Test]
 		public abstract void TestProcedureSupport();
 		
-		[Test]
 		public abstract void TestViewSupport();
 		
 		protected abstract void CreateDb(string fileName);

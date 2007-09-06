@@ -403,6 +403,7 @@ namespace PlaneDisaster
 			// cmdRefresh
 			// 
 			this.cmdRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdRefresh.Enabled = false;
 			this.cmdRefresh.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cmdRefresh.ForeColor = System.Drawing.Color.Red;
 			this.cmdRefresh.Location = new System.Drawing.Point(855, 65);
