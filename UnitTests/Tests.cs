@@ -59,10 +59,6 @@ namespace UnitTests
 		private static readonly string _sqlCreateTable = "CREATE TABLE tblTest (id INTEGER PRIMARY KEY, description varchar(255))";
 		private static readonly string _sqlDropTable = "DROP TABLE tblTest";
 		private static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@id, @description)";
-		//v_test SQL
-		//TODO: Create a test where views are created selected, dropped etc.
-		private static readonly string _sqlCreateView = "CREATE VIEW v_test SELECT id, description FROM tblTest";
-		private static readonly string _sqlDropView = "DROP VIEW v_test";
 		
 		#endregion SQL Strings
 		
@@ -99,6 +95,46 @@ namespace UnitTests
 		
 		
 		/// <summary>
+		/// Creates a MDB database, creates a table, inserts some rows,
+		/// deletes some rows, and deletes the database.
+		/// </summary>
+		[Test]
+		public void TestMdbReadOnly ()
+		{
+			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+			try {	
+				CreateMdb(fileName);
+				
+				OleDba oleDba = new OleDba();
+				oleDba.ConnectMDB(fileName);
+				PopulateOleDba(oleDba);
+				
+				File.SetAttributes(fileName, FileAttributes.ReadOnly);
+				if (File.GetAttributes(fileName) != FileAttributes.ReadOnly) {
+					Assert.Fail("{0} is not readonly.", new object [] {fileName});
+				}
+				
+				try {
+					oleDba.ExecuteSqlCommand(_sqlDropTable);
+				}
+				catch (IOException ex) {
+					string msg = string.Format
+						("The process cannot access the file '{0}' because it is being used by another process.", ex.Message);
+					Assert.AreEqual(msg, ex.Message);
+				}
+				
+				oleDba.Disconnect();
+			}
+			finally 
+			{
+				File.SetAttributes(fileName, FileAttributes.Normal);
+				File.Delete(fileName);
+				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+			}
+		}
+		
+		
+		/// <summary>
 		/// Creates a SQLite database, creates a table, inserts some rows,
 		/// deletes some rows, and deletes the database.
 		/// </summary>
@@ -120,6 +156,47 @@ namespace UnitTests
 			}
 			finally 
 			{
+				File.Delete(fileName);
+				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+			}
+		}
+		
+		
+		/// <summary>
+		/// Creates a SQLite database, creates a table, inserts some rows,
+		/// deletes some rows, and deletes the database.
+		/// </summary>
+		[Test]
+		public void TestSQLiteReadOnly ()
+		{
+			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".sqlite");
+			try {	
+				CreateSQLite(fileName);
+				
+				SQLiteDba sqliteDba = new SQLiteDba();
+				sqliteDba.Connect(fileName);
+				
+				PopulateSQLite(sqliteDba);
+				
+				File.SetAttributes(fileName, FileAttributes.ReadOnly);
+				if (File.GetAttributes(fileName) != FileAttributes.ReadOnly) {
+					Assert.Fail("{0} is not readonly.", new object [] {fileName});
+				}
+				
+				try {
+					sqliteDba.ExecuteSqlCommand(_sqlDropTable);
+				}
+				catch (IOException ex) {
+					string msg = string.Format
+						("The process cannot access the file '{0}' because it is being used by another process.", ex.Message);
+					Assert.AreEqual(msg, ex.Message);
+				}
+				
+				sqliteDba.Disconnect();
+			}
+			finally 
+			{
+				File.SetAttributes(fileName, FileAttributes.Normal);
 				File.Delete(fileName);
 				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
 			}

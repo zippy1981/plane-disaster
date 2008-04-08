@@ -26,12 +26,10 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="nunit.core">
-      <HintPath>..\..\..\..\..\..\Program Files\SharpDevelop\2.2\bin\Tools\NUnit\nunit.core.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files\NUnit 2.4.5\bin\nunit.core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\..\..\..\..\..\Program Files\SharpDevelop\2.2\bin\Tools\NUnit\nunit.framework.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Program Files\NUnit 2.4.5\bin\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -43,6 +41,7 @@
     <Compile Include="TestDbaBase.cs" />
     <Compile Include="TestOdbc.cs" />
     <Compile Include="Tests.cs" />
+    <Compile Include="TestSqlite.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">

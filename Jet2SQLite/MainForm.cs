@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Justin Dearing
+ * Copyright 2006-2008 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 
@@ -58,7 +58,7 @@ namespace PlaneDisaster.Jet2SQLite
 				if (File.Exists(value)) {
 					txtJetSqlFile.Text = value;
 				} else {
-					throw new FileNotFoundException("JetSql filw dows not exist", value);
+					throw new FileNotFoundException("JetSql file dows not exist", value);
 				}
 			}
 		}
@@ -140,7 +140,7 @@ namespace PlaneDisaster.Jet2SQLite
 					}
 				} else if (ex.ErrorCode == -2147467259) {
 					Text = "PlaneDisaster.NET";
-					string Msg = String.Format("File [{0}] not found.", JetSqlFile);
+					string Msg = String.Format("File '{0}' not found.", JetSqlFile);
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
 				} else {

@@ -52,7 +52,6 @@ namespace PlaneDisaster
 		/// </summary>
 		private void InitializeComponent() {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			this.lstTables = new System.Windows.Forms.ListBox();
 			this.radCSV = new System.Windows.Forms.RadioButton();
 			this.radGrid = new System.Windows.Forms.RadioButton();
 			this.cmdSQL = new System.Windows.Forms.Button();
@@ -79,27 +78,14 @@ namespace PlaneDisaster
 			this.compactJetSQLmdbFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.repairDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.databaseSchemaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.lstViews = new System.Windows.Forms.ListBox();
-			this.lblViews = new System.Windows.Forms.Label();
-			this.lblTables = new System.Windows.Forms.Label();
 			this.lblColumns = new System.Windows.Forms.Label();
-			this.lblProcedures = new System.Windows.Forms.Label();
-			this.lstProcedures = new System.Windows.Forms.ListBox();
 			this.radInsert = new System.Windows.Forms.RadioButton();
 			this.cmdRefresh = new System.Windows.Forms.Button();
 			this.cmdSavSql = new System.Windows.Forms.Button();
+			this.treeObjects = new System.Windows.Forms.TreeView();
 			((System.ComponentModel.ISupportInitialize)(this.gridResults)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
-			// 
-			// lstTables
-			// 
-			this.lstTables.ItemHeight = 16;
-			this.lstTables.Location = new System.Drawing.Point(336, 400);
-			this.lstTables.Name = "lstTables";
-			this.lstTables.Size = new System.Drawing.Size(160, 52);
-			this.lstTables.TabIndex = 10;
-			this.lstTables.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
 			// 
 			// radCSV
 			// 
@@ -137,7 +123,7 @@ namespace PlaneDisaster
 			// lstColumns
 			// 
 			this.lstColumns.ItemHeight = 16;
-			this.lstColumns.Location = new System.Drawing.Point(502, 400);
+			this.lstColumns.Location = new System.Drawing.Point(0, 404);
 			this.lstColumns.Name = "lstColumns";
 			this.lstColumns.Size = new System.Drawing.Size(160, 52);
 			this.lstColumns.TabIndex = 12;
@@ -158,11 +144,11 @@ namespace PlaneDisaster
 			this.txtResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 									| System.Windows.Forms.AnchorStyles.Left) 
 									| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtResults.Location = new System.Drawing.Point(4, 102);
+			this.txtResults.Location = new System.Drawing.Point(166, 101);
 			this.txtResults.Multiline = true;
 			this.txtResults.Name = "txtResults";
 			this.txtResults.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.txtResults.Size = new System.Drawing.Size(886, 275);
+			this.txtResults.Size = new System.Drawing.Size(724, 275);
 			this.txtResults.TabIndex = 4;
 			this.txtResults.Visible = false;
 			// 
@@ -182,10 +168,10 @@ namespace PlaneDisaster
 									| System.Windows.Forms.AnchorStyles.Left) 
 									| System.Windows.Forms.AnchorStyles.Right)));
 			this.gridResults.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.gridResults.Location = new System.Drawing.Point(4, 102);
+			this.gridResults.Location = new System.Drawing.Point(232, 101);
 			this.gridResults.Name = "gridResults";
 			this.gridResults.RowTemplate.Height = 24;
-			this.gridResults.Size = new System.Drawing.Size(886, 275);
+			this.gridResults.Size = new System.Drawing.Size(658, 275);
 			this.gridResults.TabIndex = 3;
 			// 
 			// cmdSaveCsv
@@ -341,54 +327,13 @@ namespace PlaneDisaster
 			this.databaseSchemaToolStripMenuItem.Text = "Database &Schema";
 			this.databaseSchemaToolStripMenuItem.Click += new System.EventHandler(this.menuDatabaseSchema_Click);
 			// 
-			// lstViews
-			// 
-			this.lstViews.ItemHeight = 16;
-			this.lstViews.Location = new System.Drawing.Point(4, 400);
-			this.lstViews.Name = "lstViews";
-			this.lstViews.Size = new System.Drawing.Size(160, 52);
-			this.lstViews.TabIndex = 6;
-			this.lstViews.SelectedIndexChanged += new System.EventHandler(this.Lst_SelectedIndexChanged);
-			// 
-			// lblViews
-			// 
-			this.lblViews.Location = new System.Drawing.Point(4, 379);
-			this.lblViews.Name = "lblViews";
-			this.lblViews.Size = new System.Drawing.Size(100, 19);
-			this.lblViews.TabIndex = 5;
-			this.lblViews.Text = "Views";
-			// 
-			// lblTables
-			// 
-			this.lblTables.Location = new System.Drawing.Point(336, 381);
-			this.lblTables.Name = "lblTables";
-			this.lblTables.Size = new System.Drawing.Size(100, 19);
-			this.lblTables.TabIndex = 9;
-			this.lblTables.Text = "Tables";
-			// 
 			// lblColumns
 			// 
-			this.lblColumns.Location = new System.Drawing.Point(502, 379);
+			this.lblColumns.Location = new System.Drawing.Point(0, 383);
 			this.lblColumns.Name = "lblColumns";
 			this.lblColumns.Size = new System.Drawing.Size(100, 19);
 			this.lblColumns.TabIndex = 11;
 			this.lblColumns.Text = "Columns";
-			// 
-			// lblProcedures
-			// 
-			this.lblProcedures.Location = new System.Drawing.Point(170, 379);
-			this.lblProcedures.Name = "lblProcedures";
-			this.lblProcedures.Size = new System.Drawing.Size(100, 19);
-			this.lblProcedures.TabIndex = 7;
-			this.lblProcedures.Text = "Procedures";
-			// 
-			// lstProcedures
-			// 
-			this.lstProcedures.ItemHeight = 16;
-			this.lstProcedures.Location = new System.Drawing.Point(170, 400);
-			this.lstProcedures.Name = "lstProcedures";
-			this.lstProcedures.Size = new System.Drawing.Size(160, 52);
-			this.lstProcedures.TabIndex = 8;
 			// 
 			// radInsert
 			// 
@@ -423,19 +368,23 @@ namespace PlaneDisaster
 			this.cmdSavSql.Text = "Save &SQL";
 			this.cmdSavSql.Click += new System.EventHandler(this.CmdSavSqlClick);
 			// 
+			// treeObjects
+			// 
+			this.treeObjects.Location = new System.Drawing.Point(4, 101);
+			this.treeObjects.Name = "treeObjects";
+			this.treeObjects.Size = new System.Drawing.Size(156, 279);
+			this.treeObjects.TabIndex = 19;
+			this.treeObjects.MouseDown += new System.Windows.Forms.MouseEventHandler(WinFormEventsHelper.TreeViewRightClickSelect);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.ClientSize = new System.Drawing.Size(902, 464);
+			this.Controls.Add(this.treeObjects);
 			this.Controls.Add(this.cmdSavSql);
 			this.Controls.Add(this.cmdRefresh);
 			this.Controls.Add(this.radInsert);
-			this.Controls.Add(this.lblProcedures);
-			this.Controls.Add(this.lstProcedures);
 			this.Controls.Add(this.lblColumns);
-			this.Controls.Add(this.lblTables);
-			this.Controls.Add(this.lblViews);
-			this.Controls.Add(this.lstViews);
 			this.Controls.Add(this.cmdSaveCsv);
 			this.Controls.Add(this.radGrid);
 			this.Controls.Add(this.radCSV);
@@ -443,7 +392,6 @@ namespace PlaneDisaster
 			this.Controls.Add(this.txtResults);
 			this.Controls.Add(this.lstColumns);
 			this.Controls.Add(this.txtSQL);
-			this.Controls.Add(this.lstTables);
 			this.Controls.Add(this.cmdStatus);
 			this.Controls.Add(this.gridResults);
 			this.Controls.Add(this.menuStrip1);
@@ -460,6 +408,7 @@ namespace PlaneDisaster
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.TreeView treeObjects;
 		private System.Windows.Forms.Button cmdSavSql;
 		private System.Windows.Forms.ToolStripMenuItem executeToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem queryToolStripMenuItem;
@@ -468,13 +417,8 @@ namespace PlaneDisaster
 		private System.Windows.Forms.RadioButton radCSV;
 		private System.Windows.Forms.ToolStripMenuItem openRecentToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
-		private System.Windows.Forms.ListBox lstProcedures;
-		private System.Windows.Forms.Label lblProcedures;
 		private System.Windows.Forms.Label lblColumns;
-		private System.Windows.Forms.Label lblTables;
-		private System.Windows.Forms.Label lblViews;
 		private System.Windows.Forms.ToolStripMenuItem databaseSchemaToolStripMenuItem;
-		private System.Windows.Forms.ListBox lstViews;
 		private System.Windows.Forms.ToolStripMenuItem repairDatabaseToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem microsoftAccessJetSQLToolStripMenuItem;
@@ -496,7 +440,6 @@ namespace PlaneDisaster
 		private System.Windows.Forms.ListBox lstColumns;
 		private System.Windows.Forms.Button cmdSQL;
 		private System.Windows.Forms.RadioButton radGrid;
-		private System.Windows.Forms.ListBox lstTables;
 		#endregion
 	}
 }

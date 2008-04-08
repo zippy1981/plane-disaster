@@ -229,7 +229,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Table">The Name of the table</param>
 		/// <returns>The column names as an array of strings.</returns>
 		public override string [] GetColumnNames (string Table) {
-			DataTable dt = new DataTable();
+			DataTable dt;
 			int numCols;
 			string [] Tables;
 			
@@ -241,18 +241,21 @@ namespace PlaneDisaster.Dba
 			}
 			
 			return Tables;
-		}
-		
-		
-		/// <summary>
-		/// Gets a list of procedures in the database.
-		/// </summary>
-		/// <returns>
-		/// A list of procedure names as an array of strings.
-		/// </returns>
-		public override string [] GetProcedures() {
-			return null;
-		}
+        }
+
+
+        /// <summary>
+        /// Returns all rows in a table in a 
+        /// <code>System.DataGridView</code>.
+        /// </summary>
+        /// <param name="Table">The name of the table</param>
+        /// <returns>A DataGridView containing the result set.</returns>
+        public override DataTable GetTableAsDataTable(string Table)
+        {
+            return GetSqlAsDataTable(
+                String.Format("SELECT * FROM [{0}]", Table)
+            );
+        }
 		
 		
 		/// <summary>

@@ -26,10 +26,9 @@
 
 using NUnit.Framework;
 using System;
-using System.Data.Common;
 using System.Data.Odbc;
-using System.Diagnostics;
 using System.IO;
+
 using PlaneDisaster.Dba;
 
 namespace UnitTests

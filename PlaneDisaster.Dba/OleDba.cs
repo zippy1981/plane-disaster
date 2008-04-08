@@ -28,7 +28,6 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
-using System.Text;
 
 namespace PlaneDisaster.Dba
 {
@@ -40,25 +39,23 @@ namespace PlaneDisaster.Dba
 		private OleDbConnection _Cn;
 		private string _ConnectionString;
 		private string MDB;
-		//private bool _supportsProcedures;
-		//private bool _supportsViews;
 		
 		#region Properties
 		
 		/// <summary>The OleDb database connection</summary>
-		protected override System.Data.Common.DbConnection Cn {
+		protected override DbConnection Cn {
 			get {
-				return (DbConnection)this._Cn;
+				return _Cn;
 			}
 			set {
-				this._Cn = (OleDbConnection) value;
+				_Cn = (OleDbConnection) value;
 			}
 		}
 		
 		
 		/// <summary>The OleDb Connection string</summary>
 		public new string ConnectionString {
-			get { return this._ConnectionString; }
+			get { return _ConnectionString; }
 		}
 		
 		
@@ -95,12 +92,12 @@ namespace PlaneDisaster.Dba
 		public override bool SupportsViews {
 			get {
 				if (Connected) {
-					if (_Cn.Provider != "Microsoft.Jet.OLEDB") {
+
+					if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB")) {
 						string msg = string.Format ("Currently the OleDba.SupportsViews property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
 						throw new NotImplementedException(msg);
 					}
 					return true;
-					//return _supportsViews;
 				} else {
 					throw new InvalidOperationException("The value of OleDba.SupportsViews depends on the database that it is connected to.");
 				}
@@ -113,7 +110,7 @@ namespace PlaneDisaster.Dba
 		/// Connect to the previously defined connection string.
 		/// </summary>
 		public void Connect (){
-			this.Cn = new OleDbConnection(ConnectionString);
+			Cn = new OleDbConnection(ConnectionString);
 			Cn.Open();
 		}
 		
@@ -121,10 +118,10 @@ namespace PlaneDisaster.Dba
 		/// <summary>
 		/// Connect to the specified DSN
 		/// </summary>
-		/// <param name="ConnStr">DSN to connect to.</param>
+        /// <param name="ConnectionString">DSN to connect to.</param>
 		public void ConnectDSN(string ConnectionString) {
-			this._ConnectionString = ConnectionString;
-			this.Connect();
+			_ConnectionString = ConnectionString;
+			Connect();
 		}
 		
 
@@ -134,7 +131,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB() {
 			_ConnectionString = String.Format
 				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};User Id=admin;Password=;", MDB);
-			this.Connect();
+			Connect();
 		}
 		
 
@@ -144,7 +141,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="File">MDB file to connect to.</param>
 		public void ConnectMDB(string File) {
 			MDB = File;
-			this.ConnectMDB();
+			ConnectMDB();
 		}
 		
 		
@@ -159,7 +156,7 @@ namespace PlaneDisaster.Dba
 			MDB = File;
 			_ConnectionString = String.Format
 					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", MDB, Password);
-			this.Connect();
+			Connect();
 		}
 		
 		
@@ -177,17 +174,16 @@ namespace PlaneDisaster.Dba
 		/// <param name="Table">The Name of the table</param>
 		/// <returns>The column names as an array of strings.</returns>
 		public override string [] GetColumnNames (string Table) {
-			DataTable dt = new DataTable();
-			int numCols;
-			string [] Tables;
-			
-			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable(OleDbSchemaGuid.Columns, new object [] {null, null, Table, null});
-			numCols = dt.Rows.Count;
-			Tables = new string[numCols];
-			for (int i = 0; i < numCols; i++) {
-				Tables[i] = (string) dt.Rows[i][3];
-			}
-			return Tables;
+            using (DataTable dt = ((OleDbConnection)Cn).GetOleDbSchemaTable(OleDbSchemaGuid.Columns, new object[] { null, null, Table, null }))
+            {
+                int numCols = dt.Rows.Count;
+                string [] Tables = new string[numCols];
+                for (int i = 0; i < numCols; i++)
+                {
+                    Tables[i] = (string) dt.Rows[i][3];
+                }
+                return Tables;
+            }
 		}
 		
 		
@@ -198,11 +194,10 @@ namespace PlaneDisaster.Dba
 		/// The source of the given procedure.
 		/// </returns>
 		public override string GetProcedureSQL(string Procedure) {
-			DataTable dt;
-			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
-				(System.Data.OleDb.OleDbSchemaGuid.Procedures, 
-				 new object[] {null, null, Procedure, null});
-			return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
+            using (DataTable dt = ((OleDbConnection)Cn).GetOleDbSchemaTable(OleDbSchemaGuid.Procedures, new object[] { null, null, Procedure, null }))
+            {
+                return (string) dt.Rows[0]["PROCEDURE_DEFINITION"];
+            }
 		}
 		
 		
@@ -214,13 +209,16 @@ namespace PlaneDisaster.Dba
 		/// <returns>A DataGridView containing the result set.</returns>
 		public override DataTable GetTableAsDataTable (string TableName) {
 			DataTable ret = new DataTable();
-			OleDbCommand cmd = (OleDbCommand)this.Cn.CreateCommand();
-			cmd.CommandType = CommandType.TableDirect;
-			cmd.CommandText = TableName;
-			OleDbDataAdapter da = new OleDbDataAdapter(cmd);
-			da.Fill(ret);
-			ret.TableName = TableName;
-			return ret;
+            using (OleDbCommand cmd = (OleDbCommand)Cn.CreateCommand())
+            {
+                cmd.CommandType = CommandType.TableDirect;
+                cmd.CommandText = TableName;
+                OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+                da.Fill(ret);
+                da.Dispose();
+                ret.TableName = TableName;
+                return ret;
+            }
 		}
 		
 		
@@ -238,18 +236,16 @@ namespace PlaneDisaster.Dba
 		/// </returns>
 		public override string [] GetTables() {
 			int numCols;
-			int i = 0;
 			string [] Tables;
-			DataTable dt = null;
-			
-			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
+			DataTable dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
 				(OleDbSchemaGuid.Tables,
 				 new Object[] {null, null, null, "TABLE"});
 			numCols = dt.Rows.Count;
 			Tables = new string[numCols];
-			for (i = 0; i < numCols; i++) {
+			for (int i = 0; i < numCols; i++) {
 				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
 			}
+            dt.Dispose();
 			return Tables;
 		}
 		
@@ -261,11 +257,14 @@ namespace PlaneDisaster.Dba
 		/// The source of the given view.
 		/// </returns>
 		public override string GetViewSQL(string View) {
-			DataTable dt;
+		    string ret;
+            DataTable dt;
 			dt = ((OleDbConnection)Cn).GetOleDbSchemaTable
-				(System.Data.OleDb.OleDbSchemaGuid.Views, 
+				(OleDbSchemaGuid.Views, 
 				 new object[] {null, null, View});
-			return (string) dt.Rows[0]["VIEW_DEFINITION"];
+			ret = (string) dt.Rows[0]["VIEW_DEFINITION"];
+            dt.Dispose();
+		    return ret;
 		}
 	}
 }

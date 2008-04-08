@@ -45,26 +45,25 @@ namespace PlaneDisaster
 	/// </summary>
 	public sealed partial class MainForm
 	{
-		private PlaneDisasterSettings _oPlaneDisasterSettings;
+		private PlaneDisasterSettings _planeDisasterSettings;
 		private dba _dbcon = null;
+		ContextMenu ctxProcedure, ctxTable, ctxView;
 		private string _CSV;
 		private string _InsertStatements;
-		private const int _MinClientHeight = 464;
-		private const int _MinClientWidth = 902;
 		
 		#region Properties
 		
 		/// <summary>The Results of the query in CSV format.</summary>
 		private string CSV {
-			get { return this._CSV; }
-			set { this._CSV = value; }
+			get { return _CSV; }
+			set { _CSV = value; }
 		}
 		
 		
 		/// <summary>The Results of the query in InsertStatements format.</summary>
 		private string InsertStatements {
-			get { return this._InsertStatements; }
-			set { this._InsertStatements = value; }
+			get { return _InsertStatements; }
+			set { _InsertStatements = value; }
 		}
 		
 		
@@ -80,8 +79,8 @@ namespace PlaneDisaster
 		
 		/// <summary>The contents of the Query Text Area.</summary>
 		internal string Query {
-			get { return this.txtSQL.Text; }
-			set { this.txtSQL.Text = value; }
+			get { return txtSQL.Text; }
+			set { txtSQL.Text = value; }
 		}
 		
 		#endregion
@@ -93,15 +92,10 @@ namespace PlaneDisaster
 		{
 			InitializeComponent();
 			
-			/* ListBox Right Click event handlers */
-			lstProcedures.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
-			lstTables.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
-			lstViews.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
+			gridResults.DataError += this.EvtDataGridError;
 			
-			gridResults.DataError += new DataGridViewDataErrorEventHandler(this.EvtDataGridError);
-			
-			_oPlaneDisasterSettings = PlaneDisasterSettings.GetSection(ConfigurationUserLevel.PerUserRoamingAndLocal);
-			_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+			_planeDisasterSettings = PlaneDisasterSettings.GetSection(ConfigurationUserLevel.PerUserRoamingAndLocal);
+			_planeDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 		}
@@ -178,14 +172,8 @@ namespace PlaneDisaster
 			
 			// The Labels
 			this.lblColumns.Top = this.ClientSize.Height - 85;
-			this.lblProcedures.Top = this.ClientSize.Height - 85;
-			this.lblTables.Top = this.ClientSize.Height - 85;
-			this.lblViews.Top = this.ClientSize.Height - 85;
 			// The List boxes
 			this.lstColumns.Top = this.ClientSize.Height - 65;
-			this.lstProcedures.Top = this.ClientSize.Height - 65;
-			this.lstTables.Top = this.ClientSize.Height - 65;
-			this.lstViews.Top = this.ClientSize.Height - 65;
 			// Radio Buttons
 			this.radGrid.Top = this.ClientSize.Height -85;
 			this.radCSV.Top = this.ClientSize.Height -65;
@@ -199,73 +187,54 @@ namespace PlaneDisaster
 		
 		#region ListBox Events
 		
-		void lst_DblClick(object sender, EventArgs  e) {
-			ListBox lst = (ListBox) sender;
-			
-			if (lst.Name == "lstColumns") {
-				//I dont know what the default action for the columm list should be
-			} else if (lst.Text != ""){
-				try {
-					int RowCount = _dbcon.GetTableRowCount(lst.Text);
-					if (RowCount > this.MaxRowDisplayCount) {
-						string Message;
-						string SQL;
-						
-						if (this._dbcon is OdbcDba) {
-							SQL = String.Format
-								("SELECT TOP {1} * FROM {0}",
-								 lst.Text, MaxRowDisplayCount);
-						} else {
-							SQL = String.Format
-								("SELECT * FROM {0} LIMIT {1}",
-								 lst.Text, MaxRowDisplayCount);
-						}
-						Message = String.Format
-							("Row count is {0}. Displaying the first {1} rows.",
-							 _dbcon.GetTableRowCount(lst.Text),
-							 MaxRowDisplayCount);
-						MessageBox.Show(Message, "Too Many Rows!");
-						LoadQueryResults(SQL, lst.Text);
+		private void DisplayTable(string tableName) {
+			try {
+				long RowCount = _dbcon.GetTableRowCount(tableName);
+				if (RowCount > this.MaxRowDisplayCount) {
+					string Message;
+					string SQL;
+					
+					if (this._dbcon is OdbcDba) {
+						SQL = String.Format
+							("SELECT TOP {1} * FROM {0}",
+							 tableName, MaxRowDisplayCount);
 					} else {
-						LoadTableResults(lst.Text);
+						SQL = String.Format
+							("SELECT * FROM {0} LIMIT {1}",
+							 tableName, MaxRowDisplayCount);
 					}
-				} catch (DbException ex) {
-					switch (ex.ErrorCode) {
-						case -2147217865:
-							MessageBox.Show(ex.Message, "Query Error");
-							break;
-						case -2147217904:
-							MessageBox.Show
-								(String.Format
-								 ("Query {0} requires parameters. Please execute it with parameters via the SQL prompt.",
-								  lst.Text));
-							break;
-						case -2147217911:
-							MessageBox.Show(ex.Message, "Permission Error");
-							break;
-						default:
-							throw ex;
-					}
+					Message = String.Format
+						("Row count is {0}. Displaying the first {1} rows.",
+						 _dbcon.GetTableRowCount(tableName),
+						 MaxRowDisplayCount);
+					MessageBox.Show(Message, "Too Many Rows!");
+					LoadQueryResults(SQL, tableName);
+				} else {
+					LoadTableResults(tableName);
 				}
 			}
-		}
-		
-		
-		/// <summary>
-		/// If you want to be able to select an item in your listbox via right click,
-		/// add this function as an event handler to the listbox's mousedown event.
-		/// </summary>
-		/// <param name="sender">The listbox being right clicked.</param>
-		/// <param name="e">The MouseEventArgs object.</param>
-		void Lst_RightClickSelect(object sender, MouseEventArgs  e) {
-			if (e.Button == MouseButtons.Right) {
-				ListBox lst = (ListBox) sender;
-				int Index = lst.IndexFromPoint(e.X, e.Y);
-				
-				if (Index >= 0 && Index < lst.Items.Count) {
-					lst.SelectedIndex = Index;
+			catch (DbException ex)
+			{
+				switch (ex.ErrorCode) {
+					case -2147467259:
+						string msg = string.Format("Connection error viewing database object {0}. Its possible that {0} is a reference to a database object in a remote database.", tableName);
+						MessageBox.Show(msg);
+						break;
+					case -2147217865:
+						MessageBox.Show(ex.Message, "Query Error");
+						break;
+					case -2147217904:
+						MessageBox.Show
+							(string.Format
+							 ("Query {0} requires parameters. Please execute it with parameters via the SQL prompt.",
+							  tableName));
+						break;
+					case -2147217911:
+						MessageBox.Show(ex.Message, "Permission Error");
+						break;
+					default:
+						throw ex;
 				}
-				lst.Refresh();
 			}
 		}
 		
@@ -343,21 +312,21 @@ namespace PlaneDisaster
 		
 		void menuDrop_Click (object sender, System.EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
+			// TODO: Figure out how to select the node from the menu.
+			TreeNode node = treeObjects.SelectedNode;
 			
 			if (mnu.Name == "menuDropProcedure") {
-				_dbcon.DropProcedure('[' + (string) lstProcedures.SelectedItem + ']');
-				lstProcedures.DataSource = _dbcon.GetProcedures();
+				_dbcon.DropProcedure('[' + node.Text + ']');
 			} else if (mnu.Name == "menuDropTable") {
-				_dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
-				lstTables.DataSource = _dbcon.GetTables();
+				_dbcon.DropTable('[' + node.Text + ']');
 			} else if (mnu.Name == "menuDropView") {
-				_dbcon.DropView('[' + (string) lstViews.SelectedItem + ']');
-				lstViews.DataSource = _dbcon.GetViews();
+				_dbcon.DropView('[' + node.Text + ']');
 			} else {
 				throw new ArgumentException
 					("sender for menuDrop_Click must be one of " +
 					 "menuProcedures, menuTables, or menuViews.");
 			}
+			treeObjects.SelectedNode.Remove();
 		}
 
 		
@@ -398,7 +367,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+				_planeDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -434,7 +403,7 @@ namespace PlaneDisaster
 						break;
 				}
 				AddRecentFile(dlg.FileName);
-				_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+				_planeDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 					(openRecentToolStripMenuItem,
 					 menuOpenRecent_Click);
 				InitContextMenues();
@@ -444,10 +413,26 @@ namespace PlaneDisaster
 		
 		
 		void menuOpenRecent_Click (object sender, System.EventArgs e) {
-			string FileName = Path.GetFullPath(((ToolStripItem)sender).Text);
+			ToolStripItem menuItem = (ToolStripItem)sender;
+			string fileName = Path.GetFullPath(menuItem.Text);
 			
-			OpenDatabaseFile(FileName);
-			InitContextMenues();
+			if (File.Exists(fileName))
+			{
+				OpenDatabaseFile(fileName);
+				InitContextMenues();
+			}
+			else
+			{
+				menuItem.Owner.Items.Remove(menuItem);
+				menuItem.Dispose();
+				
+				_planeDisasterSettings.RecentFiles.Remove(fileName);
+				_planeDisasterSettings.Save();
+				
+				string msg = 
+					string.Format("File {0} no longer exists. Removing from Open Recent list.", fileName);
+				MessageBox.Show(msg);
+			}
 		}
 
 
@@ -484,46 +469,58 @@ namespace PlaneDisaster
 		
 		void menuSchema_Click (object sender, System.EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
+			// TODO: Figure out how to select the node from the menu.
+			TreeNode node = treeObjects.SelectedNode;
 			
 			if (mnu.Name == "menuProcedureSchema") {
-				gridResults.DataSource = _dbcon.GetColumnSchema(lstProcedures.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(node.Text);
 			} else if (mnu.Name == "menuTableSchema") {
-				gridResults.DataSource = _dbcon.GetColumnSchema(lstTables.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(node.Text);
 			} else if (mnu.Name == "menuViewSchema") {
-				gridResults.DataSource = _dbcon.GetColumnSchema(lstViews.Text);
+				gridResults.DataSource = _dbcon.GetColumnSchema(node.Text);
 			} else {
 				throw new ArgumentException
 					("sender for menu_Click must be one of " +
-					 "menuProcedures, menuTables, or menuViews.");
+					 "menuProcedureSchema, menuTableSchema, or menuViewSchema.");
 			}
 		}
 		
 		
 		void menuScript_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
+			MenuItem mnu = (MenuItem)sender;
+			// TODO: Figure out how to select the node from the menu.
+			TreeNode node = treeObjects.SelectedNode;
 			
 			if (mnu.Name == "menuScriptProcedure") {
-				Query = _dbcon.GetProcedureSQL(lstProcedures.Text);
+				Query = _dbcon.GetProcedureSQL(node.Text);
 			} else if (mnu.Name == "menuScriptTable") {
-				Query = ((SQLiteDba)_dbcon).GetTableSQL(lstTables.Text);
+				Query = ((SQLiteDba)_dbcon).GetTableSQL(node.Text);
 			} else if (mnu.Name == "menuScriptView") {
-				Query = _dbcon.GetViewSQL(lstViews.Text);
+				Query = _dbcon.GetViewSQL(node.Text);
 			}
 		}
 		
 		
 		void menuShow_Click (object sender, EventArgs e) {
 			MenuItem mnu = (MenuItem) sender;
+			TreeNode treeNode = treeObjects.SelectedNode;
 			
-			if (mnu.Name == "menuShowProcedure") {
-				lst_DblClick(lstProcedures, e);
-			} else if (mnu.Name == "menuShowTable") {
-				lst_DblClick(lstTables, e);
-			} else if (mnu.Name == "menuShowView") {
-				lst_DblClick(lstViews, e);
-			} else {
+			if (mnu.Name == "menuShowProcedure")
+			{
+				DisplayTable(treeNode.Text);
+			}
+			else if (mnu.Name == "menuShowTable")
+			{
+				DisplayTable(treeNode.Text);
+			}
+			else if (mnu.Name == "menuShowView")
+			{
+				DisplayTable(treeNode.Text);
+			}
+			else
+			{
 				throw new ArgumentException
-					("sender for menuShow_Click must be one of " +
+					("Sender for menuShow_Click must be one of " +
 					 "menuProcedures, menuTables, or menuViews.");
 			}
 		}
@@ -564,13 +561,8 @@ namespace PlaneDisaster
 		private void AddRecentFile (string FileName) {
 			FileName = Path.GetFullPath(FileName);
 			
-			_oPlaneDisasterSettings.RecentFiles.Add(FileName);
-			_oPlaneDisasterSettings.Save();
-		}
-		
-		
-		private void ClearRecentFileMenu() {
-			openRecentToolStripMenuItem.DropDownItems.Clear();
+			_planeDisasterSettings.RecentFiles.Add(FileName);
+			_planeDisasterSettings.Save();
 		}
 		
 		
@@ -579,15 +571,6 @@ namespace PlaneDisaster
 		/// </summary>
 		internal void DisconnectDataSource() {
 			
-			/* ListBox Double Click event handlers */
-			lstColumns.DoubleClick -= lst_DblClick;
-			lstProcedures.DoubleClick -= this.lst_DblClick;
-			lstTables.DoubleClick -= lst_DblClick;
-			lstViews.DoubleClick -= lst_DblClick;
-			
-			lstProcedures.DataSource = null;
-			lstTables.DataSource = null;
-			lstViews.DataSource = null;
 			/*
 			 * We must clear this last otherwise, events firing from
 			 * the first three might repopulate this.
@@ -595,9 +578,6 @@ namespace PlaneDisaster
 			lstColumns.DataSource = null;
 			
 			lstColumns.ContextMenu = null;
-			lstProcedures.ContextMenu = null;
-			lstTables.ContextMenu = null;
-			lstViews.ContextMenu = null;
 			
 			txtResults.Text = "";
 			CSV = "";
@@ -624,9 +604,6 @@ namespace PlaneDisaster
 		/// </remarks>
 		private void DisplayDataSource() {
 			lstColumns.DataSource = null;
-			lstProcedures.DataSource = _dbcon.GetProcedures();
-			lstTables.DataSource = _dbcon.GetTables();
-			lstViews.DataSource = _dbcon.GetViews();
 			
 			txtResults.Text = "";
 			gridResults.DataSource = null;
@@ -661,33 +638,25 @@ namespace PlaneDisaster
 		}
 		
 		
-		internal void InitContextMenues () {
-			ContextMenu ctxProcedure, ctxTable, ctxView;
+		private void InitContextMenues () {
 			MenuItem menuDropProcedure, menuDropTable, menuDropView;
 			MenuItem menuScriptProcedure, menuScriptTable, menuScriptView;
 			MenuItem menuShowProcedure, menuShowTable, menuShowView;
 			MenuItem menuTableSchema, menuViewSchema;
 			
-			if (!(_dbcon is SQLiteDba)) {	
-				lstProcedures.DoubleClick += new EventHandler(this.lst_DblClick);
-				
-				menuDropProcedure = new MenuItem("Drop");
-				menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
-				menuDropProcedure.Name = "menuDropProcedure";
-				
-				menuScriptProcedure = new MenuItem("Script");
-				menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
-				menuScriptProcedure.Name = "menuScriptProcedure";
-				
-				menuShowProcedure = new MenuItem("Show");
-				menuShowProcedure.Click += new EventHandler(menuShow_Click);
-				menuShowProcedure.Name = "menuShowProcedure";
-				
-				ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
-				this.lstProcedures.ContextMenu = ctxProcedure;
-			}
+			menuDropProcedure = new MenuItem("Drop");
+			menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
+			menuDropProcedure.Name = "menuDropProcedure";
 			
-			lstTables.DoubleClick += new EventHandler(this.lst_DblClick);
+			menuScriptProcedure = new MenuItem("Script");
+			menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
+			menuScriptProcedure.Name = "menuScriptProcedure";
+			
+			menuShowProcedure = new MenuItem("Show");
+			menuShowProcedure.Click += new EventHandler(menuShow_Click);
+			menuShowProcedure.Name = "menuShowProcedure";
+			
+			ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
 			
 			menuDropTable = new MenuItem("Drop");
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
@@ -710,9 +679,6 @@ namespace PlaneDisaster
 			} else {
 				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuTableSchema, menuDropTable});
 			}
-			this.lstTables.ContextMenu = ctxTable;
-			
-			lstViews.DoubleClick += new EventHandler(this.lst_DblClick);
 			
 			menuDropView = new MenuItem("Drop");
 			menuDropView.Click += new System.EventHandler(menuDrop_Click);
@@ -731,7 +697,46 @@ namespace PlaneDisaster
 			menuViewSchema.Name = "menuViewSchema";
 
 			ctxView = new ContextMenu(new MenuItem[] {menuShowView, menuViewSchema, menuScriptView, menuDropView});
-			this.lstViews.ContextMenu = ctxView;
+			InitDbObjTree();
+		}
+		
+		
+		internal void InitDbObjTree()
+		{
+			if (!this._dbcon.Connected) {
+				return;
+			}
+			
+			TreeNode [] nodes = new TreeNode [] {
+				new TreeNode("Tables"),
+				new TreeNode("Views"),
+				new TreeNode("Procedures")
+			};
+			
+			nodes[0].Name = "Tables";
+			nodes[1].Name = "Views";
+			nodes[2].Name = "Procedures";
+			
+			treeObjects.Nodes.Clear();
+			treeObjects.Nodes.AddRange(nodes);
+			foreach (string tableName in _dbcon.GetTables())
+			{
+				TreeNode node = new TreeNode(tableName);
+				node.ContextMenu = this.ctxTable;
+				treeObjects.Nodes["Tables"].Nodes.Add(node);
+			}
+			foreach (string viewName in _dbcon.GetViews())
+			{
+				TreeNode node = new TreeNode(viewName);
+				node.ContextMenu = this.ctxView;
+				treeObjects.Nodes["Views"].Nodes.Add(node);
+			}
+			foreach (string procedureName in _dbcon.GetProcedures())
+			{
+				TreeNode node = new TreeNode(procedureName);
+				node.ContextMenu = this.ctxProcedure;
+				treeObjects.Nodes["Procedures"].Nodes.Add(node);
+			}
 		}
 		
 		
@@ -838,7 +843,7 @@ namespace PlaneDisaster
 				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
-			_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
+			_planeDisasterSettings.RecentFiles.GenerateOpenRecentMenu
 				(openRecentToolStripMenuItem,
 				 menuOpenRecent_Click);
 			this.queryToolStripMenuItem.Enabled = true;
@@ -871,7 +876,7 @@ namespace PlaneDisaster
 					}
 				} else if (ex.ErrorCode == -2147467259) {
 					Text = "PlaneDisaster.NET";
-					string Msg = String.Format("File [{0}] not found.", FileName);
+					string Msg = String.Format("File '{0}' not found.", FileName);
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
 				} else {

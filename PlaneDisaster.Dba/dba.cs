@@ -26,7 +26,6 @@
 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -66,17 +65,17 @@ namespace PlaneDisaster.Dba
 		/// <summary>The ADO.NET database connection</summary>
 		protected virtual DbConnection Cn {
 			get {
-				return this._Cn;
+				return _Cn;
 			}
 			set {
-				this._Cn = value;
+				_Cn = value;
 			}
 		}
 		
 		
 		/// <summary>The Database Connection string</summary>
 		public string ConnectionString {
-			get { return this.Cn.ConnectionString; }
+			get { return Cn.ConnectionString; }
 		}
 		
 		
@@ -108,7 +107,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Name">The name to give to the procedure.</param>
 		/// <param name="SQL">The SQL statement that generates the PROCEDURE.</param>
 		public void CreateProcedure(string Name, string SQL) {
-			this.CreateProcedure(Name, SQL, true);
+			CreateProcedure(Name, SQL, true);
 		}
 		
 		
@@ -141,7 +140,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Name">The name to give to the view.</param>
 		/// <param name="SQL">The SQL statement that generates the VIEW.</param>
 		public void CreateView(string Name, string SQL) {
-			this.CreateView(Name, SQL, true);
+			CreateView(Name, SQL, true);
 		}
 		
 		
@@ -202,7 +201,7 @@ namespace PlaneDisaster.Dba
 		
 		/// <summary>Disconnect from the database.</summary>
 		public void Disconnect () {
-			this.Cn.Close();
+			Cn.Close();
 		}
 		
 
@@ -232,7 +231,7 @@ namespace PlaneDisaster.Dba
 				}
 			}
 			cmd.Dispose();
-			ret = this.GetSqlAsDataTable(Statements[Statements.Length - 1]);
+			ret = GetSqlAsDataTable(Statements[Statements.Length - 1]);
 			return ret;
 		}
 		
@@ -253,7 +252,7 @@ namespace PlaneDisaster.Dba
 		/// Executes the SQL command passed as a string.
 		/// </summary>
 		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
-		/// <param name="paramaters">The parameters to pass to the SQL.</param>
+        /// <param name="parameters">The parameters to pass to the SQL.</param>
 		public virtual void ExecuteSqlCommand (string SQL, DbParameter [] parameters) {
 			using (DbCommand cmd = Cn.CreateCommand()) {
 				cmd.CommandText = SQL;
@@ -271,7 +270,7 @@ namespace PlaneDisaster.Dba
 		/// </param>
 		/// <returns>A dataset generated from the last SQL command in the script.</returns>
 		public DataTable ExecuteSqlFile(string Script) {
-			return this.ExecuteScript(System.IO.File.ReadAllText(Script));
+			return ExecuteScript(System.IO.File.ReadAllText(Script));
 		}
 		
 		
@@ -283,27 +282,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Distinct">Set to true to only return unique values.</param>
 		/// <returns>The contents of the column as a string of arrays.</returns>
 		public virtual string [] GetColumnAsStringArray (string Table, string Col, bool Distinct) {
-			string SQL;
-			DbCommand cmd;
-			DbDataReader rdr;
-			ArrayList Rows = new ArrayList();
-			
-			using (cmd = Cn.CreateCommand()) {
-				Rows = new ArrayList();
-				
-				SQL = Distinct ?
-					string.Format("SELECT DISTINCT [{1}] FROM [{0}]", Table, Col) :
-					string.Format("SELECT [{1}] FROM [{0}]", Table, Col);
-				cmd.CommandText = SQL;
-				rdr = cmd.ExecuteReader();
-				
-				while (rdr.Read()) {
-					Rows.Add(rdr[Col].ToString());
-				}
-				rdr.Close();
-				rdr.Dispose();
-			}
-			return (string []) Rows.ToArray(typeof(System.String));
+		    return GetColumnAsStringArray(GetTableAsDataTable(Table), Col, Distinct);
 		}
 		
 		
@@ -314,7 +293,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Col">The name of the column.</param>
 		/// <returns>The contents of the column as a string of arrays.</returns>
 		public string [] GetColumnAsStringArray (string Table, string Col) {
-			return this.GetColumnAsStringArray(Table, Col, false);
+			return GetColumnAsStringArray(Table, Col, false);
 		}
 		 
 		 	
@@ -346,11 +325,15 @@ namespace PlaneDisaster.Dba
 		/// A list of Procedures names as an array of strings.
 		/// </returns>
 		public virtual string [] GetProcedures() {
+			if (!SupportsProcedures) {
+				return new string [0];
+			}
+			
 			int numCols;
-			int i = 0;
+			int i;
 			string [] Tables;
 			
-			DataTable dt = null;			
+			DataTable dt;
 
 			dt = Cn.GetSchema("procedures");
 			numCols = dt.Rows.Count;
@@ -408,7 +391,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="SQL">The SQL statement to execute.</param>
 		/// <returns>A string containing a CSV</returns>
 		public string GetSQLAsCSV (string SQL) {
-			return this.GetSQLAsCSV(SQL, ",");
+			return GetSQLAsCSV(SQL, ",");
 		}
 		
 		
@@ -479,17 +462,15 @@ namespace PlaneDisaster.Dba
 		/// <param name="SQL">The SQL Statement</param>
 		/// <returns>A DataGridView containing the result set.</returns>
 		public virtual DataTable GetSqlAsDataTable(string SQL) {
-			DbCommand cmd;
-			DataSet ds = new DataSet();
-			DataAdapter da;
-			
-			using (cmd = Cn.CreateCommand()) {
-				cmd.CommandText = SQL;
-				da = this.CreateDataAdapter(cmd);
+			using(DataSet ds = new DataSet())
+            using (DbCommand cmd = Cn.CreateCommand())
+            using (DataAdapter da = CreateDataAdapter(cmd))
+            {
+                cmd.CommandText = SQL;
 				da.Fill(ds);
+
+                return (ds.Tables.Count == 0) ? null : ds.Tables[0];
 			}
-			
-			return (ds.Tables.Count == 0) ? null : ds.Tables[0];
 		}
 		
 		
@@ -501,7 +482,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="TableName">The title of the DataTable</param>
 		/// <returns>A DaTatable containing the result set.</returns>
 		public DataTable GetSqlAsDataTable(string SQL, string TableName) {
-			DataTable ret = this.GetSqlAsDataTable(SQL);
+			DataTable ret = GetSqlAsDataTable(SQL);
 			ret.TableName = TableName;
 			return ret;
 		}
@@ -526,7 +507,7 @@ namespace PlaneDisaster.Dba
 			using (cmd = Cn.CreateCommand()) {
 				cmd.CommandText = SQL;
 				cmd.Parameters.AddRange(Parameters);
-				da = this.CreateDataAdapter(cmd);
+				da = CreateDataAdapter(cmd);
 				da.Fill(ds);
 			}
 			
@@ -559,7 +540,7 @@ namespace PlaneDisaster.Dba
 		/// <param name="Table">The name of the table</param>
 		/// <returns>A string containing a CSV</returns>
 		public string GetTableAsCSV (string Table) {
-			return this.GetSQLAsCSV("SELECT * FROM " + Table);
+			return GetSQLAsCSV("SELECT * FROM " + Table);
 		}
 		
 		
@@ -570,41 +551,50 @@ namespace PlaneDisaster.Dba
 		/// <param name="Table">The name of the table</param>
 		/// <returns>A DataGridView containing the result set.</returns>
 		public virtual DataTable GetTableAsDataTable (string Table) {
-			return this.GetSqlAsDataTable(
-				String.Format("SELECT * FROM [{0}]", Table)
-			);
+            using (DataSet ds = new DataSet())
+            using (DbCommand cmd = Cn.CreateCommand())
+            using (DataAdapter da = CreateDataAdapter(cmd))
+            {
+                cmd.CommandText = Table;
+                cmd.CommandType = CommandType.TableDirect;
+                da.Fill(ds);
+
+                return (ds.Tables.Count == 0) ? null : ds.Tables[0];
+            }
 		}
 		
 		
 		/// <summary>
-		/// Retrieves the number of rows in a table.
-		/// </summary>
-		/// <param name="Table">The name of the table.</param>
-		/// <returns>The number of tables of an integer.</returns>
-		public virtual int GetTableRowCount(String Table) {
-			IDbCommand cmd;
-			IDataReader rdr;
-			int ret;
-			using (cmd = Cn.CreateCommand()) {
-				cmd.CommandText = 
-					String.Format("SELECT COUNT(*) FROM [{0}]", Table);
-				rdr = cmd.ExecuteReader();
-				rdr.Read();
-				try {
-					ret = (int) rdr[0];
-				} 
-				/* 
-				 * The previous works with access databases, but trips an 
-				 * InvalidCastException in SQLite databases. Its probably that whole, 
-				 * "Lets make a loosley typed database." mentality of Dr. Hib.
-				 */
-				catch (InvalidCastException) {
-					ret = int.Parse(rdr[0].ToString());
-				}
-				rdr.Close();
-			}
-			return ret;
-		}
+        /// Retrieves the number of rows in a table.
+        /// </summary>
+        /// <param name="Table">The name of the table.</param>
+        /// <returns>The number of rows in the table as an integer.</returns>
+        public long GetTableRowCount(string Table)
+        {
+            using (IDbCommand cmd = Cn.CreateCommand())
+            {
+                object ret;
+                cmd.CommandText = string.Format("SELECT COUNT(*) FROM {0}", Table);
+                ret = cmd.ExecuteScalar();
+                if (ret is int)
+                {
+                	return (long)(int)ret;
+                }
+                else if (ret is long)
+                {
+                	return (long)ret;
+                }
+                else
+                {
+                	try { return (long)ret; }
+                	catch (InvalidCastException ex)
+                	{
+                		string msg = "There was an InvalidCastException in dba.GetTableRowCount(). See InnerException for details.";
+                		throw new InvalidCastException(msg, ex);
+                	}
+                }
+            }
+        }
 		
 
 		/// <summary>
@@ -614,18 +604,21 @@ namespace PlaneDisaster.Dba
 		/// A list of table names as an array of strings.
 		/// </returns>
 		public virtual string [] GetTables() {
-			int RowCount;
-			int i = 0;
 			string [] Tables;
-			DataTable dt = null;
 			
-			dt = Cn.GetSchema("tables");
-			RowCount = dt.Rows.Count;
-			Tables = new string[RowCount];
-			for (i = 0; i < RowCount; i++) {
-				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
-			}
-			return Tables;
+			using (DataTable dt = Cn.GetSchema("tables"))
+		    {
+                int RowCount;
+                int i;
+
+		        RowCount = dt.Rows.Count;
+		        Tables = new string[RowCount];
+		        for (i = 0; i < RowCount; i++)
+		        {
+		            Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+		        }
+            }
+            return Tables;
 		}
 		
 		
@@ -636,20 +629,25 @@ namespace PlaneDisaster.Dba
 		/// A list of views names as an array of strings.
 		/// </returns>
 		public string [] GetViews() {
-			int numCols;
-			int i = 0;
-			string [] Tables;
-			
-			DataTable dt = null;			
-
-			dt = Cn.GetSchema("views");
-			numCols = dt.Rows.Count;
-			Tables = new string[numCols];
-			for (i = 0; i < numCols; i++) {
-				Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+			if (!SupportsViews) {
+				return new string [0];
 			}
+			string [] Tables;
 
-			return Tables;
+            using (DataTable dt = Cn.GetSchema("views"))
+            {
+                int numCols;
+                int i;
+
+                numCols = dt.Rows.Count;
+                Tables = new string[numCols];
+                for (i = 0; i < numCols; i++)
+                {
+                    Tables[i] = (string) dt.Rows[i]["TABLE_NAME"];
+                }
+            }
+
+		    return Tables;
 		}
 		
 		
@@ -660,10 +658,10 @@ namespace PlaneDisaster.Dba
 		/// The source of the given view.
 		/// </returns>
 		public virtual string GetViewSQL(string View) {
-			DataTable dt;
-			dt = Cn.GetSchema
-				("Views", new string[] {null, null, View});
-			return (string) dt.Rows[0]["VIEW_DEFINITION"];
+            using (DataTable dt = Cn.GetSchema ("Views", new string[] { null, null, View }))
+            {
+                return (string) dt.Rows[0]["VIEW_DEFINITION"];
+            }
 		}
 	
 	
@@ -676,7 +674,7 @@ namespace PlaneDisaster.Dba
 		/// A string containing an XML serialized data tablr.
 		/// </returns>
 		public string SerializeQuery (string SQL) {
-			return this.GetSqlAsDataTable(SQL).DataSet.GetXml();
+			return GetSqlAsDataTable(SQL).DataSet.GetXml();
 		}
 		
 		
@@ -689,7 +687,7 @@ namespace PlaneDisaster.Dba
 		/// The name of the file to write the xml to.
 		/// </param>
 		public void SerializeQuery (string SQL, string File) {
-			this.GetSqlAsDataTable(SQL).DataSet.WriteXml(File, XmlWriteMode.WriteSchema);
+			GetSqlAsDataTable(SQL).DataSet.WriteXml(File, XmlWriteMode.WriteSchema);
 		}
 		
 		
@@ -704,8 +702,7 @@ namespace PlaneDisaster.Dba
 		/// The table as an XML serialized datatable.
 		/// </returns>
 		public string SerializeTable (string Table) {
-		 	string SQL = "SELECT * FROM " + Table;
-		 	return this.SerializeQuery(SQL);
+            return GetTableAsDataTable(Table).DataSet.GetXml();
 		}
 
 		
@@ -718,13 +715,17 @@ namespace PlaneDisaster.Dba
 		/// </param>
 		/// <param name="File"></param>
 		public void SerializeTable (string Table, string File) {
-			string SQL = "SELECT * FROM " + Table;
-		 	this.SerializeQuery(SQL, File);
+            GetTableAsDataTable(Table).DataSet.WriteXml(File, XmlWriteMode.WriteSchema);
 		}
 		
 		#region Private Members
 		
-		private string [] SqlScript2Statements (string Script) {
+        /// <summary>
+        /// Splits a sql script seperated by semi colons into individual SQL statements.
+        /// </summary>
+        /// <param name="Script">The script of sql statements.</param>
+        /// <returns>An array of sql statements.</returns>
+		private static string [] SqlScript2Statements (string Script) {
 			//TODO: write a parser that can handle semi colons inside of quotes.
 			Script = Script.TrimEnd(';');
 			return Script.Split(';');
@@ -733,22 +734,6 @@ namespace PlaneDisaster.Dba
 		#endregion
 		
 		#region Static Members
-		
-		
-		/// <summary>
-		/// Prints out an exception in a messagee box.
-		/// This is my catchall for dealing with exceptions.
-		/// </summary>
-		/// <param name="e">The Exception I am dealing with.</param>
-		/*
-		protected static void DbaException (DbException e) {
-			string Title;
-		
-			Title = String.Format("DBA Exception (HRESULT: {0})", e.ErrorCode);
-			System.Windows.Forms.MessageBox.Show
-				(e.ToString() , Title);
-		}
-		*/
 		
 		
 		/// <summary>
@@ -852,11 +837,11 @@ namespace PlaneDisaster.Dba
 		/// <param name="Column">The name of the column.</param>
 		/// <returns>The contents of the column as a string of arrays</returns>
 		public static string [] GetColumnAsStringArray (DataTable Table, string Column) {
-			ArrayList Rows = new ArrayList();
+            List<string> Rows = new List<string>();
 			foreach(DataRow Row in Table.Rows) {
 				Rows.Add(Row[Column].ToString());
 			}
-			return (string []) Rows.ToArray(typeof(System.String));
+			return Rows.ToArray();
 		}
 		
 		

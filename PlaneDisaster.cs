@@ -53,10 +53,10 @@ namespace PlaneDisaster
 				string FileName = args[0];
 				if (File.Exists(FileName)) {
 					frm.OpenDatabaseFile(FileName);
-					frm.InitContextMenues();
+					frm.InitDbObjTree();
 				} else if (Directory.Exists(Path.GetDirectoryName(FileName))) {
 					frm.NewDatabaseFile(FileName);
-					frm.InitContextMenues();
+					frm.InitDbObjTree();
 				} else {
 					MessageBox.Show(String.Format("File {0} is not a real file.", FileName));
 				}

@@ -24,7 +24,6 @@
  * Time: 3:55 PM
  */
 
-using NUnit.Framework;
 using System;
 using System.IO;
 using PlaneDisaster.Dba;

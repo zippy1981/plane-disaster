@@ -35,10 +35,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
-  <Import Project="$(SharpDevelopBinPath)\SharpDevelop.Build.CSharp.targets" />
   <ItemGroup>
-    <Reference Include="nunit.core" />
-    <Reference Include="nunit.framework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite">
@@ -55,4 +52,5 @@
     <Compile Include="OleDba.cs" />
     <Compile Include="SQLiteDba.cs" />
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

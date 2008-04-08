@@ -67,7 +67,9 @@
     <Compile Include="Configuration\RecentFilesCollection.cs" />
     <None Include="Changelog.txt" />
     <None Include="README.txt" />
-    <Compile Include="ConnectionStringDialog.cs" />
+    <Compile Include="ConnectionStringDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ConnectionStringDialog.Designer.cs">
       <DependentUpon>ConnectionStringDialog.cs</DependentUpon>
     </Compile>
@@ -76,25 +78,29 @@
     </EmbeddedResource>
     <Compile Include="PlaneDisaster.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
-    <Compile Include="MainForm.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <Compile Include="InputDialog.cs" />
+    <Compile Include="InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WinFormEventsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl.txt" />
     <Content Include="PlaneDisaster.NET.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Configuration" />
     <ProjectReference Include="PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">
       <Project>{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}</Project>
       <Name>PlaneDisaster.Dba</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(SharpDevelopBinPath)\SharpDevelop.Build.CSharp.targets" />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
