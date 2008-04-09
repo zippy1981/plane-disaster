@@ -8,10 +8,10 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
 	<Product 
 		Id="01B81090-F2A1-4BAE-91F8-353E84DD3760"
-		Name="PlaneDisaster.NET 0.9.4" 
+		Name="PlaneDisaster.NET 0.9.5 preAlpha 1" 
 		Language="1033"
 		Codepage="1252"
-		Version="0.9.4" 
+		Version="0.9.4.1" 
 		UpgradeCode="AC7AACE6-D31E-4039-883C-3DC11D707B04"
 		Manufacturer="ZippySoft">
 			
@@ -26,10 +26,10 @@
 			<UpgradeVersion
 				Property="PREVIOUSVERSIONFOUND"
 				IncludeMinimum='yes' Minimum='0.9.0'
-				IncludeMaximum='yes' Maximum='0.9.3' />
+				IncludeMaximum='yes' Maximum='0.9.4' />
 			<UpgradeVersion
 				Property="NEWERVERSIONFOUND"
-				IncludeMinimum='no' Minimum='0.9.4' />
+				IncludeMinimum='no' Minimum='0.9.4.1' />
 
 		</Upgrade>
 		
