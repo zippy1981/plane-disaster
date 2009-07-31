@@ -41,7 +41,6 @@
     <Compile Include="TestDbaBase.cs" />
     <Compile Include="TestOdbc.cs" />
     <Compile Include="Tests.cs" />
-    <Compile Include="TestSqlite.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">
