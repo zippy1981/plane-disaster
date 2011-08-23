@@ -1,0 +1,23 @@
+Thumbs.db
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+_ReSharper.*
+*.sln.cache
+*.xap
+*.vspcc
+*.vscc 
+*.vssscc
+desktop.ini
+#VIM stuff
+*.swp
+*~
+#Microsoft Access
+*.laccdb
+*.ldb
+#Microsoft Word
+~$*.doc
+#NUnit stuff
+TestResult.xml
+*.VisualState.xml
