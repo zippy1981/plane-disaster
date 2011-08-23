@@ -353,11 +353,11 @@ namespace PlaneDisaster
 						OpenMDB(dlg.FileName);
 						break;
 					case 2:
-						JetSqlUtil.CreateMDBv3(dlg.FileName);
+						JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access95);
 						OpenMDB(dlg.FileName);
 						break;
 					case 3:
-						JetSqlUtil.CreateMDBv4(dlg.FileName);
+						JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access2000);
 						OpenMDB(dlg.FileName);
 						break;
 					case 4:

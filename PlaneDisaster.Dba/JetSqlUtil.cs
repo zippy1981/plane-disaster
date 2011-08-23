@@ -27,17 +27,18 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace PlaneDisaster.Dba
 {
-	/// <summary>
+    /// <summary>
 	/// JetSQL is the "code name" for the sql engine behind access.
 	/// It's auctually built into windows. Microsoft Access is just a fancy
 	/// front end.
 	/// </summary>
 	public class JetSqlUtil
 	{
-		internal enum ODBC_Constants : int {
+		private enum ODBC_Constants : int {
     		ODBC_ADD_DSN = 1,
     		ODBC_CONFIG_DSN,
     		ODBC_REMOVE_DSN,
@@ -46,10 +47,23 @@ namespace PlaneDisaster.Dba
     		ODBC_REMOVE_SYS_DSN,
     		ODBC_REMOVE_DEFAULT_DSN,
 		}
+        
+        private enum SQL_RETURN_CODE : int
+        {
+            SQL_ERROR = -1,
+            SQL_INVALID_HANDLE = -2,
+            SQL_SUCCESS = 0,
+            SQL_SUCCESS_WITH_INFO = 1,
+            SQL_STILL_EXECUTING = 2,
+            SQL_NEED_DATA = 99,
+            SQL_NO_DATA = 100
+        }
 		
 		[DllImport("ODBCCP32.DLL",CharSet=CharSet.Unicode, SetLastError=true)]
-		internal static extern int SQLConfigDataSource (int hwndParent, ODBC_Constants fRequest, string lpszDriver, string lpszAttributes);
-		
+		private static extern int SQLConfigDataSource (int hwndParent, ODBC_Constants fRequest, string lpszDriver, string lpszAttributes);
+
+        [DllImport("odbccp32", CharSet = CharSet.Auto)]
+        private static extern SQL_RETURN_CODE SQLInstallerError(int iError, ref int pfErrorCode, StringBuilder lpszErrorMsg, int cbErrorMsgMax, ref int pcbErrorMsg);
 		
 		/// <summary>
 		/// Compacts an access database
@@ -66,70 +80,47 @@ namespace PlaneDisaster.Dba
 				throw new ApplicationException("Cannot compact database: " + FileName);
 			}
 		}
-		
-		
-		/// <summary>
-		/// Creates an access database. If the filename specified exists it is 
-		/// overwritten.
-		/// </summary>
-		/// <param name="FileName">The name of the databse to create.</param>
-		public static void CreateMDB (string FileName) {
-			int retCode;
-			if (File.Exists(FileName)) {
-				File.Delete(FileName);
+
+
+        /// <summary>
+        /// Creates an Access 2003 database. If the filename specified exists it is 
+        /// overwritten.
+        /// </summary>
+        /// <param name="fileName">The name of the databse to create.</param>
+        /// <param name="version">The version of the database to create.</param>
+        public static void CreateMDB (string fileName, AccessDbVersion version = AccessDbVersion.Access2003) {
+			;
+			if (File.Exists(fileName)) {
+				File.Delete(fileName);
 			}
-			string Attributes = 
-				String.Format("CREATE_DB=\"{0}\" General\0", FileName);
-			retCode = SQLConfigDataSource
-				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				"Microsoft Access Driver (*.mdb)", Attributes);
-			if (retCode == 0) {
-				throw new ApplicationException("Cannot create file: " + FileName);
-			}
-		}
-		
-		
-		/// <summary>
-		/// Creates an Access 95 database. If the filename specified exists it is 
-		/// overwritten.
-		/// </summary>
-		/// <param name="FileName">The name of the databse to create.</param>
-		public static void CreateMDBv3 (string FileName) {
-			int retCode;
-			if (File.Exists(FileName)) {
-				File.Delete(FileName);
-			}
-			string Attributes = 
-				String.Format("CREATE_DBV3=\"{0}\" General\0", FileName);
-			retCode = SQLConfigDataSource
-				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				"Microsoft Access Driver (*.mdb)", Attributes);
-			if (retCode == 0) {
-				throw new ApplicationException("Cannot create file: " + FileName);
-			}
-		}
-		
-		
-		/// <summary>
-		/// Creates an Access 2000 database. If the filename specified exists it is 
-		/// overwritten.
-		/// </summary>
-		/// <param name="FileName">The name of the databse to create.</param>
-		public static void CreateMDBv4 (string FileName) {
-			int retCode;
-			if (File.Exists(FileName)) {
-				File.Delete(FileName);
-			}
-			string Attributes = 
-				String.Format("CREATE_DBV4=\"{0}\" General\0", FileName);
-			retCode = SQLConfigDataSource
-				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				"Microsoft Access Driver (*.mdb)", Attributes);
-			if (retCode == 0) {
-				throw new ApplicationException("Cannot create file: " + FileName);
+
+            string command = "";
+            switch (version)
+            {
+                case AccessDbVersion.Access95:
+                    command = "CREATE_DBV3";
+                    break;
+                case AccessDbVersion.Access2000:
+                    command = "CREATE_DBV4";
+                    break;
+                case AccessDbVersion.Access2003:
+                    command = "CREATE_DB";
+                    break;
+            }
+
+			string Attributes = String.Format("{0}=\"{1}\" General\0", command, fileName);
+            int retCode = SQLConfigDataSource 
+                (0, ODBC_Constants.ODBC_ADD_DSN,
+                 "Microsoft Access Driver (*.mdb)", Attributes);
+			if (retCode == 0)
+			{
+			    int errorCode = 0 ;
+                int  resizeErrorMesg = 0 ;
+			    var sbError = new StringBuilder(512);
+			    SQLInstallerError(1, ref errorCode, sbError, sbError.MaxCapacity, ref resizeErrorMesg);
+				throw new ApplicationException(string.Format("Cannot create file: {0}. Error: {1}", fileName, sbError));
 			}
 		}
-		
 		
 		
 		/// <summary>
