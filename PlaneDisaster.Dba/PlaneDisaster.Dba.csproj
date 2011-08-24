@@ -62,8 +62,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.core" />
-    <Reference Include="nunit.framework" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SQLite">
@@ -73,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessDbVersion.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="dba.cs" />
     <Compile Include="JetSqlUtil.cs" />
