@@ -86,9 +86,8 @@ namespace UnitTests
 
                 JetSqlUtil.CompactMDB(fileName);
 
-                oleDba = new OleDba();
-                oleDba.ConnectMDB(fileName);
-                PopulateOleDba(oleDba);
+                oleDba.ConnectMDB();
+                oleDba.ExecuteSqlCommand(_sqlDropTable);
                 oleDba.Disconnect();
             }
             finally
@@ -156,7 +155,7 @@ namespace UnitTests
 
                 CompactAndRepairMdb(fileName);
 
-                oleDba.ConnectMDB(fileName);
+                oleDba.ConnectMDB();
                 oleDba.ExecuteSqlCommand(_sqlDropTable);
                 oleDba.Disconnect();
             }
@@ -190,12 +189,11 @@ namespace UnitTests
                 oleDba.ConnectMDB(fileName);
                 PopulateOleDba(oleDba);
                 oleDba.Disconnect();
-                
+
                 JetSqlUtil.RepairMDB(fileName);
 
-                oleDba = new OleDba();
-                oleDba.ConnectMDB(fileName);
-                PopulateOleDba(oleDba);
+                oleDba.ConnectMDB();
+                oleDba.ExecuteSqlCommand(_sqlDropTable);
                 oleDba.Disconnect();
             }
             finally

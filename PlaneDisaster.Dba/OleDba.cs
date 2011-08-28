@@ -73,7 +73,7 @@ namespace PlaneDisaster.Dba
 		public override bool SupportsProcedures {
 			get {
 				if (Connected) {
-                    if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB") && !Regex.IsMatch(_Cn.Provider, "Microsoft Office [0-9]+\\.[0-9] Access Database Engine OLE DB Provider"))
+                    if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB") && !_Cn.Provider.StartsWith("Microsoft Jet") && !Regex.IsMatch(_Cn.Provider, "Microsoft Office [0-9]+\\.[0-9] Access Database Engine OLE DB Provider"))
                     {
 						string msg = string.Format ("Currently the OleDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
 						throw new NotImplementedException(msg);
