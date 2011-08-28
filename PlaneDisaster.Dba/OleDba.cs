@@ -29,6 +29,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PlaneDisaster.Dba
 {
@@ -72,12 +73,12 @@ namespace PlaneDisaster.Dba
 		public override bool SupportsProcedures {
 			get {
 				if (Connected) {
-					if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB")) {
+                    if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB") && !Regex.IsMatch(_Cn.Provider, "Microsoft Office [0-9]+\\.[0-9] Access Database Engine OLE DB Provider"))
+                    {
 						string msg = string.Format ("Currently the OleDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
 						throw new NotImplementedException(msg);
 					}
 					return true;
-					//return _supportsProcedures;
 				} else {
 					throw new InvalidOperationException("The value of OleDba.SupportsProcedures depends on the database that it is connected to.");
 				}
@@ -133,7 +134,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		public void ConnectMDB() {
 			_ConnectionString = String.Format
-				("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};User Id=admin;Password=;", MDB);
+				("Provider={0};Data Source={1};User Id=admin;Password=;", JetSqlUtil.GetOleDbProviderName(), MDB);
 			this.Connect();
 		}
 		

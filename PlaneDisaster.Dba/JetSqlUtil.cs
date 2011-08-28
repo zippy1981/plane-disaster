@@ -25,9 +25,14 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Odbc;
+using System.Data.OleDb;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32;
 
 namespace PlaneDisaster.Dba
 {
@@ -37,8 +42,9 @@ namespace PlaneDisaster.Dba
 	/// front end.
 	/// </summary>
 	public class JetSqlUtil
-	{
-		private enum ODBC_Constants : int {
+    {
+        #region PInvoke
+        private enum ODBC_Constants : int {
     		ODBC_ADD_DSN = 1,
     		ODBC_CONFIG_DSN,
     		ODBC_REMOVE_DSN,
@@ -62,22 +68,29 @@ namespace PlaneDisaster.Dba
 		[DllImport("ODBCCP32.DLL",CharSet=CharSet.Unicode, SetLastError=true)]
 		private static extern int SQLConfigDataSource (int hwndParent, ODBC_Constants fRequest, string lpszDriver, string lpszAttributes);
 
-        [DllImport("odbccp32", CharSet = CharSet.Auto)]
+        [DllImport("ODBCCP32.DLL", CharSet = CharSet.Auto)]
         private static extern SQL_RETURN_CODE SQLInstallerError(int iError, ref int pfErrorCode, StringBuilder lpszErrorMsg, int cbErrorMsgMax, ref int pcbErrorMsg);
-		
-		/// <summary>
+        #endregion
+
+        private static string OdbcProviderName = null;
+        private static string OleDbProviderName = null;
+
+        /// <summary>
 		/// Compacts an access database
 		/// </summary>
-		/// <param name="FileName">The name of the databse to compact.</param>
-		public static void CompactMDB (string FileName) {
-			int retCode;
-			string Attributes = 
-				String.Format("COMPACT_DB=\"{0}\" \"{0}\" General\0", FileName);
-			retCode = SQLConfigDataSource
-				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				"Microsoft Access Driver (*.mdb)", Attributes);
+		/// <param name="fileName">The name of the databse to compact.</param>
+		public static void CompactMDB (string fileName) {
+			string attributes = 
+				String.Format("COMPACT_DB=\"{0}\" \"{0}\" General\0", Path.GetFullPath(fileName));
+			int retCode = SQLConfigDataSource
+				(0, ODBC_Constants.ODBC_ADD_DSN,
+                GetOdbcProviderName(), attributes);
 			if (retCode == 0) {
-				throw new ApplicationException("Cannot compact database: " + FileName);
+                int errorCode = 0;
+                int resizeErrorMesg = 0;
+                var sbError = new StringBuilder(512);
+                SQLInstallerError(1, ref errorCode, sbError, sbError.MaxCapacity, ref resizeErrorMesg);
+                throw new ApplicationException(string.Format("Can not compact database:: {0}. Error: {1}", fileName, sbError));
 			}
 		}
 
@@ -108,10 +121,10 @@ namespace PlaneDisaster.Dba
                     break;
             }
 
-			string Attributes = String.Format("{0}=\"{1}\" General\0", command, fileName);
+			string attributes = String.Format("{0}=\"{1}\" General\0", command, fileName);
             int retCode = SQLConfigDataSource 
                 (0, ODBC_Constants.ODBC_ADD_DSN,
-                 "Microsoft Access Driver (*.mdb)", Attributes);
+                 GetOdbcProviderName(), attributes);
 			if (retCode == 0)
 			{
 			    int errorCode = 0 ;
@@ -121,21 +134,100 @@ namespace PlaneDisaster.Dba
 				throw new ApplicationException(string.Format("Cannot create file: {0}. Error: {1}", fileName, sbError));
 			}
 		}
-		
+
+        /// <summary>
+        /// Gets the name of the best Microsoft Access Odbc provider to use.
+        /// </summary>
+        /// <returns>
+        /// One of the following Access providers (in order of preference):
+        /// <list type="value">
+        /// <value>Microsoft Access Driver (*.mdb, *.accdb)</value>
+        /// <value>Microsoft Access Driver (*.mdb)</value>
+        /// </list>
+        /// </returns>
+        internal static string GetOdbcProviderName()
+        {
+            if (string.IsNullOrEmpty(OdbcProviderName))
+            {
+                var odbcRegKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\ODBC\\ODBCINST.INI\\ODBC Drivers", false);
+                var drivers = new List<string>(odbcRegKey.GetValueNames());
+                if (drivers.Contains("Microsoft Access Driver (*.mdb, *.accdb)"))
+                {
+                    OdbcProviderName = "Microsoft Access Driver (*.mdb, *.accdb)";
+                }
+                else if (drivers.Contains("Microsoft Access Driver (*.mdb)"))
+                {
+                    OdbcProviderName = "Microsoft Access Driver (*.mdb)";
+                }
+                else
+                {
+                    //TODO: Condider checking for 32 versus 64 bit.
+                    //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-odbc-driver-cannot-be-found
+                    throw new InvalidOperationException("Cannot find an ODBC driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. http://www.microsoft.com/download/en/details.aspx?id=13255");
+                }
+            }
+            return OdbcProviderName;
+        }
+
+        /// <summary>
+        /// Gets the name of the best Microsoft Access OleDb provider to use.
+        /// </summary>
+        /// <returns>
+        /// One of the following Access providers (in order of preference):
+        /// <list type="value">
+        /// <value>Microsoft Access Driver (*.mdb, *.accdb)</value>
+        /// <value>Microsoft Access Driver (*.mdb)</value>
+        /// </list>
+        /// </returns>
+        internal static string GetOleDbProviderName()
+        {
+            if (string.IsNullOrEmpty(OleDbProviderName))
+            {
+                var clsidRegKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\CLSID", false);
+                var oleDbProviderNames = new List<string>();
+                foreach (var subKeyName in clsidRegKey.GetSubKeyNames())
+                {
+                    var subKey = clsidRegKey.OpenSubKey(subKeyName);
+                    var oleDbSubKey = subKey.OpenSubKey("OLE DB Provider");
+                    if (subKey.GetValue("OLEDB_SERVICES") != null && oleDbSubKey != null)
+                    {
+                        oleDbProviderNames.Add((string) oleDbSubKey.GetValue(""));
+                    }
+                }
+                if (oleDbProviderNames.Contains("Microsoft Office 12.0 Access Database Engine OLE DB Provider"))
+                {
+                    OleDbProviderName = "Microsoft Office 12.0 Access Database Engine OLE DB Provider";
+                }
+                else if (oleDbProviderNames.Contains("Microsoft Jet 4.0 OLE DB Provider"))
+                {
+                    OleDbProviderName = "Microsoft Jet 4.0 OLE DB Provider";
+                }
+                else
+                {
+                    //TODO: Condider checking for 32 versus 64 bit.
+                    //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-OleDb-driver-cannot-be-found
+                    throw new InvalidOperationException("Cannot find a OleDb driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. http://www.microsoft.com/download/en/details.aspx?id=13255");
+                }
+            }
+            return OleDbProviderName;
+        }
 		
 		/// <summary>
 		/// Repairs an access database
 		/// </summary>
-		/// <param name="FileName">The name of the databse to repair.</param>
-		public static void RepairMDB (string FileName) {
-			int retCode;
-			string Attributes = 
-				String.Format("REPAIR_DB=\"{0}\"\0", FileName);
-			retCode = SQLConfigDataSource
+		/// <param name="fileName">The name of the databse to repair.</param>
+		public static void RepairMDB (string fileName) {
+			string attributes = 
+				String.Format("REPAIR_DB=\"{0}\"\0", fileName);
+			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				"Microsoft Access Driver (*.mdb)", Attributes);
+				GetOdbcProviderName(), attributes);
 			if (retCode == 0) {
-				throw new ApplicationException("Cannot repair database: " + FileName);
+                int errorCode = 0;
+                int resizeErrorMesg = 0;
+                var sbError = new StringBuilder(512);
+                SQLInstallerError(1, ref errorCode, sbError, sbError.MaxCapacity, ref resizeErrorMesg);
+                throw new ApplicationException(string.Format("Cannot repair database: {0}. Error: {1}", fileName, sbError));
 			}
 		}
 

@@ -63,39 +63,153 @@ namespace UnitTests
 		//TODO: Create a test where views are created selected, dropped etc.
 		private static readonly string _sqlCreateView = "CREATE VIEW v_test SELECT id, description FROM tblTest";
 		private static readonly string _sqlDropView = "DROP VIEW v_test";
-		
-		#endregion SQL Strings
-		
-		/// <summary>
-		/// Creates a JetSQL database, creates a table, inserts some rows,
-		/// deletes some rows, and deletes the database.
-		/// </summary>
-		[Test]
-		public void TestMdb ()
-		{
-			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
-			
-			try {
-				CreateMdb(fileName);
-				
-				OleDba oleDba = new OleDba();
-				oleDba.ConnectMDB(fileName);
-				PopulateOleDba(oleDba);
-				oleDba.Disconnect();
-				
-				CompactAndRepairMdb(fileName);
-				
-				oleDba.ConnectMDB(fileName);
-				oleDba.ExecuteSqlCommand(_sqlDropTable);
-				oleDba.Disconnect();
-			}
-			finally 
-			{
-				File.Delete(fileName);
-				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
-			}
-			
-		}
+
+        #endregion SQL Strings
+
+        /// <summary>
+        /// Creates a JetSQL database.
+        /// </summary>
+        [Test]
+        public void TestCompactMdb()
+        {
+            string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+            OleDba oleDba = null;
+
+            try
+            {
+                CreateMdb(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+
+                JetSqlUtil.CompactMDB(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+            }
+            finally
+            {
+                if (oleDba != null && oleDba.Connected)
+                {
+                    oleDba.Disconnect();
+                    oleDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+            }
+
+        }
+
+        /// <summary>
+        /// Creates a JetSQL database.
+        /// </summary>
+        [Test]
+        public void TestCreateMdb()
+        {
+            string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+            OleDba oleDba = null;
+
+            try
+            {
+                CreateMdb(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+            }
+            finally
+            {
+                if (oleDba != null && oleDba.Connected)
+                {
+                    oleDba.Disconnect();
+                    oleDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+            }
+
+        }
+
+        /// <summary>
+        /// Creates a JetSQL database, creates a table, inserts some rows,
+        /// deletes some rows, and deletes the database.
+        /// </summary>
+        [Test]
+        public void TestMdb()
+        {
+            string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+            OleDba oleDba = null;
+
+            try
+            {
+                CreateMdb(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+
+                CompactAndRepairMdb(fileName);
+
+                oleDba.ConnectMDB(fileName);
+                oleDba.ExecuteSqlCommand(_sqlDropTable);
+                oleDba.Disconnect();
+            }
+            finally
+            {
+                if (oleDba != null && oleDba.Connected)
+                {
+                    oleDba.Disconnect();
+                    oleDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+            }
+
+        }
+
+        /// <summary>
+        /// Creates a JetSQL database.
+        /// </summary>
+        [Test]
+        public void TestRepairMdb()
+        {
+            string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + ".mdb");
+            OleDba oleDba = null;
+
+            try
+            {
+                CreateMdb(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+                
+                JetSqlUtil.RepairMDB(fileName);
+
+                oleDba = new OleDba();
+                oleDba.ConnectMDB(fileName);
+                PopulateOleDba(oleDba);
+                oleDba.Disconnect();
+            }
+            finally
+            {
+                if (oleDba != null && oleDba.Connected)
+                {
+                    oleDba.Disconnect();
+                    oleDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+            }
+
+        }
 		
 		
 		/// <summary>
@@ -130,11 +244,12 @@ namespace UnitTests
 		public void TestProcedureSupport()
 		{
 			string fileBaseName = Path.Combine(_tempDirectory, _tempFilePrefix);
-			
+		    OleDba oleDba = null;
+
 			try {
 				CreateMdb(fileBaseName + ".mdb");
 				
-				OleDba oleDba = new OleDba();
+				oleDba = new OleDba();
 				try {
 					Assert.IsTrue(oleDba.SupportsProcedures);
 					Assert.Fail("OleDba.SupportsProcedures should throw a InvalidOperationException if no database is connected.");
@@ -142,11 +257,15 @@ namespace UnitTests
 				catch(InvalidOperationException) {}
 					
 				oleDba.ConnectMDB(fileBaseName + ".mdb");
-				Assert.IsTrue(oleDba.SupportsProcedures);
-				oleDba.Disconnect();
+				Assert.IsTrue(oleDba.SupportsProcedures);;
 			}
 			finally 
 			{
+                if (oleDba != null && oleDba.Connected)
+                {
+                    oleDba.Disconnect();
+                    oleDba.Dispose();
+                }
 				File.Delete(fileBaseName + ".mdb");
 				Assert.IsFalse(File.Exists(fileBaseName + ".mdb"), "Failed to delete " + fileBaseName + ".mdb");
 			}

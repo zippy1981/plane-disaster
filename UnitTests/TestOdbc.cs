@@ -24,6 +24,7 @@
  * Time: 4:00 PM
  */
 
+using System.Threading;
 using NUnit.Framework;
 using System;
 using System.Data.Common;
@@ -37,7 +38,7 @@ namespace UnitTests
 	[TestFixture]
 	public class TestOdbc : TestDbaBase
 	{
-		protected new static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (idParam, descriptionParam)";
+		protected new static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@idParam, @descriptionParam)";
 		
 		[Test]
 		public override void TestDbOperations()
@@ -55,14 +56,6 @@ namespace UnitTests
 				
 				odbcDba.ExecuteSqlCommand(_sqlDropTable);
 			}
-			catch(OdbcException ex) {
-				//TODO: Figure out why this exception gets thrown
-				Assert.Ignore(ex.Message);
-			}
-			catch (Exception ex) 
-			{
-				Assert.Fail(ex.Message);
-			}
 			finally 
 			{
 				if (odbcDba != null && odbcDba.Connected) {
@@ -79,11 +72,12 @@ namespace UnitTests
 		public override void TestProcedureSupport()
 		{
 			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + "-Odbc-TestProcedures.mdb");
-			
+		    OdbcDba odbcDba = null;
+
 			try {
 				CreateDb(fileName);
 							
-				OdbcDba odbcDba = new OdbcDba();
+				odbcDba = new OdbcDba();
 				try {
 					Assert.IsTrue(odbcDba.SupportsProcedures);
 					Assert.Fail("OdbcDba.SupportsProcedures should throw a InvalidOperationException if no database is connected.");
@@ -92,12 +86,16 @@ namespace UnitTests
 					
 				odbcDba.ConnectMDB(fileName);
 				Assert.IsTrue(odbcDba.SupportsProcedures);
-				odbcDba.Disconnect();
 			}
 			finally 
 			{
-				File.Delete(fileName);
-				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+                if (odbcDba != null && odbcDba.Connected)
+                {
+                    odbcDba.Disconnect();
+                    odbcDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
 			}
 		}
 		
@@ -106,11 +104,12 @@ namespace UnitTests
 		public override void TestViewSupport()
 		{
 			string fileName = Path.Combine(_tempDirectory, _tempFilePrefix + "-Odbc-TestViews.mdb");
-			
+		    OdbcDba odbcDba = null;
+
 			try {
 				CreateDb(fileName);
 							
-				OdbcDba odbcDba = new OdbcDba();
+				odbcDba = new OdbcDba();
 				try {
 					Assert.IsTrue(odbcDba.SupportsViews);
 					Assert.Fail("OdbcDba.SupportsViews should throw a InvalidOperationException if no database is connected.");
@@ -119,12 +118,16 @@ namespace UnitTests
 					
 				odbcDba.ConnectMDB(fileName);
 				Assert.IsTrue(odbcDba.SupportsViews);
-				odbcDba.Disconnect();
 			}
 			finally 
 			{
-				File.Delete(fileName);
-				Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
+                if (odbcDba != null && odbcDba.Connected)
+                {
+                    odbcDba.Disconnect();
+                    odbcDba.Dispose();
+                }
+                File.Delete(fileName);
+                Assert.IsFalse(File.Exists(fileName), "Failed to delete " + fileName);
 			}
 		}
 		
@@ -148,7 +151,7 @@ namespace UnitTests
 			
 			foreach(tblTestRow row in rows) {
 				OdbcParameter[] parameters = new OdbcParameter [] {
-					new OdbcParameter("idParam", row.Id),
+					new OdbcParameter("@idParam", row.Id),
 					new OdbcParameter("@descriptionParam", row.Description)
 				};
 				odbcDba.ExecuteSqlCommand(_sqlInsertRow, parameters);

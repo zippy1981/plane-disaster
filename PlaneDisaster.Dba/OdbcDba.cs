@@ -63,8 +63,9 @@ namespace PlaneDisaster.Dba
 		/// </exception>
 		public override bool SupportsProcedures {
 			get {
+                // TODO: I don't know what I was thinking when I made OdbcDba.SupportsProcedures return true or throw.
 				if (Connected) {
-					if (_Cn.Driver != "odbcjt32.dll") {
+                    if (_Cn.Driver != "odbcjt32.dll" && _Cn.Driver != "ACEODBC.DLL") {
 						string msg = string.Format ("Currently the OdbcDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Driver);
 						throw new NotImplementedException(msg);
 					}
@@ -86,8 +87,9 @@ namespace PlaneDisaster.Dba
 		/// </exception>
 		public override bool SupportsViews {
 			get {
+				// TODO: I don't know what I was thinking when I made OdbcDba.SupportsProcedures return true or throw.
 				if (Connected) {
-					if (_Cn.Driver != "odbcjt32.dll") {
+                    if (_Cn.Driver != "odbcjt32.dll" && _Cn.Driver != "ACEODBC.DLL") {
 						string msg = string.Format ("Currently the OdbcDba.SupportsViews property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Driver);
 						throw new NotImplementedException(msg);
 					}
@@ -118,7 +120,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File) {
 			Cn = new OdbcConnection();
 			Cn.ConnectionString = String.Format
-				("Driver={{Microsoft Access Driver (*.mdb)}};Dbq={0};Uid=Admin;Pwd=;", File);
+				("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd=;", JetSqlUtil.GetOdbcProviderName(), File);
 			Cn.Open();
 		}
 		
