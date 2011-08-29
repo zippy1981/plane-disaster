@@ -26,12 +26,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Odbc;
-using System.Data.OleDb;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using Microsoft.Win32;
 
 namespace PlaneDisaster.Dba
@@ -74,6 +72,7 @@ namespace PlaneDisaster.Dba
 
         private static string OdbcProviderName = null;
         private static string OleDbProviderName = null;
+
 
         /// <summary>
 		/// Compacts an access database
