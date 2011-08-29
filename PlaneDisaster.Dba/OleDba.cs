@@ -61,6 +61,13 @@ namespace PlaneDisaster.Dba
 		public new string ConnectionString {
 			get { return this._ConnectionString; }
 		}
+
+
+        /// <summary>Returns true if the database is a Mirosoft Access database.</summary>
+        public override bool IsAccessDatabase
+        {
+            get { return true; }
+        }
 		
 		
 		/// <summary>

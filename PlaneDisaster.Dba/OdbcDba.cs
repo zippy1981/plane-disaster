@@ -52,8 +52,15 @@ namespace PlaneDisaster.Dba
 				this._Cn = (OdbcConnection) value;
 			}
 		}
+
+
+        /// <summary>Returns true if the database is a Mirosoft Access database.</summary>
+        public override bool IsAccessDatabase
+        {
+            get { return true; }
+        }
 		
-		
+
 		/// <summary>
 		/// Returns true if the connected database provider supports procedures.
 		/// </summary>

@@ -211,13 +211,14 @@ namespace PlaneDisaster
 						string Message;
 						string SQL;
 						
-						if (this._dbcon is OdbcDba) {
+                        //TODO: Make ths not suck
+						if (this._dbcon.IsAccessDatabase) {
 							SQL = String.Format
-								("SELECT TOP {1} * FROM {0}",
+								("SELECT TOP {1} * FROM [{0}]",
 								 lst.Text, MaxRowDisplayCount);
 						} else {
 							SQL = String.Format
-								("SELECT * FROM {0} LIMIT {1}",
+								("SELECT * FROM [{0}] LIMIT {1}",
 								 lst.Text, MaxRowDisplayCount);
 						}
 						Message = String.Format

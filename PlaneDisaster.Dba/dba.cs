@@ -78,9 +78,11 @@ namespace PlaneDisaster.Dba
 		public string ConnectionString {
 			get { return this.Cn.ConnectionString; }
 		}
-		
-		
-		/// <summary>
+
+        /// <summary>Returns true if the database is a Mirosoft Access database.</summary>
+	    public abstract bool IsAccessDatabase { get; }
+        
+	    /// <summary>
 		/// Returns true if the underlying database provider supports procedures.
 		/// </summary>
 		public abstract bool SupportsProcedures { get; }
@@ -559,7 +561,8 @@ namespace PlaneDisaster.Dba
 		/// <param name="Table">The name of the table</param>
 		/// <returns>A string containing a CSV</returns>
 		public string GetTableAsCSV (string Table) {
-			return this.GetSQLAsCSV("SELECT * FROM " + Table);
+            // TODO: Eliminate this and replace with KbCsv if Ken agrees to change the license.
+			return this.GetSQLAsCSV(string.Format("SELECT * FROM [{0}]", Table));
 		}
 		
 		
