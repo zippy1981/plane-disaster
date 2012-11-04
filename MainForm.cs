@@ -879,6 +879,11 @@ namespace PlaneDisaster
 					throw ex;
 				}
 			}
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message, "Error Opening database");
+                return;
+            }
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
 			this.DisplayDataSource();
 		}

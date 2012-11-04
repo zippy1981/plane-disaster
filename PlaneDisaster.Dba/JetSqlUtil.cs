@@ -73,8 +73,11 @@ namespace PlaneDisaster.Dba
         private static string OdbcProviderName = null;
         private static string OleDbProviderName = null;
 
+        /// <summary>The url for downloading the MS Access Redistributable.</summary>
+        /// <remarks>This has changed on me in the past.</remarks>
+        private const string ACCESS_REDISTRIBUTABLE_URL = "http://www.microsoft.com/en-us/download/details.aspx?id=13255";
 
-        /// <summary>
+		/// <summary>
 		/// Compacts an access database
 		/// </summary>
 		/// <param name="fileName">The name of the databse to compact.</param>
@@ -162,7 +165,8 @@ namespace PlaneDisaster.Dba
                 {
                     //TODO: Condider checking for 32 versus 64 bit.
                     //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-odbc-driver-cannot-be-found
-                    throw new InvalidOperationException("Cannot find an ODBC driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. http://www.microsoft.com/download/en/details.aspx?id=13255");
+                    string msg = string.Format("Cannot find an ODBC driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. {0}", ACCESS_REDISTRIBUTABLE_URL);
+                    throw new InvalidOperationException(msg);
                 }
             }
             return OdbcProviderName;
@@ -205,7 +209,8 @@ namespace PlaneDisaster.Dba
                 {
                     //TODO: Condider checking for 32 versus 64 bit.
                     //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-OleDb-driver-cannot-be-found
-                    throw new InvalidOperationException("Cannot find a OleDb driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. http://www.microsoft.com/download/en/details.aspx?id=13255");
+                    string msg = string.Format("Cannot find an OleDb driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. {0}", ACCESS_REDISTRIBUTABLE_URL);
+                    throw new InvalidOperationException(msg);
                 }
             }
             return OleDbProviderName;
