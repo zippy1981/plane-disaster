@@ -1,5 +1,5 @@
 /* 
- * Copyright 2006-2007 Justin Dearing
+ * Copyright 2006-2012 Justin Dearing
  * 
  * This file is part of PlaneDisaster.NET.
  * 
@@ -26,11 +26,11 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.OleDb;
-using System.Data.SQLite;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
@@ -47,25 +47,37 @@ namespace PlaneDisaster
 	{
 		private PlaneDisasterSettings _oPlaneDisasterSettings;
 		private dba _dbcon = null;
-		private string _CSV;
-		private string _InsertStatements;
-		private const int _MinClientHeight = 464;
-		private const int _MinClientWidth = 902;
+
+        private const string FILTER_ALL_FILES = "All Files|*.*";
+        private const string FILTER_ALL_DBFORMATS = "All supported database types|*.accdb;*.mdb;*.mde;*.db;*.db3;*.sqlite";
+        private const string FILTER_CSV = "Comma Seperated Value (*.csv)|*.csv";
+        private const string FILTER_JETSQL = "Microsoft Access (*.accdb;*.mdb;*.mde)|*.accdb;*.mdb;*.mde";
+        private const string FILTER_SQLITE = "SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite";
+        private const string FILTER_SQL_SCRIPTS = "SQL Scripts (*.sql)|*.sql";
+
+        private readonly List<string> _JetSqlExtensions = new List<string>
+	        {
+	            ".accdb",
+                ".mde",
+                ".mdb"
+	        };
+        private readonly List<string> _SqliteExtensions = new List<string>
+	        {
+	            ".db",
+                ".db3",
+                ".sqlite"
+	        };
 		
 		#region Properties
+
+        private string CurrentFile { get; set; }
 		
 		/// <summary>The Results of the query in CSV format.</summary>
-		private string CSV {
-			get { return this._CSV; }
-			set { this._CSV = value; }
-		}
+        private string CSV { get; set; }
 		
 		
 		/// <summary>The Results of the query in InsertStatements format.</summary>
-		private string InsertStatements {
-			get { return this._InsertStatements; }
-			set { this._InsertStatements = value; }
-		}
+        private string InsertStatements { get; set; }
 		
 		
 		/// <summary>
@@ -120,7 +132,7 @@ namespace PlaneDisaster
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
 			string FileName;
-			dlg.Filter = "Comma Seperated Value (*.csv)|*.csv|All Files|";
+			dlg.Filter = FILTER_CSV + "|" + FILTER_ALL_FILES;
 			
 			if(dlg.ShowDialog() == DialogResult.OK ) {
 				FileName = dlg.FileName;
@@ -136,7 +148,7 @@ namespace PlaneDisaster
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
 			string FileName;
-			dlg.Filter = "SQL Scripts (*.sql)|*.sql|All Files|";
+			dlg.Filter = FILTER_SQL_SCRIPTS;
 			
 			if(dlg.ShowDialog() == DialogResult.OK ) {
 				FileName = dlg.FileName;
@@ -309,10 +321,8 @@ namespace PlaneDisaster
 		
 		void menuCompactDatabase_Click (object sender, System.EventArgs e)
 		{
-			string CurrentFile = GetFileName();
-			string FileFilter = "Microsoft Access (*.mdb;*.mde)|*.mdb;*,mde";
 			FileDialog dlg = new OpenFileDialog();
-			dlg.Filter = FileFilter;
+			dlg.Filter = FILTER_JETSQL;
 			
 			try {
 				if (dlg.ShowDialog() == DialogResult.OK) {
@@ -375,7 +385,7 @@ namespace PlaneDisaster
 			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
 			FileFilter.Append("|Microsoft Access 95 (*.mdb)|*.mdb");
 			FileFilter.Append("|Microsoft Access 2000 (*.mdb)|*.mdb");
-			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
+			FileFilter.AppendFormat("|{0}", FILTER_SQLITE);
 			dlg.Filter = FileFilter.ToString();
 			
 			if (dlg.ShowDialog() == DialogResult.OK) {
@@ -411,19 +421,21 @@ namespace PlaneDisaster
 		void menuOpen_Click (object sender, System.EventArgs e) {
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("All supported database types|*.mdb;*.mde;*.db;*.db3;*.sqlite");
-			FileFilter.Append("|Microsoft Access (*.mdb;*.mde)|*.mdb;*.mde");
-			FileFilter.Append("|SQLite3 (*.db;*.db3;*.sqlite)|*.db;*.db3;*.sqlite");
+            FileFilter.AppendFormat("{0}|", FILTER_ALL_DBFORMATS);
+            FileFilter.AppendFormat("{0}|", FILTER_JETSQL);
+            FileFilter.AppendFormat("{0}|", FILTER_SQLITE);
+            FileFilter.Append(FILTER_ALL_FILES);
 			dlg.Filter = FileFilter.ToString();
 			
 			if(dlg.ShowDialog() == DialogResult.OK) {
 				switch (dlg.FilterIndex) {
 					case 1:
 						string Extension =
-							System.IO.Path.GetExtension(dlg.FileName).ToLower();
-						if (Extension == ".mdb" || Extension == ".mde") {
+							Path.GetExtension(dlg.FileName).ToLower();
+                        if (_JetSqlExtensions.Contains(Extension))
+                        {
 							OpenMDB(dlg.FileName);
-						} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+						} else if (_SqliteExtensions.Contains(Extension)) {
 							OpenSQLite(dlg.FileName);
 						} else {throw new ApplicationException("Unknown file type.");}
 						break;
@@ -454,17 +466,16 @@ namespace PlaneDisaster
 
 		void menuRepairDatabase_Click (object sender, System.EventArgs e)
 		{
-			string CurrentFile = GetFileName();
 			StringBuilder FileFilter = new StringBuilder();
 			FileDialog dlg = new OpenFileDialog();
-			FileFilter.Append("Microsoft Access (*.mdb)|*.mdb");
+            FileFilter.Append(FILTER_JETSQL);
 			dlg.Filter = FileFilter.ToString();
 			
 			try {
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					if (dlg.FileName == CurrentFile) {
 						DisconnectDataSource();
-						JetSqlUtil.RepairMDB(dlg.FileName);
+                        JetSqlUtil.RepairMDB(dlg.FileName);
 						OpenMDB(CurrentFile);
 					} else {
 						JetSqlUtil.RepairMDB(dlg.FileName); }
@@ -612,6 +623,7 @@ namespace PlaneDisaster
 			closeToolStripMenuItem.Enabled = false;
 			queryToolStripMenuItem.Enabled = false;
 			cmdRefresh.Enabled = false;
+		    CurrentFile = null;
 		}
 		
 		
@@ -641,24 +653,6 @@ namespace PlaneDisaster
 		
 		private string GetDatabaseStatus() {
 			return _dbcon.GetStatus();
-		}
-		
-		
-		/// <summary>
-		/// Gets the file name of the currently open database.
-		/// </summary>
-		/// <returns>The file name of the currently open database.</returns>
-		internal string GetFileName() {
-			DbConnectionStringBuilder ConStr;
-			
-			if (_dbcon is OleDba) {
-				ConStr = new OleDbConnectionStringBuilder(((OleDba)_dbcon).ConnectionString);
-				//For some reason FileName is blank.
-				return (string)((OleDbConnectionStringBuilder)ConStr)["Dbq"];
-			} else if (_dbcon is SQLiteDba) {
-				ConStr = new SQLiteConnectionStringBuilder(((SQLiteDba)_dbcon).ConnectionString);
-				return ((SQLiteConnectionStringBuilder)ConStr).DataSource;
-			} else { return ""; }
 		}
 		
 		
@@ -809,6 +803,7 @@ namespace PlaneDisaster
 		
 		internal void NewDatabaseFile(string FileName) {
 			string Extension = Path.GetExtension(FileName);
+            //TODO: Make use of _JetSqlExtensions and _SqliteExtensions
 			switch (Extension) {
 				case ".mdb":
 					JetSqlUtil.CreateMDB(FileName);
@@ -822,7 +817,7 @@ namespace PlaneDisaster
 					break;
 			}
 			this.queryToolStripMenuItem.Enabled = true;
-			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", Path.GetFileName(FileName), FileName);
 		}
 		
 		
@@ -831,11 +826,10 @@ namespace PlaneDisaster
 				this.DisconnectDataSource();
 			} catch (NullReferenceException) {}
 			
-			string Extension =
-				System.IO.Path.GetExtension(FileName).ToLower();
-			if (Extension == ".mdb" || Extension == ".mde") {
+			string Extension = Path.GetExtension(FileName).ToLower();
+			if (_JetSqlExtensions.Contains(Extension)) {
 				OpenMDB(FileName);
-			} else if (Extension == ".db" || Extension == ".db3" || Extension == ".sqlite") {
+			} else if (_SqliteExtensions.Contains(Extension)) {
 				OpenSQLite(FileName);
 			} else {throw new ApplicationException("Unknown file type.");}
 			AddRecentFile(FileName);
@@ -872,6 +866,7 @@ namespace PlaneDisaster
 					}
 				} else if (ex.ErrorCode == -2147467259) {
 					Text = "PlaneDisaster.NET";
+                    //TODO: Apparently this error code is also returned if you try to open an .accdb with the Jet 4.0 driver
 					string Msg = String.Format("File [{0}] not found.", FileName);
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
@@ -884,7 +879,8 @@ namespace PlaneDisaster
                 MessageBox.Show(ex.Message, "Error Opening database");
                 return;
             }
-			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", Path.GetFileName(FileName), FileName);
+ 		    CurrentFile = FileName;
 			this.DisplayDataSource();
 		}
 		
@@ -894,6 +890,8 @@ namespace PlaneDisaster
 			
 			((SQLiteDba) _dbcon).Connect(FileName);
 			Text = string.Format("{0} - ({1}) - PlaneDisaster.NET", System.IO.Path.GetFileName(FileName), FileName);
+
+            CurrentFile = FileName;
 			this.DisplayDataSource();
 		}
 		
