@@ -27,6 +27,7 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 
@@ -86,10 +87,31 @@ namespace PlaneDisaster.Configuration
 
 		#endregion
 
+        // See http://www.pinvoke.net/default.aspx/shell32.shaddtorecentdocs
+        #region JumpMenuPinvokes
+
+        private enum ShellAddToRecentDocsFlags
+        {
+            Pidl = 0x001,
+            Path = 0x002,
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Ansi)]
+        private static extern void SHAddToRecentDocs(ShellAddToRecentDocsFlags flag, string path);
+
+        /// <summary>Adds the document to the recent file list</summary>
+        /// <seealso cref="http://blogs.sas.com/content/sasdummy/2011/09/28/jumping-into-windows-7-jump-lists/">Jumping into Windows 7 Jump Lists - The SAS Dummy</seealso>
+        private static void AddToRecentDocs(string path)
+        {
+            SHAddToRecentDocs(ShellAddToRecentDocsFlags.Path, path);
+        }
+
+        #endregion
+
 		/// <summary>
 		/// Adds a PlaneDisasterElement to the configuration file.
 		/// </summary>
-		public void Add(RecentFileElement element)
+		private void Add(RecentFileElement element)
 		{
 			RecentFileElement [] NewFiles = new RecentFileElement [this.Count];
 			short FileCount = this.MaxCount;
@@ -114,6 +136,7 @@ namespace PlaneDisaster.Configuration
 		public void Add(string FileName)
 		{
 			Add (new RecentFileElement(Path.GetFullPath(FileName)));
+		    AddToRecentDocs(FileName);
 		}
 		
 		

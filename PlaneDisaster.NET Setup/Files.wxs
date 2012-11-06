@@ -15,6 +15,9 @@
 						
 						<!-- Begin File associations -->
 						<ProgId Id="PlaneDisaster.mdbfile" Description="JetSQL Database" Icon="&quot;[#MainExecutable]&quot;">
+							<Extension Id="accdb">
+								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
+							</Extension>
 							<Extension Id="mdb">
 								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
 							</Extension>
