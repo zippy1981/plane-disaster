@@ -91,6 +91,8 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>The contents of the Query Text Area.</summary>
+		/// <remarks>Hidden from the designer, which would otherwise try to serialize it (WFO1000).</remarks>
+		[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		internal string Query {
 			get { return this.txtSQL.Text; }
 			set { this.txtSQL.Text = value; }
@@ -257,7 +259,7 @@ namespace PlaneDisaster
 							MessageBox.Show(ex.Message, "Permission Error");
 							break;
 						default:
-							throw ex;
+							throw;
 					}
 				}
 			}
@@ -870,7 +872,7 @@ namespace PlaneDisaster
 							if (exSecond.ErrorCode == -2147217843) {
 								MessageBox.Show("Incorrect Password");
 							} else {
-								throw exSecond;
+								throw;
 							}
 							return;
 						} finally { GetPassword.Dispose(); }
@@ -882,7 +884,7 @@ namespace PlaneDisaster
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
 				} else {
-					throw ex;
+					throw;
 				}
 			}
             catch (InvalidOperationException ex)

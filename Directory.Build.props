@@ -48,7 +48,8 @@
 
   <!-- On .NET the System.Data providers and configuration are packages, and SQLite is the managed Core build. -->
   <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="11.0.0" />
+    <!-- The Windows Desktop framework that WinForms projects use already includes it (NU1510). -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="11.0.0" Condition=" '$(UseWindowsForms)' != 'true' " />
     <PackageReference Include="System.Data.Odbc" Version="11.0.0" />
     <PackageReference Include="System.Data.OleDb" Version="11.0.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
