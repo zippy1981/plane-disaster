@@ -21,3 +21,6 @@ desktop.ini
 #NUnit stuff
 TestResult.xml
 *.VisualState.xml
+
+# Vendor ODBC installers and licence keys for experiments/linux-odbc
+experiments/linux-odbc/drivers/*/vendor/
