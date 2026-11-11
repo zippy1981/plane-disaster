@@ -24,6 +24,7 @@ env:
   # The SDK that builds every framework, including net11.0-windows.
   DOTNET_VERSION: 11.0.x
   NUNIT_RUNNERS_VERSION: 2.6.4
+  REPORTGENERATOR_VERSION: 5.6.0
   ACE_X64_URL: https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/accessdatabaseengine_X64.exe
 
 jobs:
@@ -150,13 +151,34 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # setup-dotnet installs only the x64 runtime, so the x86 .NET build is compiled but not tested.
-      - name: Run unit tests (dotnet test)
+      # This leg has the Access Database Engine and runs every test, so it also measures code coverage.
+      - name: Run unit tests with coverage (dotnet test)
         if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
         shell: pwsh
         run: >-
           dotnet test UnitTests --no-build -nologo
           -c $env:CONFIGURATION -f $env:FRAMEWORK "-p:Platform=$env:PLATFORM"
           --logger "trx;LogFileName=$env:GITHUB_WORKSPACE\TestResult.trx"
+          --collect "Code Coverage;Format=Cobertura"
+          --results-directory "$env:GITHUB_WORKSPACE\coverage"
+
+      - name: Coverage report
+        if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
+        shell: pwsh
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version $env:REPORTGENERATOR_VERSION
+          reportgenerator "-reports:coverage/**/*.cobertura.xml" -targetdir:coverage-report `
+            "-reporttypes:Html;MarkdownSummaryGithub;Cobertura;Badges" `
+            "-assemblyfilters:+PlaneDisaster*;+Jet2SQLite;+jsql_admin" -title:PlaneDisaster.NET
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Content coverage-report/SummaryGithub.md >> $env:GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
+        with:
+          name: coverage-report
+          path: coverage-report/
+          if-no-files-found: error
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
