@@ -8,4 +8,10 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>$(DefineConstants);TEST</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- An unfinished PostgreSQL provider that needs Npgsql; the old project never compiled it either. -->
+    <Compile Remove="NpgsqlDba.cs" />
+    <None Include="NpgsqlDba.cs" />
+  </ItemGroup>
 </Project>
