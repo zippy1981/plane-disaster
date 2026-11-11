@@ -1,3 +1,12 @@
+--- 0.9.5
+* 32 and 64 bit (x86 and x64) builds; there is no AnyCPU build.
+* Recent files are added to the Windows recent items, and the installer associates .accdb files.
+* Runs on Windows 10 and 11 without .NET 3.5: the exes now also run on the .NET 4 runtime.
+* 64 bit builds use the Access Database Engine (ACE 12.0 to 16.0) for OleDb, and compact and repair through it.
+* [BUGFIX] The OleDb provider was chosen by its description rather than its ProgID.
+* New WiX 5 installer with the standard install-folder wizard. It upgrades earlier versions in place.
+* The installer shows the GPL, the license PlaneDisaster.NET is under; it showed the LGPL.
+* Built, tested and released by GitHub Actions.
 --- 0.9.1
 * Better delegate assigning
 * Better exception handling
