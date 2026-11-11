@@ -130,8 +130,8 @@ namespace PlaneDisaster.Dba
 		/// it worked. If it encounters a datatype it doesn't know how to deal with it
 		/// panics and throws an exception.</para>
 		/// <para>Columns get a declared type System.Data.SQLite reads back as the same
-		/// .NET type: whole numbers are INTEGER, float and double are REAL, decimal is
-		/// NUMERIC, and bool, DateTime and Guid are BOOLEAN, DATETIME and GUID. Dates are
+		/// .NET type: whole numbers are INTEGER, float, double and decimal are REAL (decimal
+		/// comes back as double), and bool, DateTime and Guid are BOOLEAN, DATETIME and GUID. Dates are
 		/// stored as ISO 8601 text, which SQLite's date functions read. Any other type
 		/// throws a <see cref="DataException"/>.</para>
 		/// <para>All INSERT statements are done as one transaction. The reason for this
@@ -228,10 +228,10 @@ namespace PlaneDisaster.Dba
 			} else if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort)
 			           || type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong)) {
 				return "INTEGER";
-			} else if (type == typeof(float) || type == typeof(double)) {
+			} else if (type == typeof(float) || type == typeof(double) || type == typeof(decimal)) {
+				// Not NUMERIC for decimal: SQLite stores it as REAL anyway, and System.Data.SQLite on .NET
+				// reads a NUMERIC column back as the double's exact expansion (19.99 is 19.98999...).
 				return "REAL";
-			} else if (type == typeof(decimal)) {
-				return "NUMERIC";
 			} else if (type == typeof(byte[])) {
 				return "BLOB";
 			}
