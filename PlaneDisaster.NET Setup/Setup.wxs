@@ -1,125 +1,35 @@
-<?xml version="1.0"?>
-<!--
-	Much of the "customization" here is blatantly stolen from
-	SharpDevelop's setup file.
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The PlaneDisaster.NET installer. The UI is WiX's standard InstallDir wizard. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package
+      Name="PlaneDisaster.NET"
+      Version="$(var.PlaneDisasterVersion)"
+      Manufacturer="ZippySoft"
+      UpgradeCode="AC7AACE6-D31E-4039-883C-3DC11D707B04"
+      Language="1033"
+      Codepage="1252"
+      Scope="perMachine">
+    <SummaryInformation Description="PlaneDisaster.NET $(var.PlaneDisasterVersion)" />
 
-	http://www.icsharpcode.net/OpenSource/SD/
--->
-<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
-	<Product 
-		Id="01B81090-F2A1-4BAE-91F8-353E84DD3760"
-		Name="PlaneDisaster.NET 0.9.4" 
-		Language="1033"
-		Codepage="1252"
-		Version="0.9.4" 
-		UpgradeCode="AC7AACE6-D31E-4039-883C-3DC11D707B04"
-		Manufacturer="ZippySoft">
-			
-		<Package 
-			Id="E2EDDC8F-8D79-4DC0-803F-633A12C3BA14" 
-			Description="#Description" 
-			Comments="Comments" 
-			InstallerVersion="200" 
-			Compressed="yes" />
-		
-		<Upgrade Id='AC7AACE6-D31E-4039-883C-3DC11D707B04'>
-			<UpgradeVersion
-				Property="PREVIOUSVERSIONFOUND"
-				IncludeMinimum='yes' Minimum='0.9.0'
-				IncludeMaximum='yes' Maximum='0.9.3' />
-			<UpgradeVersion
-				Property="NEWERVERSIONFOUND"
-				IncludeMinimum='no' Minimum='0.9.4' />
+    <!-- Replaces every earlier version, including the WiX 2 MSIs that used the same upgrade code. -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of PlaneDisaster.NET is already installed." />
+    <MediaTemplate EmbedCab="yes" />
 
-		</Upgrade>
-		
-		
-		<!-- 
-			Conditions to be satisfied before the installer begins.
-			Note that we are using "Installed OR" in the conditions so
-			so they never block the user from repairing, patching, or 
-			uninstalling the package after it has been installed. 
+    <Launch
+        Condition="Installed OR MsiNetAssemblySupport &gt;= &quot;2.0.50727&quot;"
+        Message="This setup requires the .NET Framework 2.0 or higher." />
 
-			For	example the user could do something odd like uninstall .NET 2.0
- 			and then run the msi to uninstall SharpDevelop. Without the 
-			"Installed OR" this would not be allowed.
-		-->
-		<!--
-			Check for .NET 2.0 
-			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/msinetassemblysupport.asp
-		-->
-		<Condition Message="This setup requires the .NET Framework 2.0 or higher.">
-			Installed OR MsiNetAssemblySupport &gt;= "2.0.50727"
-		</Condition>
-		
-		<!-- 
-			Install for all users.
+    <Icon Id="PlaneDisaster.ico" SourceFile="$(var.RepoRoot)PlaneDisaster.NET.ico" />
+    <Property Id="ARPPRODUCTICON" Value="PlaneDisaster.ico" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/zippy1981/plane-disaster" />
 
-			Using ALLUSERS=2 means the application can be installed by a non-admin. 
-			In this case it will be a per-user installation installed into the 
-			user's personal profile. 
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <ui:WixUI Id="WixUI_InstallDir" />
 
-			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/allusers.asp
-		-->
-		<Property Id="ALLUSERS">2</Property>
-		
-		
-		<!-- 
-			Support entries shown when clicking "Click here for support information"
-			in Control Panel's Add/Remove Programs
-
-			http://msdn.microsoft.com/library/default.asp?url=/library/en-us/msi/setup/configuration_properties.asp
-		-->
-		<!-- Suppress the Modify button in the Control Panel's Add/Remove Programs -->
-		<Property Id="ARPNOMODIFY">1</Property> 
-		<!-- Puts PlaneDisaster.NET icon in Control Panel's Add/Remove Programs -->
-		<Property Id="ARPPRODUCTICON">MainExecutable</Property>
-		<Icon Id="MainExecutable" SourceFile="..\bin\Release\PlaneDisaster.exe"/>
-		
-		<Property Id="AcceptLicense">No</Property>
-		<!--BUTTON TEXT-->
-		<Property Id="Button_Back">&lt; &amp;Back</Property>
-		<Property Id="Button_Next">&amp;Next &gt;</Property>
-		<Property Id="Button_Finish">&amp;Finish</Property>
-		<Property Id="Button_OK">OK</Property>
-		<Property Id="Button_Cancel">Cancel</Property>
-		<Property Id="Button_Browse">Br&amp;owse...</Property>
-		<Property Id="Button_Exit">&amp;Exit</Property>
-		<Property Id="Button_Ignore">&amp;Ignore</Property>
-		<Property Id="Button_Install">&amp;Install</Property>
-		<Property Id="Button_Remove">&amp;Remove</Property>
-		<Property Id="Button_Repair">&amp;Repair</Property>
-		<Property Id="Button_Reset">&amp;Reset</Property>
-		<Property Id="Button_Resume">&amp;Resume</Property>
-		<Property Id="Button_Retry">&amp;Retry</Property>
-		<Property Id="Button_Return">&amp;Return</Property>
-		<Property Id="Button_Yes">&amp;Yes</Property>
-		<Property Id="Button_No">&amp;No</Property>
-		<!--END BUTTON TEXT-->
-		<CustomAction Id="SET_INSTALLDIR" Property="INSTALLDIR" Value="[INSTALLDIR]" Execute="firstSequence" />
-		<!-- INSTALL DESCRIPTION -->
-		<Media Id="1" Cabinet="contents.cab" EmbedCab="yes" />
-		<Directory Id="TARGETDIR" Name="SourceDir" />
-		<Feature Id="PlaneDisaster.NET" Title="PlaneDisaster.NET" Level="1">
-			<ComponentRef Id="PlaneDisasterExe" />
-			<ComponentRef Id="PlaneDisasterDll" />
-			<ComponentRef Id="PlaneDisasterDocs" />
-			<ComponentRef Id="Jet2SQLite" />
-		</Feature>
-		<Feature Id="SQLite.NET" Title="SQLite.NET" Level="1">
-			<ComponentRef Id="SQLite.NET" />
-		</Feature>
-		<!-- END INSTALL DESCRIPTION -->
-		
-		<CustomAction Id='DowngradeForbidden' Error='Newer version alrady installed.' />
-								
-		<AdminExecuteSequence>
-		</AdminExecuteSequence>
-		<InstallExecuteSequence>
-			<!-- Prevent downgrades -->
-			<Custom Action='DowngradeForbidden' After='FindRelatedProducts'>NEWERVERSIONFOUND</Custom>
-			<RemoveExistingProducts Before="InstallInitialize"/>
-		</InstallExecuteSequence>
-		<UIRef Id="UserInterface" />
-	</Product>
+    <Feature Id="PlaneDisaster.NET" Title="PlaneDisaster.NET">
+      <ComponentGroupRef Id="PlaneDisasterComponents" />
+    </Feature>
+  </Package>
 </Wix>

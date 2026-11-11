@@ -1,58 +1,17 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <!--
+    Build after the solution, for the same platform:
+      dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=x64 -p:PlaneDisasterVersion=0.9.4
+    WiX 5 is used rather than 6 or 7, which need the Open Source Maintenance Fee EULA accepted.
+  -->
   <PropertyGroup>
-    <ProjectGuid>{337D91DF-22E4-4D70-8850-BD75594DE22B}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <OutputType>package</OutputType>
-    <RootNamespace>PlaneDisaster.NET_Setup</RootNamespace>
-    <OutputName>PlaneDisaster.NET-Setup</OutputName>
-    <WixToolPath Condition=" '$(WixToolPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixToolPath>
-    <ToolPath Condition=" '$(ToolPath)' == '' ">$(WixToolPath)</ToolPath>
-    <WixMSBuildExtensionsPath Condition=" '$(WixMSBuildExtensionsPath)' == '' ">$(SharpDevelopBinPath)\Tools\Wix</WixMSBuildExtensionsPath>
-    <DefineConstants>DATADIR=$(SharpDevelopBinPath)\..\data\resources\InstallerBitmaps</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <OutputPath>bin\Debug\</OutputPath>
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>Full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <OutputPath>bin\Release\</OutputPath>
-    <DebugSymbols>False</DebugSymbols>
-    <DebugType>None</DebugType>
+    <PlaneDisasterVersion Condition=" '$(PlaneDisasterVersion)' == '' ">0.9.4</PlaneDisasterVersion>
+    <AppConfiguration Condition=" '$(AppConfiguration)' == '' ">Release</AppConfiguration>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\</RepoRoot>
+    <OutputName>PlaneDisaster.NET-$(PlaneDisasterVersion)-$(Platform)</OutputName>
+    <DefineConstants>PlaneDisasterVersion=$(PlaneDisasterVersion);AppBin=$(RepoRoot)bin\$(Platform)\$(AppConfiguration)\;Jet2SQLiteBin=$(RepoRoot)Jet2SQLite\bin\$(Platform)\$(AppConfiguration)\;RepoRoot=$(RepoRoot)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BrowseDialog.wxs" />
-    <Compile Include="CancelDialog.wxs" />
-    <Compile Include="ExitDialog.wxs" />
-    <Compile Include="FatalErrorDialog.wxs" />
-    <Compile Include="Files.wxs" />
-    <Compile Include="OutOfDiskSpaceDialog.wxs" />
-    <Compile Include="OutOfRollbackDiskSpaceDialog.wxs" />
-    <Compile Include="ProgressDialog.wxs" />
-    <Compile Include="SelectFolderDialog.wxs" />
-    <Compile Include="Setup.wxs" />
-    <Compile Include="UserExitDialog.wxs" />
-    <Compile Include="UserInterface.wxs" />
-    <Compile Include="VerifyReadyDialog.wxs" />
-    <Compile Include="ViewLicenseAgreementDialog.wxs" />
-    <Compile Include="Warning.wxs" />
-    <Compile Include="WelcomeDialog.wxs" />
-    <None Include="license.rtf" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Jet2SQLite\Jet2SQLite.csproj">
-      <Project>{D9402D0E-F69F-497B-94E6-405BD3D1D012}</Project>
-      <Name>Jet2SQLite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PlaneDisaster.csproj">
-      <Project>{BA5695EC-7541-4AE8-9934-E850C86C3DCD}</Project>
-      <Name>PlaneDisaster</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">
-      <Project>{D598E4D0-F3B5-44C4-AF99-3B0D31FC7B83}</Project>
-      <Name>PlaneDisaster.Dba</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(WixMSBuildExtensionsPath)\wix.targets" />
 </Project>

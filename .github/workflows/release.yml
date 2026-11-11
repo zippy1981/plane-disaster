@@ -1,0 +1,55 @@
+name: Release
+
+# Push a tag such as v0.9.5 to build the MSIs and publish a GitHub release. The tag must match the
+# AssemblyVersion in AssemblyInfo.cs, which is also the MSI version.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the tag matches AssemblyInfo.cs
+        env:
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::Tag $TAG does not match AssemblyVersion $VERSION in AssemblyInfo.cs"
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: artifacts
+
+      - name: Package the release assets
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          mkdir -p dist
+          cp artifacts/msi-*/*.msi dist/
+          for platform in x86 x64; do
+            (cd "artifacts/portable-$platform" && zip -qr "$GITHUB_WORKSPACE/dist/PlaneDisaster.NET-$VERSION-$platform.zip" .)
+          done
+          ls -l dist
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/* --title "PlaneDisaster.NET $TAG" --generate-notes --verify-tag
