@@ -24,3 +24,5 @@ TestResult.xml
 
 # Vendor ODBC installers and licence keys for experiments/linux-odbc
 experiments/linux-odbc/drivers/*/vendor/
+# Host probes cached by scripts/Get-HostCapabilities.ps1 and per-host overrides
+.claude/*.local.json
