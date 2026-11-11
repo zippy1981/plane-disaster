@@ -116,6 +116,7 @@
     <Compile Include="OdbcDba.cs" />
     <Compile Include="OleDba.cs" />
     <Compile Include="SQLiteDba.cs" />
+    <Compile Include="SqlTokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

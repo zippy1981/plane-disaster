@@ -140,6 +140,7 @@
       <DependentUpon>ConnectionStringDialog.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="PlaneDisaster.cs" />
+    <Compile Include="SqlSyntaxHighlighter.cs" />
     <Compile Include="IConnectionStringDialog.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

@@ -39,6 +39,9 @@ namespace PlaneDisaster
 				if (components != null) {
 					components.Dispose();
 				}
+				if (_sqlHighlighter != null) {
+					_sqlHighlighter.Dispose();
+				}
 			}
 			base.Dispose(disposing);
 		}
@@ -57,7 +60,7 @@ namespace PlaneDisaster
 			this.radGrid = new System.Windows.Forms.RadioButton();
 			this.cmdSQL = new System.Windows.Forms.Button();
 			this.lstColumns = new System.Windows.Forms.ListBox();
-			this.txtSQL = new System.Windows.Forms.TextBox();
+			this.txtSQL = new System.Windows.Forms.RichTextBox();
 			this.txtResults = new System.Windows.Forms.TextBox();
 			this.cmdStatus = new System.Windows.Forms.Button();
 			this.gridResults = new System.Windows.Forms.DataGridView();
@@ -146,10 +149,12 @@ namespace PlaneDisaster
 			// 
 			this.txtSQL.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
 									| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSQL.DetectUrls = false;
+			this.txtSQL.Font = new System.Drawing.Font("Consolas", 9.75F);
 			this.txtSQL.Location = new System.Drawing.Point(4, 29);
 			this.txtSQL.Multiline = true;
 			this.txtSQL.Name = "txtSQL";
-			this.txtSQL.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+			this.txtSQL.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
 			this.txtSQL.Size = new System.Drawing.Size(845, 71);
 			this.txtSQL.TabIndex = 1;
 			// 
@@ -492,7 +497,7 @@ namespace PlaneDisaster
 		private System.Windows.Forms.DataGridView gridResults;
 		private System.Windows.Forms.Button cmdStatus;
 		private System.Windows.Forms.TextBox txtResults;
-		private System.Windows.Forms.TextBox txtSQL;
+		private System.Windows.Forms.RichTextBox txtSQL;
 		private System.Windows.Forms.ListBox lstColumns;
 		private System.Windows.Forms.Button cmdSQL;
 		private System.Windows.Forms.RadioButton radGrid;
