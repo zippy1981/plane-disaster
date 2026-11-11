@@ -1,3 +1,6 @@
+--- Unreleased
+* Every build uses System.Data.SQLite 1.0.119 (SQLite 3.46) instead of the CLR 2 mixed-mode 1.0.66.
+
 --- 0.9.5
 * 32 and 64 bit (x86 and x64) builds; there is no AnyCPU build.
 * Recent files are added to the Windows recent items, and the installer associates .accdb files.

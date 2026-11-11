@@ -73,7 +73,8 @@ jobs:
         # net20 is what ships. net481 and net11.0-windows build the same SDK-style projects for the
         # latest .NET Framework and the latest .NET, to catch API and warning breaks; Release is enough.
         framework: [net20, net481, net11.0-windows]
-        configuration: [Debug, Release]
+        # Pull requests build Release only; pushes to master add the net20 Debug legs (overflow checks on).
+        configuration: ${{ fromJSON(github.event_name == 'pull_request' && '["Release"]' || '["Debug","Release"]') }}
         platform: [x86, x64]
         exclude:
           - framework: net481
@@ -94,6 +95,12 @@ jobs:
 
       - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
         if: matrix.framework != 'net11.0-windows'
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Restore
         shell: pwsh
@@ -182,7 +189,7 @@ jobs:
         shell: pwsh
         run: |
           $dir = New-Item -ItemType Directory -Force portable
-          Copy-Item "bin\$env:PLATFORM\Release\net20\*" $dir -Exclude *.xml, *.pdb
+          Copy-Item "bin\$env:PLATFORM\Release\net20\*" $dir -Recurse -Exclude *.xml, *.pdb
           Copy-Item "Jet2SQLite\bin\$env:PLATFORM\Release\net20\Jet2SQLite.exe*" $dir
           Copy-Item gpl.txt, README.md $dir
 
@@ -199,6 +206,23 @@ jobs:
           name: portable-${{ matrix.platform }}
           path: portable/
           if-no-files-found: error
+
+  # build/mono/build.sh lists its sources by hand; fail when they drift from the projects' Compile items.
+  mono-sources:
+    name: Mono source list
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Compare build.sh with the projects
+        run: bash build/mono/check-sources.sh
 
   # Mono can't load the SDK-style projects, so build/mono/build.sh compiles the same sources with mcs
   # and runs the tests that don't need Windows. Debian unstable packages the latest Mono release.
@@ -233,7 +257,7 @@ jobs:
   # The one required check: it passes when the build passed or was skipped for a docs-only change.
   result:
     name: CI result
-    needs: [changes, build, mono]
+    needs: [changes, build, mono-sources, mono]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5

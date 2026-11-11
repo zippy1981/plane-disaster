@@ -27,8 +27,6 @@
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <WarningLevel>4</WarningLevel>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <!-- packages/ holds the CLR 2 System.Data.SQLite the .NET Framework builds reference. -->
-    <PackagesDir>$(MSBuildThisFileDirectory)packages\</PackagesDir>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(Configuration)' == 'Debug' ">
@@ -38,20 +36,21 @@
   <!-- Items are evaluated after all properties, so TargetFrameworkIdentifier is known here. -->
   <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Data.SQLite" Condition=" '$(Platform)' == 'x86' ">
-      <HintPath>$(PackagesDir)SQLitex64.1.0.66\lib\32\System.Data.SQLite.DLL</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite" Condition=" '$(Platform)' == 'x64' ">
-      <HintPath>$(PackagesDir)SQLitex64.1.0.66\lib\64\System.Data.SQLite.DLL</HintPath>
-    </Reference>
   </ItemGroup>
 
-  <!-- On .NET the System.Data providers and configuration are packages, and SQLite is the managed Core build. -->
+  <!--
+    Every framework uses the same System.Data.SQLite: a managed assembly (lib/net20 on .NET Framework)
+    plus the native SQLite.Interop.dll, which the package copies to x86\ and x64\ under the output.
+  -->
+  <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+  </ItemGroup>
+
+  <!-- On .NET the System.Data providers and configuration are packages. -->
   <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
     <!-- The Windows Desktop framework that WinForms projects use already includes it (NU1510). -->
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="11.0.0" Condition=" '$(UseWindowsForms)' != 'true' " />
     <PackageReference Include="System.Data.Odbc" Version="11.0.0" />
     <PackageReference Include="System.Data.OleDb" Version="11.0.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
   </ItemGroup>
 </Project>
