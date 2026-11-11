@@ -709,7 +709,7 @@ namespace PlaneDisaster.Dba
 		/// The table as an XML serialized datatable.
 		/// </returns>
 		public string SerializeTable (string Table) {
-		 	string SQL = "SELECT * FROM " + Table;
+		 	string SQL = String.Format("SELECT * FROM [{0}]", Table);
 		 	return this.SerializeQuery(SQL);
 		}
 
@@ -723,7 +723,7 @@ namespace PlaneDisaster.Dba
 		/// </param>
 		/// <param name="File"></param>
 		public void SerializeTable (string Table, string File) {
-			string SQL = "SELECT * FROM " + Table;
+			string SQL = String.Format("SELECT * FROM [{0}]", Table);
 		 	this.SerializeQuery(SQL, File);
 		}
 		
