@@ -100,16 +100,18 @@ namespace UnitTests
 
 		[Test]
 		public void Procedures() {
-			_db.CreateProcedure("qryOne", "SELECT * FROM tblTest WHERE id = 1");
-			CollectionAssert.Contains(_db.GetProcedures(), "qryOne");
-			StringAssert.Contains("tblTest", _db.GetProcedureSQL("qryOne"));
+			// Jet lists a SELECT without parameters as a view; action queries are procedures.
+			_db.CreateProcedure("qryDelete", "DELETE FROM tblTest WHERE id = 1");
+			CollectionAssert.Contains(_db.GetProcedures(), "qryDelete");
+			StringAssert.Contains("tblTest", _db.GetProcedureSQL("qryDelete"));
 
 			// Creating it again replaces it.
-			_db.CreateProcedure("qryOne", "SELECT * FROM tblTest WHERE id = 2");
-			Assert.AreEqual(2, Convert.ToInt32(_db.GetSqlAsDataTable("SELECT * FROM qryOne").Rows[0]["id"]));
+			_db.CreateProcedure("qryDelete", "DELETE FROM tblTest WHERE id = 2");
+			_db.ExecuteSqlCommand("EXECUTE qryDelete");
+			Assert.AreEqual(new string[] {"1", "3"}, _db.GetColumnAsStringArray("tblTest", "id"));
 
-			_db.DropProcedure("qryOne");
-			CollectionAssert.DoesNotContain(_db.GetProcedures(), "qryOne");
+			_db.DropProcedure("qryDelete");
+			CollectionAssert.DoesNotContain(_db.GetProcedures(), "qryDelete");
 		}
 
 
