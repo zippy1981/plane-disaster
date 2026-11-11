@@ -12,7 +12,7 @@ This file is the OpenCode (and other agent) counterpart to [CLAUDE.md](CLAUDE.md
 
 ## Building
 
-- CI builds the solution in `.github/workflows/build.yml` on `windows-latest`, for Debug and Release, x86 and x64. There is no AnyCPU configuration. A change that touches only Markdown or agent config skips the Windows build; the `CI result` job still reports.
+- CI builds the solution in `.github/workflows/build.yml` on `windows-latest`, for Debug and Release, x86 and x64, as shipped (.NET Framework 2.0). The `framework` axis also builds and tests Release retargeted to .NET Framework 4.8.1 (`-p:TargetFrameworkVersion=v4.8.1`). There is no AnyCPU configuration. A change that touches only Markdown or agent config skips the Windows build; the `CI result` job still reports.
 - The projects target .NET Framework 2.0. The workflow gets the reference assemblies from the `Microsoft.NETFramework.ReferenceAssemblies.net20` NuGet package and passes `TargetFrameworkRootPath` and `FrameworkPathOverride` to MSBuild, so the host needs no .NET 3.5 install. Copy those arguments to build locally.
 - `packages/` is committed, so build with `-p:RestorePackages=false`; the bundled `.nuget/NuGet.exe` is too old to restore.
 - `PlaneDisaster.NET Setup` is a WiX 5 SDK project, built after the solution with `dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=<x86|x64>`. CI builds the MSIs on the Release legs. WiX 6 and later need the OSMF EULA accepted, so stay on 5 unless the user decides otherwise.
