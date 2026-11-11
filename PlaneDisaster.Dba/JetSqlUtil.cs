@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -89,6 +90,20 @@ namespace PlaneDisaster.Dba
 			string tempName = fullName + ".compacting" + Path.GetExtension(fullName);
 			if (File.Exists(tempName)) {
 				File.Delete(tempName);
+			}
+			// The ACE ODBC driver fails COMPACT_DB, so compact through ACE's DAO engine when it is there.
+			Type daoEngineType = IsAceOdbcDriver() ? Type.GetTypeFromProgID("DAO.DBEngine.120") : null;
+			if (daoEngineType != null) {
+				object dbEngine = Activator.CreateInstance(daoEngineType);
+				try {
+					daoEngineType.InvokeMember("CompactDatabase", BindingFlags.InvokeMethod, null, dbEngine,
+						new object[] { fullName, tempName });
+				} finally {
+					Marshal.ReleaseComObject(dbEngine);
+				}
+				File.Delete(fullName);
+				File.Move(tempName, fullName);
+				return;
 			}
 			string attributes =
 				String.Format("COMPACT_DB=\"{0}\" \"{1}\" General\0", fullName, tempName);
