@@ -36,7 +36,7 @@ namespace PlaneDisaster.Dba
 	/// <summary>
 	/// Description of OleDba.
 	/// </summary>
-	public class OleDba : dba
+	public partial class OleDba : dba
 	{
 		private OleDbConnection _Cn;
 		private string _ConnectionString;

@@ -115,6 +115,8 @@
     <Compile Include="JetSqlUtil.cs" />
     <Compile Include="OdbcDba.cs" />
     <Compile Include="OleDba.cs" />
+    <Compile Include="OleDba.LinkedTables.cs" />
+    <Compile Include="LateBound.cs" />
     <Compile Include="SQLiteDba.cs" />
   </ItemGroup>
   <ItemGroup>

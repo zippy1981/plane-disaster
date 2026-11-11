@@ -350,6 +350,77 @@ namespace PlaneDisaster
 		{
 			this.gridResults.DataSource = _dbcon.GetSchema();
 		}
+
+
+		/// <summary>Links a table from another Access database into the open one.</summary>
+		void menuLinkTable_Click(object sender, System.EventArgs e)
+		{
+			OleDba target = _dbcon as OleDba;
+			if (target == null || !target.Connected) {
+				MessageBox.Show("Open a Microsoft Access database first.", "PlaneDisaster.NET");
+				return;
+			}
+			using (OpenFileDialog dlg = new OpenFileDialog()) {
+				dlg.Filter = FILTER_JETSQL;
+				dlg.Title = "Choose the database that has the table to link to";
+				if (dlg.ShowDialog() != DialogResult.OK) {
+					return;
+				}
+				string sourceTable;
+				using (InputDialog ask = new InputDialog()) {
+					if (ask.ShowDialog("Name of the table in " + Path.GetFileName(dlg.FileName)) != DialogResult.OK) {
+						return;
+					}
+					sourceTable = ask.Input.Trim();
+				}
+				string linkName = sourceTable;
+				if (Array.IndexOf(target.GetTablesAndLinks(), linkName) >= 0) {
+					using (InputDialog ask = new InputDialog()) {
+						if (ask.ShowDialog(linkName + " exists here. Name for the link") != DialogResult.OK) {
+							return;
+						}
+						linkName = ask.Input.Trim();
+					}
+				}
+				try {
+					target.LinkTable(linkName, dlg.FileName, sourceTable);
+				} catch (Exception ex) {
+					MessageBox.Show(string.Format("Could not link {0}: {1}", sourceTable, ex.Message), "PlaneDisaster.NET");
+					return;
+				}
+				lstTables.DataSource = GetTableList();
+			}
+		}
+
+
+		/// <summary>Removes the selected linked table. Refuses local tables.</summary>
+		void menuUnlinkTable_Click(object sender, System.EventArgs e)
+		{
+			OleDba target = _dbcon as OleDba;
+			string name = (string) lstTables.SelectedItem;
+			if (target == null || !target.Connected || string.IsNullOrEmpty(name)) {
+				MessageBox.Show("Select a linked table in an open Microsoft Access database first.", "PlaneDisaster.NET");
+				return;
+			}
+			if (!target.IsLinkedTable(name)) {
+				MessageBox.Show(name + " is a local table, not a link. Use Drop to delete a table.", "PlaneDisaster.NET");
+				return;
+			}
+			string question = string.Format("Remove the link {0}? The table it points at is not changed.", name);
+			if (MessageBox.Show(question, "PlaneDisaster.NET", MessageBoxButtons.YesNo) != DialogResult.Yes) {
+				return;
+			}
+			target.UnlinkTable(name);
+			lstTables.DataSource = GetTableList();
+		}
+
+
+		/// <summary>The names for the table list: Access shows its linked tables too.</summary>
+		private string[] GetTableList()
+		{
+			OleDba oleDba = _dbcon as OleDba;
+			return oleDba != null ? oleDba.GetTablesAndLinks() : _dbcon.GetTables();
+		}
 		
 		
 		void menuDrop_Click (object sender, System.EventArgs e) {
@@ -360,7 +431,7 @@ namespace PlaneDisaster
 				lstProcedures.DataSource = _dbcon.GetProcedures();
 			} else if (mnu.Name == "menuDropTable") {
 				_dbcon.DropTable('[' + (string) lstTables.SelectedItem + ']');
-				lstTables.DataSource = _dbcon.GetTables();
+				lstTables.DataSource = GetTableList();
 			} else if (mnu.Name == "menuDropView") {
 				_dbcon.DropView('[' + (string) lstViews.SelectedItem + ']');
 				lstViews.DataSource = _dbcon.GetViews();
@@ -638,7 +709,7 @@ namespace PlaneDisaster
 		private void DisplayDataSource() {
 			lstColumns.DataSource = null;
 			lstProcedures.DataSource = _dbcon.GetProcedures();
-			lstTables.DataSource = _dbcon.GetTables();
+			lstTables.DataSource = GetTableList();
 			lstViews.DataSource = _dbcon.GetViews();
 			
 			txtResults.Text = "";

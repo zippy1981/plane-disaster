@@ -78,6 +78,8 @@ namespace PlaneDisaster
 			this.microsoftAccessJetSQLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.compactJetSQLmdbFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.repairDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.linkTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.unlinkTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.databaseSchemaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.lstViews = new System.Windows.Forms.ListBox();
 			this.lblViews = new System.Windows.Forms.Label();
@@ -314,7 +316,9 @@ namespace PlaneDisaster
 			// 
 			this.microsoftAccessJetSQLToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.compactJetSQLmdbFileToolStripMenuItem,
-									this.repairDatabaseToolStripMenuItem});
+									this.repairDatabaseToolStripMenuItem,
+									this.linkTableToolStripMenuItem,
+									this.unlinkTableToolStripMenuItem});
 			this.microsoftAccessJetSQLToolStripMenuItem.Name = "microsoftAccessJetSQLToolStripMenuItem";
 			this.microsoftAccessJetSQLToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
 			this.microsoftAccessJetSQLToolStripMenuItem.Text = "Microsoft Access (JetSQL)";
@@ -332,6 +336,20 @@ namespace PlaneDisaster
 			this.repairDatabaseToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
 			this.repairDatabaseToolStripMenuItem.Text = "&Repair Database";
 			this.repairDatabaseToolStripMenuItem.Click += new System.EventHandler(this.menuRepairDatabase_Click);
+			//
+			// linkTableToolStripMenuItem
+			//
+			this.linkTableToolStripMenuItem.Name = "linkTableToolStripMenuItem";
+			this.linkTableToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+			this.linkTableToolStripMenuItem.Text = "&Link Table...";
+			this.linkTableToolStripMenuItem.Click += new System.EventHandler(this.menuLinkTable_Click);
+			//
+			// unlinkTableToolStripMenuItem
+			//
+			this.unlinkTableToolStripMenuItem.Name = "unlinkTableToolStripMenuItem";
+			this.unlinkTableToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+			this.unlinkTableToolStripMenuItem.Text = "Remove Selected &Link";
+			this.unlinkTableToolStripMenuItem.Click += new System.EventHandler(this.menuUnlinkTable_Click);
 			// 
 			// databaseSchemaToolStripMenuItem
 			// 
@@ -476,6 +494,8 @@ namespace PlaneDisaster
 		private System.Windows.Forms.ToolStripMenuItem databaseSchemaToolStripMenuItem;
 		private System.Windows.Forms.ListBox lstViews;
 		private System.Windows.Forms.ToolStripMenuItem repairDatabaseToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem linkTableToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem unlinkTableToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem microsoftAccessJetSQLToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem compactJetSQLmdbFileToolStripMenuItem;
