@@ -79,13 +79,19 @@ namespace PlaneDisaster.Dba
 		/// <summary>
 		/// Compacts an access database
 		/// </summary>
-		/// 
-		/// 
-		/// 
+		/// <remarks>
+		/// The Access Database Engine (ACE) driver can't compact a file onto itself, so this compacts
+		/// into a temporary file next to the database and then replaces the database with it.
+		/// </remarks>
 		/// <param name="fileName">The name of the databse to compact.</param>
 		public static void CompactMDB (string fileName) {
-			string attributes = 
-				String.Format("COMPACT_DB=\"{0}\" \"{0}\" General\0", Path.GetFullPath(fileName));
+			string fullName = Path.GetFullPath(fileName);
+			string tempName = fullName + ".compacting" + Path.GetExtension(fullName);
+			if (File.Exists(tempName)) {
+				File.Delete(tempName);
+			}
+			string attributes =
+				String.Format("COMPACT_DB=\"{0}\" \"{1}\" General\0", fullName, tempName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN,
                 GetOdbcProviderName(), attributes);
@@ -96,7 +102,18 @@ namespace PlaneDisaster.Dba
                 SQLInstallerError(1, ref errorCode, sbError, sbError.MaxCapacity, ref resizeErrorMesg);
                 throw new ApplicationException(string.Format("Can not compact database:: {0}. Error: {1}", fileName, sbError));
 			}
+			File.Delete(fullName);
+			File.Move(tempName, fullName);
 		}
+
+
+        /// <summary>
+        /// True when the ODBC driver is the Access Database Engine (ACE) one rather than Jet 4.0.
+        /// </summary>
+        private static bool IsAceOdbcDriver()
+        {
+            return GetOdbcProviderName() == "Microsoft Access Driver (*.mdb, *.accdb)";
+        }
 
 
         /// <summary>
@@ -223,9 +240,17 @@ namespace PlaneDisaster.Dba
 		/// <summary>
 		/// Repairs an access database
 		/// </summary>
+		/// <remarks>
+		/// The Access Database Engine (ACE) driver has no REPAIR_DB command because compacting repairs
+		/// the database, so with that driver this compacts it.
+		/// </remarks>
 		/// <param name="fileName">The name of the databse to repair.</param>
 		public static void RepairMDB (string fileName) {
-			string attributes = 
+			if (IsAceOdbcDriver()) {
+				CompactMDB(fileName);
+				return;
+			}
+			string attributes =
 				String.Format("REPAIR_DB=\"{0}\"\0", fileName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN, 
