@@ -11,7 +11,7 @@
 
   <!-- This project sits at the repo root, so keep the other projects and the installer out of its globs. -->
   <PropertyGroup>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Jet2SQLite/**;jsql_admin/**;PlaneDisaster.Dba/**;UnitTests/**;PlaneDisaster.NET Setup/**;WebSite/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Jet2SQLite/**;jsql_admin/**;PlaneDisaster.Dba/**;UnitTests/**;PlaneDisaster.NET Setup/**;WebSite/**;experiments/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">

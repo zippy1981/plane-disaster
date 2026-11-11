@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Runs PlaneDisaster.Dba's OdbcDba against an ODBC driver on Linux. It compiles the Dba sources for
+    plain net11.0 (not net11.0-windows), which is what a Linux build of PlaneDisaster would need.
+    Directory.Build.props still adds the System.Data.Odbc, OleDb and SQLite packages.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net11.0</TargetFrameworks>
+    <Nullable>disable</Nullable>
+    <!-- OleDba and JetSqlUtil call Windows-only APIs; the harness never reaches them. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../../PlaneDisaster.Dba/*.cs" Exclude="../../../PlaneDisaster.Dba/NpgsqlDba.cs" LinkBase="Dba" />
+  </ItemGroup>
+</Project>
