@@ -1,0 +1,5 @@
+# Docs, workflows and lint config are LF everywhere, so markdownlint and actionlint see the same bytes on every host.
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
