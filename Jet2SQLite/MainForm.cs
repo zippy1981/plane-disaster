@@ -130,10 +130,10 @@ namespace PlaneDisaster.Jet2SQLite
 						try {
 							((OdbcDba) JetDb).ConnectMDB(JetSqlFile, GetPassword.Input);
 						} catch (OdbcException exSecond) {
-							if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {
+							if (exSecond.ErrorCode == -2147217843 || exSecond.ErrorCode == -2146232009) {
 								MessageBox.Show("Incorrect Password");
 							} else {
-								throw exSecond;
+								throw;
 							}
 							return;
 						} finally { GetPassword.Dispose(); }
@@ -144,7 +144,7 @@ namespace PlaneDisaster.Jet2SQLite
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
 				} else {
-					throw ex;
+					throw;
 				}
 			}
 			

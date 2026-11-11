@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+  # release.yml calls this to build the MSIs it publishes.
+  workflow_call:
+    outputs:
+      version:
+        description: The AssemblyVersion from AssemblyInfo.cs, which is also the MSI version.
+        value: ${{ jobs.changes.outputs.version }}
 
 permissions:
   contents: read
@@ -15,10 +21,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The projects target .NET Framework 2.0, which windows-latest doesn't install. MSBuild reads the
-  # reference assemblies from this NuGet package instead.
-  NET20_REF_VERSION: 1.0.3
+  # The SDK that builds every framework, including net11.0-windows.
+  DOTNET_VERSION: 11.0.x
   NUNIT_RUNNERS_VERSION: 2.6.4
+  REPORTGENERATOR_VERSION: 5.6.0
   ACE_X64_URL: https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/accessdatabaseengine_X64.exe
 
 jobs:
@@ -28,10 +34,17 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.diff.outputs.code }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - id: version
+        name: Read the version from AssemblyInfo.cs
+        run: |
+          version=$(grep -oP 'AssemblyVersion\("\K[0-9.]+' AssemblyInfo.cs)
+          echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
       - id: diff
         name: Skip the Windows build when only docs and agent config changed
@@ -50,7 +63,7 @@ jobs:
           if [ -n "$code" ]; then echo "code=true"; else echo "code=false"; fi >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build (${{ matrix.configuration }} ${{ matrix.platform }})
+    name: Build (${{ matrix.framework }} ${{ matrix.configuration }} ${{ matrix.platform }})
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: windows-latest
@@ -58,33 +71,55 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [Debug, Release]
+        # net20 is what ships. net481 and net11.0-windows build the same SDK-style projects for the
+        # latest .NET Framework and the latest .NET, to catch API and warning breaks; Release is enough.
+        framework: [net20, net481, net11.0-windows]
+        # Pull requests build Release only; pushes to master add the net20 Debug legs (overflow checks on).
+        configuration: ${{ fromJSON(github.event_name == 'pull_request' && '["Release"]' || '["Debug","Release"]') }}
         platform: [x86, x64]
+        exclude:
+          - framework: net481
+            configuration: Debug
+          - framework: net11.0-windows
+            configuration: Debug
+    env:
+      FRAMEWORK: ${{ matrix.framework }}
+      CONFIGURATION: ${{ matrix.configuration }}
+      PLATFORM: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # The projects list net11.0-windows, so every leg needs a .NET SDK that knows it.
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
       - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+        if: matrix.framework != 'net11.0-windows'
 
-      - name: Fetch .NET Framework 2.0 reference assemblies
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
         shell: pwsh
-        run: |
-          $dir = Join-Path $env:RUNNER_TEMP 'net20-ref'
-          $nupkg = "$dir.zip"
-          Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.netframework.referenceassemblies.net20/$env:NET20_REF_VERSION/microsoft.netframework.referenceassemblies.net20.$env:NET20_REF_VERSION.nupkg" -OutFile $nupkg
-          Expand-Archive $nupkg $dir
-          "NET20_REF_ROOT=$dir\build\" >> $env:GITHUB_ENV
+        run: dotnet restore PlaneDisaster.NET.sln -nologo "-p:Platform=$env:PLATFORM"
 
+      # Full framework MSBuild compiles the .NET Framework legs: it embeds the forms' non-string .resx
+      # resources the way .NET Framework 2.0 reads them, which dotnet build cannot.
       - name: Build solution
         shell: pwsh
-        # Packages are committed under packages/, so the legacy NuGet.targets restore is skipped.
-        run: >-
-          msbuild PlaneDisaster.NET.sln -m -nologo -v:minimal
-          "-p:Configuration=${{ matrix.configuration }}"
-          "-p:Platform=${{ matrix.platform }}"
-          -p:RestorePackages=false
-          -warnaserror -p:TreatWarningsAsErrors=true
-          "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT"
-          "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
+        run: |
+          $common = @("PlaneDisaster.NET.sln", "-nologo", "-warnaserror", "-p:TreatWarningsAsErrors=true",
+            "-p:Configuration=$env:CONFIGURATION", "-p:Platform=$env:PLATFORM", "-p:TargetFramework=$env:FRAMEWORK")
+          if ($env:FRAMEWORK -eq 'net11.0-windows') {
+            dotnet build @common --no-restore
+          } else {
+            msbuild @common -m -v:minimal
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Jet 4.0 is 32 bit only, so the x64 tests need the 64 bit Access Database Engine.
       - name: Install Access Database Engine 2016 (x64)
@@ -97,6 +132,7 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "Access Database Engine install exited with $($p.ExitCode)" }
 
       - name: Fetch NUnit 2.6 console runner
+        if: matrix.framework != 'net11.0-windows'
         shell: pwsh
         run: |
           $dir = Join-Path $env:RUNNER_TEMP 'nunit'
@@ -104,34 +140,146 @@ jobs:
           Expand-Archive "$dir.zip" $dir
           "NUNIT_TOOLS=$dir\tools" >> $env:GITHUB_ENV
 
-      - name: Run unit tests
+      - name: Run unit tests (NUnit 2.6)
+        if: matrix.framework != 'net11.0-windows'
         shell: pwsh
-        # The test assembly targets CLR 2, which the runner doesn't have, so NUnit runs it on CLR 4.
+        # NUnit runs every .NET Framework build on CLR 4; the net20 test assembly targets CLR 2, which the runner doesn't have.
         run: |
-          $console = if ('${{ matrix.platform }}' -eq 'x86') { 'nunit-console-x86.exe' } else { 'nunit-console.exe' }
-          $dll = "UnitTests\bin\${{ matrix.platform }}\${{ matrix.configuration }}\UnitTests.dll"
+          $console = if ($env:PLATFORM -eq 'x86') { 'nunit-console-x86.exe' } else { 'nunit-console.exe' }
+          $dll = "UnitTests\bin\$env:PLATFORM\$env:CONFIGURATION\$env:FRAMEWORK\UnitTests.dll"
           & "$env:NUNIT_TOOLS\$console" $dll /framework:net-4.0 /noshadow /nologo /result:TestResult.xml
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # setup-dotnet installs only the x64 runtime, so the x86 .NET build is compiled but not tested.
+      # This leg has the Access Database Engine and runs every test, so it also measures code coverage.
+      - name: Run unit tests with coverage (dotnet test)
+        if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
+        shell: pwsh
+        run: >-
+          dotnet test UnitTests --no-build -nologo
+          -c $env:CONFIGURATION -f $env:FRAMEWORK "-p:Platform=$env:PLATFORM"
+          --logger "trx;LogFileName=$env:GITHUB_WORKSPACE\TestResult.trx"
+          --collect "Code Coverage;Format=Cobertura"
+          --results-directory "$env:GITHUB_WORKSPACE\coverage"
+
+      - name: Coverage report
+        if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
+        shell: pwsh
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version $env:REPORTGENERATOR_VERSION
+          reportgenerator "-reports:coverage/**/*.cobertura.xml" -targetdir:coverage-report `
+            "-reporttypes:Html;MarkdownSummaryGithub;Cobertura;Badges" `
+            "-assemblyfilters:+PlaneDisaster*;+Jet2SQLite;+jsql_admin" -title:PlaneDisaster.NET
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Content coverage-report/SummaryGithub.md >> $env:GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.framework == 'net11.0-windows' && matrix.platform == 'x64'
+        with:
+          name: coverage-report
+          path: coverage-report/
+          if-no-files-found: error
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: TestResult-${{ matrix.configuration }}-${{ matrix.platform }}
-          path: TestResult.xml
+          name: TestResult-${{ matrix.framework }}-${{ matrix.configuration }}-${{ matrix.platform }}
+          path: |
+            TestResult.xml
+            TestResult.trx
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: PlaneDisaster-${{ matrix.configuration }}-${{ matrix.platform }}
+          name: PlaneDisaster-${{ matrix.framework }}-${{ matrix.configuration }}-${{ matrix.platform }}
           path: |
-            bin/${{ matrix.platform }}/${{ matrix.configuration }}/
-            */bin/${{ matrix.platform }}/${{ matrix.configuration }}/
+            bin/${{ matrix.platform }}/${{ matrix.configuration }}/${{ matrix.framework }}/
+            */bin/${{ matrix.platform }}/${{ matrix.configuration }}/${{ matrix.framework }}/
           if-no-files-found: error
+
+      # The MSI and portable zip ship the net20 build.
+      - name: Build the MSI
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
+        shell: pwsh
+        run: >-
+          dotnet build "PlaneDisaster.NET Setup" -c Release -nologo -warnaserror
+          "-p:Platform=$env:PLATFORM" -p:AppTargetFramework=net20
+          "-p:PlaneDisasterVersion=${{ needs.changes.outputs.version }}"
+
+      - name: Stage the portable zip contents
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
+        shell: pwsh
+        run: |
+          $dir = New-Item -ItemType Directory -Force portable
+          Copy-Item "bin\$env:PLATFORM\Release\net20\*" $dir -Recurse -Exclude *.xml, *.pdb
+          Copy-Item "Jet2SQLite\bin\$env:PLATFORM\Release\net20\Jet2SQLite.exe*" $dir
+          Copy-Item gpl.txt, README.md $dir
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
+        with:
+          name: msi-${{ matrix.platform }}
+          path: PlaneDisaster.NET Setup/bin/${{ matrix.platform }}/Release/*.msi
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
+        with:
+          name: portable-${{ matrix.platform }}
+          path: portable/
+          if-no-files-found: error
+
+  # build/mono/build.sh lists its sources by hand; fail when they drift from the projects' Compile items.
+  mono-sources:
+    name: Mono source list
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Compare build.sh with the projects
+        run: bash build/mono/check-sources.sh
+
+  # Mono can't load the SDK-style projects, so build/mono/build.sh compiles the same sources with mcs
+  # and runs the tests that don't need Windows. Debian unstable packages the latest Mono release.
+  mono:
+    name: Build (mono Release x64)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    container: debian:sid
+    timeout-minutes: 20
+    steps:
+      - name: Install Mono
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends mono-devel ca-certificates curl unzip >/dev/null
+          mono --version | head -1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build and test with Mono
+        run: bash build/mono/build.sh "$GITHUB_WORKSPACE/bin/mono"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: PlaneDisaster-mono-Release-x64
+          path: |
+            bin/mono/
+            !bin/mono/obj/
+          if-no-files-found: ignore
 
   # The one required check: it passes when the build passed or was skipped for a docs-only change.
   result:
     name: CI result
-    needs: [changes, build]
+    needs: [changes, build, mono-sources, mono]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5

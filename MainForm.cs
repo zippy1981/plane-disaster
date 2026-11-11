@@ -91,6 +91,8 @@ namespace PlaneDisaster
 		
 		
 		/// <summary>The contents of the Query Text Area.</summary>
+		/// <remarks>Hidden from the designer, which would otherwise try to serialize it (WFO1000).</remarks>
+		[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		internal string Query {
 			get { return this.txtSQL.Text; }
 			set { this.txtSQL.Text = value; }
@@ -257,7 +259,7 @@ namespace PlaneDisaster
 							MessageBox.Show(ex.Message, "Permission Error");
 							break;
 						default:
-							throw ex;
+							throw;
 					}
 				}
 			}
@@ -424,7 +426,7 @@ namespace PlaneDisaster
 		
 		
 		void menuDrop_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
+			ToolStripMenuItem mnu = (ToolStripMenuItem) sender;
 			
 			if (mnu.Name == "menuDropProcedure") {
 				_dbcon.DropProcedure('[' + (string) lstProcedures.SelectedItem + ']');
@@ -566,7 +568,7 @@ namespace PlaneDisaster
 		
 		
 		void menuSchema_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
+			ToolStripMenuItem mnu = (ToolStripMenuItem) sender;
 			
 			if (mnu.Name == "menuProcedureSchema") {
 				gridResults.DataSource = _dbcon.GetColumnSchema(lstProcedures.Text);
@@ -583,7 +585,7 @@ namespace PlaneDisaster
 		
 		
 		void menuScript_Click (object sender, System.EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
+			ToolStripMenuItem mnu = (ToolStripMenuItem) sender;
 			
 			if (mnu.Name == "menuScriptProcedure") {
 				Query = _dbcon.GetProcedureSQL(lstProcedures.Text);
@@ -596,7 +598,7 @@ namespace PlaneDisaster
 		
 		
 		void menuShow_Click (object sender, EventArgs e) {
-			MenuItem mnu = (MenuItem) sender;
+			ToolStripMenuItem mnu = (ToolStripMenuItem) sender;
 			
 			if (mnu.Name == "menuShowProcedure") {
 				lst_DblClick(lstProcedures, e);
@@ -677,10 +679,10 @@ namespace PlaneDisaster
 			 */
 			lstColumns.DataSource = null;
 			
-			lstColumns.ContextMenu = null;
-			lstProcedures.ContextMenu = null;
-			lstTables.ContextMenu = null;
-			lstViews.ContextMenu = null;
+			lstColumns.ContextMenuStrip = null;
+			lstProcedures.ContextMenuStrip = null;
+			lstTables.ContextMenuStrip = null;
+			lstViews.ContextMenuStrip = null;
 			
 			txtResults.Text = "";
 			CSV = "";
@@ -727,77 +729,88 @@ namespace PlaneDisaster
 		}
 		
 		
+		/// <summary>
+		/// Builds a context menu from menu items. ContextMenuStrip replaces ContextMenu, which .NET
+		/// (Core) 3.1 and later removed.
+		/// </summary>
+		private static ContextMenuStrip NewContextMenu(params ToolStripItem[] items) {
+			ContextMenuStrip menu = new ContextMenuStrip();
+			menu.Items.AddRange(items);
+			return menu;
+		}
+
+
 		internal void InitContextMenues () {
-			ContextMenu ctxProcedure, ctxTable, ctxView;
-			MenuItem menuDropProcedure, menuDropTable, menuDropView;
-			MenuItem menuScriptProcedure, menuScriptTable, menuScriptView;
-			MenuItem menuShowProcedure, menuShowTable, menuShowView;
-			MenuItem menuTableSchema, menuViewSchema;
+			ContextMenuStrip ctxProcedure, ctxTable, ctxView;
+			ToolStripMenuItem menuDropProcedure, menuDropTable, menuDropView;
+			ToolStripMenuItem menuScriptProcedure, menuScriptTable, menuScriptView;
+			ToolStripMenuItem menuShowProcedure, menuShowTable, menuShowView;
+			ToolStripMenuItem menuTableSchema, menuViewSchema;
 			
 			if (!(_dbcon is SQLiteDba)) {	
 				lstProcedures.DoubleClick += new EventHandler(this.lst_DblClick);
 				
-				menuDropProcedure = new MenuItem("Drop");
+				menuDropProcedure = new ToolStripMenuItem("Drop");
 				menuDropProcedure.Click += new System.EventHandler(menuDrop_Click);
 				menuDropProcedure.Name = "menuDropProcedure";
 				
-				menuScriptProcedure = new MenuItem("Script");
+				menuScriptProcedure = new ToolStripMenuItem("Script");
 				menuScriptProcedure.Click += new System.EventHandler(menuScript_Click);
 				menuScriptProcedure.Name = "menuScriptProcedure";
 				
-				menuShowProcedure = new MenuItem("Show");
+				menuShowProcedure = new ToolStripMenuItem("Show");
 				menuShowProcedure.Click += new EventHandler(menuShow_Click);
 				menuShowProcedure.Name = "menuShowProcedure";
 				
-				ctxProcedure = new ContextMenu(new MenuItem[] {menuShowProcedure, menuScriptProcedure, menuDropProcedure});
-				this.lstProcedures.ContextMenu = ctxProcedure;
+				ctxProcedure = NewContextMenu(menuShowProcedure, menuScriptProcedure, menuDropProcedure);
+				this.lstProcedures.ContextMenuStrip = ctxProcedure;
 			}
 			
 			lstTables.DoubleClick += new EventHandler(this.lst_DblClick);
 			
-			menuDropTable = new MenuItem("Drop");
+			menuDropTable = new ToolStripMenuItem("Drop");
 			menuDropTable.Click += new System.EventHandler(menuDrop_Click);
 			menuDropTable.Name = "menuDropTable";
 			
-			menuScriptTable = new MenuItem("Script");
+			menuScriptTable = new ToolStripMenuItem("Script");
 			menuScriptTable.Click += new System.EventHandler(menuScript_Click);
 			menuScriptTable.Name = "menuScriptTable";
 			
-			menuShowTable = new MenuItem("Show");
+			menuShowTable = new ToolStripMenuItem("Show");
 			menuShowTable.Click += new EventHandler(menuShow_Click);
 			menuShowTable.Name = "menuShowTable";
 			
-			menuTableSchema = new MenuItem("Schema");
+			menuTableSchema = new ToolStripMenuItem("Schema");
 			menuTableSchema.Click += new System.EventHandler(this.menuSchema_Click);
 			menuTableSchema.Name = "menuTableSchema";
 			
 			if (_dbcon is SQLiteDba) {
-				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuScriptTable, menuTableSchema, menuDropTable});
+				ctxTable = NewContextMenu(menuShowTable, menuScriptTable, menuTableSchema, menuDropTable);
 			} else {
-				ctxTable = new ContextMenu(new MenuItem[] {menuShowTable, menuTableSchema, menuDropTable});
+				ctxTable = NewContextMenu(menuShowTable, menuTableSchema, menuDropTable);
 			}
-			this.lstTables.ContextMenu = ctxTable;
+			this.lstTables.ContextMenuStrip = ctxTable;
 			
 			lstViews.DoubleClick += new EventHandler(this.lst_DblClick);
 			
-			menuDropView = new MenuItem("Drop");
+			menuDropView = new ToolStripMenuItem("Drop");
 			menuDropView.Click += new System.EventHandler(menuDrop_Click);
 			menuDropView.Name = "menuDropView";
 
-			menuScriptView = new MenuItem("Script");
+			menuScriptView = new ToolStripMenuItem("Script");
 			menuScriptView.Click += new System.EventHandler(menuScript_Click);
 			menuScriptView.Name = "menuScriptView";
 			
-			menuShowView = new MenuItem("Show");
+			menuShowView = new ToolStripMenuItem("Show");
 			menuShowView.Click += new EventHandler(menuShow_Click);
 			menuShowView.Name = "menuShowView";
 			
-			menuViewSchema = new MenuItem("Schema");
+			menuViewSchema = new ToolStripMenuItem("Schema");
 			menuViewSchema.Click += new System.EventHandler(this.menuSchema_Click);
 			menuViewSchema.Name = "menuViewSchema";
 
-			ctxView = new ContextMenu(new MenuItem[] {menuShowView, menuViewSchema, menuScriptView, menuDropView});
-			this.lstViews.ContextMenu = ctxView;
+			ctxView = NewContextMenu(menuShowView, menuViewSchema, menuScriptView, menuDropView);
+			this.lstViews.ContextMenuStrip = ctxView;
 		}
 		
 		
@@ -930,7 +943,7 @@ namespace PlaneDisaster
 							if (exSecond.ErrorCode == -2147217843) {
 								MessageBox.Show("Incorrect Password");
 							} else {
-								throw exSecond;
+								throw;
 							}
 							return;
 						} finally { GetPassword.Dispose(); }
@@ -942,7 +955,7 @@ namespace PlaneDisaster
 					MessageBox.Show(Msg, "Error Opening File");
 					return;
 				} else {
-					throw ex;
+					throw;
 				}
 			}
             catch (InvalidOperationException ex)

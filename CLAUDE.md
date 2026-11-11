@@ -1,6 +1,6 @@
 # Working in this repo
 
-PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite databases, written in C# against .NET Framework 2.0. The solution is `PlaneDisaster.NET.sln`.
+PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite databases, written in C#. It ships for .NET Framework 2.0 and also builds for .NET Framework 4.8.1 and .NET 11. The solution is `PlaneDisaster.NET.sln`.
 
 ## Other agent tools
 
@@ -9,11 +9,13 @@ PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite datab
 
 ## Building
 
-- CI builds the solution in `.github/workflows/build.yml` on `windows-latest`, for Debug and Release, x86 and x64. There is no AnyCPU configuration. A change that touches only Markdown or agent config skips the Windows build; the `CI result` job still reports.
-- The projects target .NET Framework 2.0. The workflow gets the reference assemblies from the `Microsoft.NETFramework.ReferenceAssemblies.net20` NuGet package and passes `TargetFrameworkRootPath` and `FrameworkPathOverride` to MSBuild, so the host needs no .NET 3.5 install. Copy those arguments to build locally.
-- `packages/` is committed, so build with `-p:RestorePackages=false`; the bundled `.nuget/NuGet.exe` is too old to restore.
-- `PlaneDisaster.NET Setup` (WiX) isn't built by the solution: it expects SharpDevelop's WiX tools.
-- This host has no Visual Studio or .NET SDK. Push a branch and let CI build it.
+- The projects are SDK-style and multi-target `net20` (what ships), `net481` and `net11.0-windows` (`Directory.Build.props`). Platforms are x86 and x64; there is no AnyCPU. Output goes to `bin\<platform>\<configuration>\<tfm>\`.
+- Build one framework at a time. Restore with `dotnet restore PlaneDisaster.NET.sln -p:Platform=x64`. Build .NET Framework with full MSBuild: `msbuild PlaneDisaster.NET.sln -p:Configuration=Release -p:Platform=x64 -p:TargetFramework=net20`. `dotnet build` can't embed the forms' non-string `.resx` resources for .NET Framework. Build .NET with `dotnet build PlaneDisaster.NET.sln -c Release -p:Platform=x64 -p:TargetFramework=net11.0-windows`.
+- CI (`.github/workflows/build.yml`, `windows-latest`) runs net20, net481 and net11.0-windows Release, each for x86 and x64, and adds net20 Debug on pushes to `master`. It caches `~/.nuget/packages`. A `mono` job builds with the latest Mono (Debian unstable, in a container) through `build/mono/build.sh`, which compiles the same sources with `mcs` because Mono can't load SDK-style projects. It runs only the SQLite and tokenizer tests, since Access needs Windows. A new source folder or resource must be added to that script too; the `Mono source list` job (`build/mono/check-sources.sh`) fails when its file list differs from the projects' Compile items. The .NET Framework tests use NUnit 2.6 (the `NUnit` 2.6.2 package, run by nunit-console). The .NET tests use NUnit 3 via `dotnet test`, on x64 only. That leg also measures code coverage (`--collect "Code Coverage"`, Cobertura); ReportGenerator writes the summary to the job summary and the HTML report to the `coverage-report` artifact. A change that touches only Markdown or agent config skips the Windows build; the `CI result` job still reports.
+- Every framework uses the `System.Data.SQLite.Core` 1.0.119 package: a managed assembly plus `x86\SQLite.Interop.dll` and `x64\SQLite.Interop.dll`, which the MSI and the portable zip ship. .NET also uses the `System.Data.OleDb`/`Odbc` and `System.Configuration.ConfigurationManager` packages. Packages come from NuGet; nothing is committed under `packages/`.
+- `PlaneDisaster.NET Setup` is a WiX 5 SDK project, built after the solution with `dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=<x86|x64>`. CI builds the MSIs on the Release legs. WiX 6 and later need the OSMF EULA accepted, so stay on 5 unless the user decides otherwise.
+- Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
+- This host has no Visual Studio or .NET SDK. Push a branch and let CI build the Windows legs. Linux work (the Mono build, a .NET SDK container, the experiments) can run on the WSL distro's Docker: follow the `host-capabilities` skill, and clean up with `safe-docker-cleanup`. The `host-doctor` agent diagnoses a host that can't.
 
 ## Markdown
 
