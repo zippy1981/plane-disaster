@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The projects target .NET Framework 2.0, which windows-latest doesn't install. MSBuild reads the
+  # reference assemblies from this NuGet package instead.
+  NET20_REF_VERSION: 1.0.3
+
+jobs:
+  build:
+    name: Build (${{ matrix.configuration }} ${{ matrix.platform }})
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+        platform: [x86, x64]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: microsoft/setup-msbuild@v3
+
+      - name: Fetch .NET Framework 2.0 reference assemblies
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'net20-ref'
+          $nupkg = "$dir.zip"
+          Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.netframework.referenceassemblies.net20/$env:NET20_REF_VERSION/microsoft.netframework.referenceassemblies.net20.$env:NET20_REF_VERSION.nupkg" -OutFile $nupkg
+          Expand-Archive $nupkg $dir
+          "NET20_REF_ROOT=$dir\build\" >> $env:GITHUB_ENV
+
+      - name: Build solution
+        shell: pwsh
+        # Packages are committed under packages/, so the legacy NuGet.targets restore is skipped.
+        run: >-
+          msbuild PlaneDisaster.NET.sln -m -nologo -v:minimal
+          "-p:Configuration=${{ matrix.configuration }}"
+          "-p:Platform=${{ matrix.platform }}"
+          -p:RestorePackages=false
+          "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT"
+          "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: PlaneDisaster-${{ matrix.configuration }}-${{ matrix.platform }}
+          path: |
+            bin/${{ matrix.platform }}/${{ matrix.configuration }}/
+            */bin/${{ matrix.platform }}/${{ matrix.configuration }}/
+          if-no-files-found: error
