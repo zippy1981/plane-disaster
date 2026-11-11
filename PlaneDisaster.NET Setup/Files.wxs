@@ -50,8 +50,8 @@
 
       <!-- Shortcuts live in the user's profile as far as ICE checks go, so they key off HKCU. -->
       <Component Id="StartMenuShortcuts" Directory="PlaneDisasterStartMenuFolder">
-        <Shortcut Id="PlaneDisasterShortcut" Name="PlaneDisaster.NET" Target="[#MainExecutable]" WorkingDirectory="INSTALLDIR" />
-        <Shortcut Id="Jet2SQLiteShortcut" Name="Jet2SQLite" Target="[#Jet2SQLiteExecutable]" WorkingDirectory="INSTALLDIR" />
+        <Shortcut Id="PlaneDisasterShortcut" Name="PlaneDisaster.NET" Target="[INSTALLDIR]PlaneDisaster.exe" WorkingDirectory="INSTALLDIR" />
+        <Shortcut Id="Jet2SQLiteShortcut" Name="Jet2SQLite" Target="[INSTALLDIR]Jet2SQLite.exe" WorkingDirectory="INSTALLDIR" />
         <RemoveFolder Id="RemovePlaneDisasterStartMenuFolder" On="uninstall" />
         <RegistryValue Root="HKCU" Key="Software\ZippySoft\PlaneDisaster.NET" Name="StartMenuShortcuts" Type="integer" Value="1" KeyPath="yes" />
       </Component>
