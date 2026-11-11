@@ -17,6 +17,11 @@ PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite datab
 - Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
 - This host has no Visual Studio or .NET SDK. Push a branch and let CI build it.
 
+## Code style
+
+- Prefer an extension method to a static helper that takes the object as its first argument: `type.ToSQLiteColumnType()`, not `SQLiteColumnType(type)`. Put it in a static `<Type>Extensions` class. .NET Framework 2.0 has no `ExtensionAttribute`, so `PlaneDisaster.Dba/TypeExtensions.cs` declares an internal one under `#if NET20`; an assembly that defines its own extension methods needs the same.
+- Prefer parameterized tests. When a test checks the same behavior for several inputs, give each input its own case with `[TestCase]`, or `[TestCaseSource]` when the values aren't compile-time constants, instead of asserting on all of them in one test. Both work in NUnit 2.6 and NUnit 3.
+
 ## Markdown
 
 Every `.md` file must pass markdownlint (`.github/workflows/markdown-lint.yml`). Follow the `markdown-lint` skill, or use the `markdown-reviewer` and `markdown-fixer` agents. Markdown, YAML and JSON are LF (`.gitattributes`).

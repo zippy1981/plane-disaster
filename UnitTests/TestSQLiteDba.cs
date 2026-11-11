@@ -301,48 +301,54 @@ namespace UnitTests
 
 		/// <summary>
 		/// Jet2SQLite copies Access tables through DataTable2SQLiteTable, so every type the Access
-		/// providers return has to map to a SQLite column that keeps the value.
+		/// providers return has to map to a SQLite column that keeps the value, and NULL.
 		/// </summary>
-		[Test]
-		public void DataTable2SQLiteTableKeepsAccessColumnTypes() {
-			Guid guid = Guid.NewGuid();
-			DateTime when = new DateTime(2026, 11, 10, 13, 14, 15);
+		/// <param name="columnType">The DataColumn's type.</param>
+		/// <param name="value">The value to copy.</param>
+		/// <param name="expected">
+		/// What reads back, as the type to compare in: SQLite widens integers to Int64 and stores
+		/// Single and Decimal as doubles.
+		/// </param>
+		[TestCaseSource("AccessColumnValues")]
+		public void DataTable2SQLiteTableKeepsAccessColumnType(Type columnType, object value, object expected) {
 			DataTable dt = new DataTable("types");
-			dt.Columns.Add("byteCol", typeof(byte));
-			dt.Columns.Add("shortCol", typeof(short));
-			dt.Columns.Add("intCol", typeof(int));
-			dt.Columns.Add("longCol", typeof(long));
-			dt.Columns.Add("singleCol", typeof(float));
-			dt.Columns.Add("doubleCol", typeof(double));
-			dt.Columns.Add("decimalCol", typeof(decimal));
-			dt.Columns.Add("boolCol", typeof(bool));
-			dt.Columns.Add("dateCol", typeof(DateTime));
-			dt.Columns.Add("guidCol", typeof(Guid));
-			dt.Columns.Add("textCol", typeof(string));
-			dt.Columns.Add("blobCol", typeof(byte[]));
-			dt.Rows.Add(new object[] {(byte)200, (short)-12345, 123456789, 1234567890123L, 1.25f, 0.5, 19.99m, true, when, guid, "text", new byte[] {1, 2, 3}});
-			dt.Rows.Add(new object[] {DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value, DBNull.Value});
+			dt.Columns.Add("value", columnType);
+			dt.Rows.Add(new object[] {value});
+			dt.Rows.Add(new object[] {DBNull.Value});
 
 			_db.DataTable2SQLiteTable(dt);
 
 			DataTable copy = _db.GetTableAsDataTable("types");
 			Assert.AreEqual(2, copy.Rows.Count);
-			DataRow row = copy.Rows[0];
-			Assert.AreEqual(200, Convert.ToInt32(row["byteCol"]));
-			Assert.AreEqual(-12345, Convert.ToInt32(row["shortCol"]));
-			Assert.AreEqual(123456789, Convert.ToInt32(row["intCol"]));
-			Assert.AreEqual(1234567890123L, Convert.ToInt64(row["longCol"]));
-			Assert.AreEqual(1.25, Convert.ToDouble(row["singleCol"]));
-			Assert.AreEqual(0.5, Convert.ToDouble(row["doubleCol"]));
-			Assert.AreEqual(19.99, Convert.ToDouble(row["decimalCol"]));
-			Assert.IsTrue(Convert.ToBoolean(row["boolCol"]));
-			Assert.AreEqual(when, Convert.ToDateTime(row["dateCol"]));
-			Assert.AreEqual(guid, new Guid(row["guidCol"].ToString()));
-			Assert.AreEqual("text", row["textCol"]);
-			Assert.AreEqual(new byte[] {1, 2, 3}, row["blobCol"]);
-			foreach (object value in copy.Rows[1].ItemArray) {
-				Assert.AreEqual(DBNull.Value, value);
+			object actual = copy.Rows[0]["value"];
+			if (expected is Guid) {
+				actual = new Guid(actual.ToString());
+			} else if (!(expected is byte[])) {
+				actual = Convert.ChangeType(actual, expected.GetType());
 			}
+			Assert.AreEqual(expected, actual);
+			Assert.AreEqual(DBNull.Value, copy.Rows[1]["value"]);
+		}
+
+
+		/// <summary>
+		/// The cases for <see cref="DataTable2SQLiteTableKeepsAccessColumnType"/>: column type, value, expected.
+		/// </summary>
+		private static object[] AccessColumnValues() {
+			return new object[] {
+				new object[] {typeof(byte), (byte)200, 200},
+				new object[] {typeof(short), (short)-12345, -12345},
+				new object[] {typeof(int), 123456789, 123456789},
+				new object[] {typeof(long), 1234567890123L, 1234567890123L},
+				new object[] {typeof(float), 1.25f, 1.25},
+				new object[] {typeof(double), 0.5, 0.5},
+				new object[] {typeof(decimal), 19.99m, 19.99},
+				new object[] {typeof(bool), true, true},
+				new object[] {typeof(DateTime), new DateTime(2026, 11, 10, 13, 14, 15), new DateTime(2026, 11, 10, 13, 14, 15)},
+				new object[] {typeof(Guid), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"), new Guid("0f8fad5b-d9cb-469f-a165-70867728950e")},
+				new object[] {typeof(string), "text", "text"},
+				new object[] {typeof(byte[]), new byte[] {1, 2, 3}, new byte[] {1, 2, 3}},
+			};
 		}
 	}
 }

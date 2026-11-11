@@ -165,7 +165,7 @@ namespace PlaneDisaster.Dba
 
 				/* Figure out what datatypes to assign to the columns */
 				foreach (DataColumn col in dt.Columns) {
-					Cols.Add(String.Concat("[", col.ColumnName, "] ", SQLiteColumnType(col.DataType)));
+					Cols.Add(String.Concat("[", col.ColumnName, "] ", col.DataType.ToSQLiteColumnType()));
 				}
 				DDL.Append(String.Join(", ", Cols.ToArray()));
 				DDL.Append(")");
@@ -212,35 +212,6 @@ namespace PlaneDisaster.Dba
 		}
 
 
-		/// <summary>
-		/// The SQLite column type for a DataColumn's type. The declared type also tells
-		/// System.Data.SQLite which .NET type to read the column back as.
-		/// </summary>
-		private static string SQLiteColumnType(Type type) {
-			if (type == typeof(string) || type == typeof(char) || type == typeof(TimeSpan)) {
-				return "TEXT";
-			} else if (type == typeof(DateTime)) {
-				return "DATETIME";
-			} else if (type == typeof(bool)) {
-				return "BOOLEAN";
-			} else if (type == typeof(Guid)) {
-				return "GUID";
-			} else if (type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort)
-			           || type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong)) {
-				return "INTEGER";
-			} else if (type == typeof(float) || type == typeof(double) || type == typeof(decimal)) {
-				// Not NUMERIC for decimal: SQLite stores it as a double either way, and reading it back
-				// as decimal shows 19.989999999999998436805981328 on .NET 11, whose double-to-decimal
-				// conversion became exact. As REAL it reads back as the double 19.99.
-				return "REAL";
-			} else if (type == typeof(byte[])) {
-				return "BLOB";
-			}
-			throw new DataException
-				(String.Concat("DataTable2SQLiteTable() doesn't know how to map columns of type ", type.ToString()));
-		}
-
-		
 		/// <summary>
 		/// Gets the names of the columns in a table
 		/// </summary>
