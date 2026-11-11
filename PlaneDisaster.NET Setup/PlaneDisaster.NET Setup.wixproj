@@ -1,11 +1,11 @@
 <Project Sdk="WixToolset.Sdk/5.0.2">
   <!--
     Build after the solution, for the same platform:
-      dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=x64 -p:PlaneDisasterVersion=0.9.4
+      dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=x64 -p:PlaneDisasterVersion=0.9.5
     WiX 5 is used rather than 6 or 7, which need the Open Source Maintenance Fee EULA accepted.
   -->
   <PropertyGroup>
-    <PlaneDisasterVersion Condition=" '$(PlaneDisasterVersion)' == '' ">0.9.4</PlaneDisasterVersion>
+    <PlaneDisasterVersion Condition=" '$(PlaneDisasterVersion)' == '' ">0.9.5</PlaneDisasterVersion>
     <AppConfiguration Condition=" '$(AppConfiguration)' == '' ">Release</AppConfiguration>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\</RepoRoot>
     <OutputName>PlaneDisaster.NET-$(PlaneDisasterVersion)-$(Platform)</OutputName>
