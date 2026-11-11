@@ -10,8 +10,21 @@
     <TargetFrameworks>net20;net481;net11.0-windows</TargetFrameworks>
     <Platforms>x86;x64</Platforms>
     <PlatformTarget>$(Platform)</PlatformTarget>
-    <!-- AssemblyInfo.cs carries the version, so the SDK must not generate its own attributes. -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--
+      AssemblyInfo.cs carries the version and descriptions, so the SDK generates none of those. It still
+      generates the rest, such as [SupportedOSPlatform("windows")] for net11.0-windows, which the platform
+      compatibility analyzer (CA1416) needs before it accepts the Windows-only OleDb and registry calls.
+    -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <WarningLevel>4</WarningLevel>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- packages/ holds the CLR 2 System.Data.SQLite the .NET Framework builds reference. -->
