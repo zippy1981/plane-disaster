@@ -15,7 +15,7 @@ PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite datab
 - Every framework uses the `System.Data.SQLite.Core` 1.0.119 package: a managed assembly plus `x86\SQLite.Interop.dll` and `x64\SQLite.Interop.dll`, which the MSI and the portable zip ship. .NET also uses the `System.Data.OleDb`/`Odbc` and `System.Configuration.ConfigurationManager` packages. Packages come from NuGet; nothing is committed under `packages/`.
 - `PlaneDisaster.NET Setup` is a WiX 5 SDK project, built after the solution with `dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=<x86|x64>`. CI builds the MSIs on the Release legs. WiX 6 and later need the OSMF EULA accepted, so stay on 5 unless the user decides otherwise.
 - Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
-- This host has no Visual Studio or .NET SDK. Push a branch and let CI build it.
+- This host has no Visual Studio or .NET SDK. Push a branch and let CI build the Windows legs. Linux work (the Mono build, a .NET SDK container, the experiments) can run on the WSL distro's Docker: follow the `host-capabilities` skill, and clean up with `safe-docker-cleanup`. The `host-doctor` agent diagnoses a host that can't.
 
 ## Markdown
 
