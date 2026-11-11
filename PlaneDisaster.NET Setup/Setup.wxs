@@ -21,7 +21,6 @@
 
     <Icon Id="PlaneDisaster.ico" SourceFile="$(var.RepoRoot)PlaneDisaster.NET.ico" />
     <Property Id="ARPPRODUCTICON" Value="PlaneDisaster.ico" />
-    <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/zippy1981/plane-disaster" />
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />

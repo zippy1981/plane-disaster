@@ -16,12 +16,11 @@
 
         <!-- File associations. MDE files are left to Access or the Access runtime. -->
         <ProgId Id="PlaneDisaster.mdbfile" Description="JetSQL Database" Icon="MainExecutable" IconIndex="0">
+          <!-- The open verb is registered on the ProgId, so one extension carries it for both. -->
           <Extension Id="accdb">
             <Verb Id="open" TargetFile="MainExecutable" Argument="&quot;%1&quot;" />
           </Extension>
-          <Extension Id="mdb">
-            <Verb Id="open" TargetFile="MainExecutable" Argument="&quot;%1&quot;" />
-          </Extension>
+          <Extension Id="mdb" />
         </ProgId>
         <ProgId Id="PlaneDisaster.sqlitefile" Description="SQLite Database" Icon="MainExecutable" IconIndex="0">
           <Extension Id="sqlite">
