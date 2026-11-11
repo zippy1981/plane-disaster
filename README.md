@@ -13,7 +13,7 @@ PlaneDisaster.NET is a .NET database front end for JetSQL (the Microsoft Access 
 | `Jet2SQLite` | A tool that copies an Access database into SQLite |
 | `jsql_admin` | A command line tool that creates an Access database (`-c -d file.mdb`) and runs a SQL script against it (`-s script.sql`) |
 | `UnitTests` | NUnit 2.6 tests |
-| `PlaneDisaster.NET Setup` | The WiX installer |
+| `PlaneDisaster.NET Setup` | The WiX 5 installer (`dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=x64`) |
 
 ## Building
 

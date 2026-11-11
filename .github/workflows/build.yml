@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+  # release.yml calls this to build the MSIs it publishes.
+  workflow_call:
+    outputs:
+      version:
+        description: The AssemblyVersion from AssemblyInfo.cs, which is also the MSI version.
+        value: ${{ jobs.changes.outputs.version }}
 
 permissions:
   contents: read
@@ -28,10 +34,17 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.diff.outputs.code }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      - id: version
+        name: Read the version from AssemblyInfo.cs
+        run: |
+          version=$(grep -oP 'AssemblyVersion\("\K[0-9.]+' AssemblyInfo.cs)
+          echo "version=$version" | tee -a "$GITHUB_OUTPUT"
 
       - id: diff
         name: Skip the Windows build when only docs and agent config changed
@@ -126,6 +139,42 @@ jobs:
           path: |
             bin/${{ matrix.platform }}/${{ matrix.configuration }}/
             */bin/${{ matrix.platform }}/${{ matrix.configuration }}/
+          if-no-files-found: error
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        if: matrix.configuration == 'Release'
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build the MSI
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: >-
+          dotnet build "PlaneDisaster.NET Setup" -c Release -nologo -warnaserror
+          "-p:Platform=${{ matrix.platform }}"
+          "-p:PlaneDisasterVersion=${{ needs.changes.outputs.version }}"
+
+      - name: Stage the portable zip contents
+        if: matrix.configuration == 'Release'
+        shell: pwsh
+        run: |
+          $dir = New-Item -ItemType Directory -Force portable
+          Copy-Item "bin\${{ matrix.platform }}\Release\*" $dir -Exclude *.xml
+          Copy-Item "Jet2SQLite\bin\${{ matrix.platform }}\Release\Jet2SQLite.exe*" $dir
+          Copy-Item gpl.txt, README.md $dir
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.configuration == 'Release'
+        with:
+          name: msi-${{ matrix.platform }}
+          path: PlaneDisaster.NET Setup/bin/${{ matrix.platform }}/Release/*.msi
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.configuration == 'Release'
+        with:
+          name: portable-${{ matrix.platform }}
+          path: portable/
           if-no-files-found: error
 
   # The one required check: it passes when the build passed or was skipped for a docs-only change.

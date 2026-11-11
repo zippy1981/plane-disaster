@@ -12,7 +12,8 @@ PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite datab
 - CI builds the solution in `.github/workflows/build.yml` on `windows-latest`, for Debug and Release, x86 and x64. There is no AnyCPU configuration. A change that touches only Markdown or agent config skips the Windows build; the `CI result` job still reports.
 - The projects target .NET Framework 2.0. The workflow gets the reference assemblies from the `Microsoft.NETFramework.ReferenceAssemblies.net20` NuGet package and passes `TargetFrameworkRootPath` and `FrameworkPathOverride` to MSBuild, so the host needs no .NET 3.5 install. Copy those arguments to build locally.
 - `packages/` is committed, so build with `-p:RestorePackages=false`; the bundled `.nuget/NuGet.exe` is too old to restore.
-- `PlaneDisaster.NET Setup` (WiX) isn't built by the solution: it expects SharpDevelop's WiX tools.
+- `PlaneDisaster.NET Setup` is a WiX 5 SDK project, built after the solution with `dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=<x86|x64>`. CI builds the MSIs on the Release legs. WiX 6 and later need the OSMF EULA accepted, so stay on 5 unless the user decides otherwise.
+- Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
 - This host has no Visual Studio or .NET SDK. Push a branch and let CI build it.
 
 ## Markdown

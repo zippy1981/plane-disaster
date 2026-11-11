@@ -95,6 +95,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Jet2SQLite.ico" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj">
