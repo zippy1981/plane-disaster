@@ -101,7 +101,7 @@ jobs:
           if ('${{ matrix.framework }}' -eq 'net20') {
             $framework = "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT", "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
           } else {
-            $framework = '-p:TargetFrameworkVersion=v4.8.1'
+            $framework = @('-p:TargetFrameworkVersion=v4.8.1')
           }
           msbuild PlaneDisaster.NET.sln -m -nologo -v:minimal `
             "-p:Configuration=${{ matrix.configuration }}" `
