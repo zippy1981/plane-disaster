@@ -47,6 +47,7 @@ namespace PlaneDisaster
 	{
 		private PlaneDisasterSettings _oPlaneDisasterSettings;
 		private dba _dbcon = null;
+		private SqlSyntaxHighlighter _sqlHighlighter;
 
         private const string FILTER_ALL_FILES = "All Files|*.*";
         private const string FILTER_ALL_DBFORMATS = "All supported database types|*.accdb;*.mdb;*.mde;*.db;*.db3;*.sqlite";
@@ -95,7 +96,10 @@ namespace PlaneDisaster
 		[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		internal string Query {
 			get { return this.txtSQL.Text; }
-			set { this.txtSQL.Text = value; }
+			set {
+				this.txtSQL.Text = value;
+				_sqlHighlighter.Highlight();
+			}
 		}
 		
 		#endregion
@@ -106,7 +110,8 @@ namespace PlaneDisaster
 		internal MainForm()
 		{
 			InitializeComponent();
-			
+			_sqlHighlighter = new SqlSyntaxHighlighter(txtSQL);
+
 			/* ListBox Right Click event handlers */
 			lstProcedures.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
 			lstTables.MouseDown += new MouseEventHandler(this.Lst_RightClickSelect);
