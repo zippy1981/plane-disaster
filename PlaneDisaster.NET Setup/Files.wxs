@@ -36,7 +36,12 @@
       </Component>
 
       <Component Id="SQLite.NET">
-        <File Id="SQLiteNet" Source="$(var.AppBin)System.Data.SQLite.DLL" KeyPath="yes" />
+        <File Id="SQLiteNet" Source="$(var.AppBin)System.Data.SQLite.dll" KeyPath="yes" />
+      </Component>
+
+      <!-- System.Data.SQLite loads the native library from the subfolder named for the process architecture. -->
+      <Component Id="SQLiteInterop" Subdirectory="$(sys.BUILDARCH)">
+        <File Id="SQLiteInterop" Source="$(var.AppBin)$(sys.BUILDARCH)\SQLite.Interop.dll" KeyPath="yes" />
       </Component>
 
       <Component Id="Jet2SQLite">

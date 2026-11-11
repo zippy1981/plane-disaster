@@ -6,14 +6,41 @@
 # SQLite parts still run on Mono; Access (Jet/ACE, ODBC) needs Windows, so those tests are skipped.
 #
 # Usage: build/mono/build.sh [output-dir]       (default: bin/mono)
+#        build/mono/build.sh --list-sources     print "<project> <path>" for every file it compiles;
+#                                               CI compares this with the projects' Compile items
 # Needs: mono-devel (mcs, resgen), curl, unzip.
 set -euo pipefail
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+
+# sources <dir> [find args...]: the .cs files the SDK would glob, without bin/ and obj/.
+sources() {
+  local dir=$1
+  shift
+  find "$dir" \( -path '*/bin' -o -path '*/obj' \) -prune -o -name '*.cs' "$@" -print | sort
+}
+
+mapfile -t dba < <(sources "$root/PlaneDisaster.Dba" ! -name NpgsqlDba.cs)
+mapfile -t app < <(find "$root" -maxdepth 1 -name '*.cs' | sort; sources "$root/Configuration")
+mapfile -t jet2sqlite < <(sources "$root/Jet2SQLite"; echo "$root/InputDialog.cs")
+mapfile -t jsql < <(sources "$root/jsql_admin")
+mapfile -t tests < <(sources "$root/UnitTests")
+
+if [ "${1:-}" = --list-sources ]; then
+  list() { local project=$1; shift; printf "$project %s\n" "${@#"$root"/}"; }
+  list PlaneDisaster.Dba "${dba[@]}"
+  list PlaneDisaster "${app[@]}"
+  list Jet2SQLite "${jet2sqlite[@]}"
+  list jsql_admin "${jsql[@]}"
+  list UnitTests "${tests[@]}"
+  exit 0
+fi
+
 out=${1:-$root/bin/mono}
 work=$out/obj
 sqlite_version=1.0.119
-nunit_version=2.6.4
+nunit_version=2.6.2
+nunit_runners_version=2.6.4
 mkdir -p "$out" "$work"
 
 # fetch <nuget id> <version> <dir>: download and unpack a NuGet package once.
@@ -25,21 +52,15 @@ fetch() {
   fi
 }
 
-# The repo's System.Data.SQLite 1.0.66 is a Windows mixed-mode DLL. Mono uses the managed build from
-# NuGet, with the Linux native interop library from the .NET Standard package.
+# The same managed System.Data.SQLite the Windows builds use, with the Linux native interop library
+# from the .NET Standard package.
 fetch stub.system.data.sqlite.core.netframework "$sqlite_version" "$work/sqlite-netfx"
 fetch stub.system.data.sqlite.core.netstandard "$sqlite_version" "$work/sqlite-netstd"
-fetch nunit.runners "$nunit_version" "$work/nunit"
+fetch nunit "$nunit_version" "$work/nunit-framework"
+fetch nunit.runners "$nunit_runners_version" "$work/nunit"
 cp "$work/sqlite-netfx/lib/net46/System.Data.SQLite.dll" "$out/"
 cp "$work/sqlite-netstd/runtimes/linux-x64/native/SQLite.Interop.dll" "$out/"
-cp "$root/packages/NUnit.2.6.2/lib/nunit.framework.dll" "$out/"
-
-# sources <dir> [find args...]: the .cs files the SDK would glob, without bin/ and obj/.
-sources() {
-  local dir=$1
-  shift
-  find "$dir" \( -path '*/bin' -o -path '*/obj' \) -prune -o -name '*.cs' "$@" -print | sort
-}
+cp "$work/nunit-framework/lib/nunit.framework.dll" "$out/"
 
 compile() {
   echo "mcs: $1" >&2
@@ -49,14 +70,12 @@ compile() {
 framework=(-r:System.dll -r:System.Data.dll -r:System.Xml.dll -r:System.Configuration.dll)
 winforms=(-r:System.Drawing.dll -r:System.Windows.Forms.dll)
 
-mapfile -t dba < <(sources "$root/PlaneDisaster.Dba" ! -name NpgsqlDba.cs)
 compile PlaneDisaster.Dba -target:library -out:"$out/PlaneDisaster.Dba.dll" \
   "${framework[@]}" -r:"$out/System.Data.SQLite.dll" "${dba[@]}"
 
 # Resource names must match the form's full type name, as ComponentResourceManager looks them up.
 resgen "$root/MainForm.resx" "$work/PlaneDisaster.MainForm.resources" >/dev/null
 resgen "$root/ConnectionStringDialog.resx" "$work/PlaneDisaster.ConnectionStringDialog.resources" >/dev/null
-mapfile -t app < <(find "$root" -maxdepth 1 -name '*.cs' | sort; sources "$root/Configuration")
 compile PlaneDisaster -target:winexe -out:"$out/PlaneDisaster.exe" -win32icon:"$root/PlaneDisaster.NET.ico" \
   "${framework[@]}" "${winforms[@]}" -r:"$out/PlaneDisaster.Dba.dll" -r:"$out/System.Data.SQLite.dll" \
   -resource:"$work/PlaneDisaster.MainForm.resources" \
@@ -64,16 +83,13 @@ compile PlaneDisaster -target:winexe -out:"$out/PlaneDisaster.exe" -win32icon:"$
   "${app[@]}"
 
 resgen "$root/Jet2SQLite/MainForm.resx" "$work/PlaneDisaster.Jet2SQLite.MainForm.resources" >/dev/null
-mapfile -t jet2sqlite < <(sources "$root/Jet2SQLite")
 compile Jet2SQLite -target:winexe -out:"$out/Jet2SQLite.exe" -win32icon:"$root/Jet2SQLite/Jet2SQLite.ico" \
   "${framework[@]}" "${winforms[@]}" -r:"$out/PlaneDisaster.Dba.dll" \
   -resource:"$work/PlaneDisaster.Jet2SQLite.MainForm.resources" \
-  "${jet2sqlite[@]}" "$root/InputDialog.cs"
+  "${jet2sqlite[@]}"
 
-mapfile -t jsql < <(sources "$root/jsql_admin")
 compile jsql_admin -target:exe -out:"$out/jsql_admin.exe" "${framework[@]}" -r:"$out/PlaneDisaster.Dba.dll" "${jsql[@]}"
 
-mapfile -t tests < <(sources "$root/UnitTests")
 compile UnitTests -target:library -out:"$out/UnitTests.dll" \
   "${framework[@]}" -r:"$out/PlaneDisaster.Dba.dll" -r:"$out/System.Data.SQLite.dll" -r:"$out/nunit.framework.dll" \
   "${tests[@]}"

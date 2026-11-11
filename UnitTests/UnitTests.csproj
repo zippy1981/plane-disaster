@@ -8,9 +8,7 @@
 
   <!-- .NET Framework builds use NUnit 2.6, the last version for .NET 2.0, run by nunit-console in CI. -->
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <Reference Include="nunit.framework">
-      <HintPath>$(PackagesDir)NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
-    </Reference>
+    <PackageReference Include="NUnit" Version="2.6.2" />
   </ItemGroup>
 
   <!-- .NET builds use NUnit 3, whose classic Assert API matches 2.6, run by dotnet test. -->
