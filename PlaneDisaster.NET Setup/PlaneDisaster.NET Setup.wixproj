@@ -7,9 +7,13 @@
   <PropertyGroup>
     <PlaneDisasterVersion Condition=" '$(PlaneDisasterVersion)' == '' ">0.9.5</PlaneDisasterVersion>
     <AppConfiguration Condition=" '$(AppConfiguration)' == '' ">Release</AppConfiguration>
+    <!-- The installer ships the .NET Framework 2.0 build; SDK-style projects put each framework in its own folder. -->
+    <AppTargetFramework Condition=" '$(AppTargetFramework)' == '' ">net20</AppTargetFramework>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))\</RepoRoot>
+    <AppBin>$(RepoRoot)bin\$(Platform)\$(AppConfiguration)\$(AppTargetFramework)\</AppBin>
+    <Jet2SQLiteBin>$(RepoRoot)Jet2SQLite\bin\$(Platform)\$(AppConfiguration)\$(AppTargetFramework)\</Jet2SQLiteBin>
     <OutputName>PlaneDisaster.NET-$(PlaneDisasterVersion)-$(Platform)</OutputName>
-    <DefineConstants>PlaneDisasterVersion=$(PlaneDisasterVersion);AppBin=$(RepoRoot)bin\$(Platform)\$(AppConfiguration)\;Jet2SQLiteBin=$(RepoRoot)Jet2SQLite\bin\$(Platform)\$(AppConfiguration)\;RepoRoot=$(RepoRoot)</DefineConstants>
+    <DefineConstants>PlaneDisasterVersion=$(PlaneDisasterVersion);AppBin=$(AppBin);Jet2SQLiteBin=$(Jet2SQLiteBin);RepoRoot=$(RepoRoot)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />

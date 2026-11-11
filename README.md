@@ -28,13 +28,15 @@ Get the MSI installer or a portable zip, for x86 or x64, from the [latest releas
 
 ## Building
 
-The projects target .NET Framework 2.0, with x86 and x64 platforms. CI builds them with MSBuild on `windows-latest`; see [`.github/workflows/build.yml`](.github/workflows/build.yml) for the exact commands. In short, from a Visual Studio developer prompt:
+The projects are SDK-style and target .NET Framework 2.0 (what ships), .NET Framework 4.8.1 and .NET 11, for x86 and x64. CI builds them on `windows-latest`; see [`.github/workflows/build.yml`](.github/workflows/build.yml) for the exact commands. You need the .NET 11 SDK, plus Visual Studio or its Build Tools for the .NET Framework builds:
 
 ```powershell
-msbuild PlaneDisaster.NET.sln -p:Configuration=Release -p:Platform=x64 -p:RestorePackages=false
+dotnet restore PlaneDisaster.NET.sln -p:Platform=x64
+msbuild PlaneDisaster.NET.sln -p:Configuration=Release -p:Platform=x64 -p:TargetFramework=net20
+dotnet build PlaneDisaster.NET.sln -c Release -p:Platform=x64 -p:TargetFramework=net11.0-windows
 ```
 
-If .NET Framework 3.5 isn't installed, add the `TargetFrameworkRootPath` and `FrameworkPathOverride` arguments from the workflow, which point MSBuild at the `Microsoft.NETFramework.ReferenceAssemblies.net20` package.
+No .NET Framework 3.5 install is needed: the SDK downloads the 2.0 reference assemblies.
 
 Opening Access files needs an Access driver. 32 bit builds use Jet 4.0, which ships with Windows. 64 bit builds need the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
 

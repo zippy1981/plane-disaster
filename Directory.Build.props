@@ -1,0 +1,57 @@
+<Project>
+  <!--
+    Settings shared by every C# project. Each project targets:
+      net20            what ships today; build with msbuild.exe (full framework MSBuild compiles its .resx)
+      net481           the latest .NET Framework
+      net11.0-windows  the latest .NET; build with dotnet build -f net11.0-windows
+    Build one framework at a time with -p:TargetFramework=<tfm> (msbuild) or -f <tfm> (dotnet).
+  -->
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+    <TargetFrameworks>net20;net481;net11.0-windows</TargetFrameworks>
+    <Platforms>x86;x64</Platforms>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <!--
+      AssemblyInfo.cs carries the version and descriptions, so the SDK generates none of those. It still
+      generates the rest, such as [SupportedOSPlatform("windows")] for net11.0-windows, which the platform
+      compatibility analyzer (CA1416) needs before it accepts the Windows-only OleDb and registry calls.
+    -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+    <WarningLevel>4</WarningLevel>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- packages/ holds the CLR 2 System.Data.SQLite the .NET Framework builds reference. -->
+    <PackagesDir>$(MSBuildThisFileDirectory)packages\</PackagesDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(Configuration)' == 'Debug' ">
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <!-- Items are evaluated after all properties, so TargetFrameworkIdentifier is known here. -->
+  <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data.SQLite" Condition=" '$(Platform)' == 'x86' ">
+      <HintPath>$(PackagesDir)SQLitex64.1.0.66\lib\32\System.Data.SQLite.DLL</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite" Condition=" '$(Platform)' == 'x64' ">
+      <HintPath>$(PackagesDir)SQLitex64.1.0.66\lib\64\System.Data.SQLite.DLL</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- On .NET the System.Data providers and configuration are packages, and SQLite is the managed Core build. -->
+  <ItemGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">
+    <!-- The Windows Desktop framework that WinForms projects use already includes it (NU1510). -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="11.0.0" Condition=" '$(UseWindowsForms)' != 'true' " />
+    <PackageReference Include="System.Data.Odbc" Version="11.0.0" />
+    <PackageReference Include="System.Data.OleDb" Version="11.0.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+  </ItemGroup>
+</Project>
