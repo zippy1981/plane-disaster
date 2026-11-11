@@ -38,6 +38,8 @@ dotnet build PlaneDisaster.NET.sln -c Release -p:Platform=x64 -p:TargetFramework
 
 No .NET Framework 3.5 install is needed: the SDK downloads the 2.0 reference assemblies.
 
+On x64 Linux, `build/mono/build.sh` builds with Mono and runs the tests that don't need Access.
+
 Opening Access files needs an Access driver. 32 bit builds use Jet 4.0, which ships with Windows. 64 bit builds need the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
 
 ## License

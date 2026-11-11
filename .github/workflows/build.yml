@@ -200,10 +200,40 @@ jobs:
           path: portable/
           if-no-files-found: error
 
+  # Mono can't load the SDK-style projects, so build/mono/build.sh compiles the same sources with mcs
+  # and runs the tests that don't need Windows. Debian unstable packages the latest Mono release.
+  mono:
+    name: Build (mono Release x64)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    container: debian:sid
+    timeout-minutes: 20
+    steps:
+      - name: Install Mono
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends mono-devel ca-certificates curl unzip >/dev/null
+          mono --version | head -1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build and test with Mono
+        run: bash build/mono/build.sh "$GITHUB_WORKSPACE/bin/mono"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: PlaneDisaster-mono-Release-x64
+          path: |
+            bin/mono/
+            !bin/mono/obj/
+          if-no-files-found: ignore
+
   # The one required check: it passes when the build passed or was skipped for a docs-only change.
   result:
     name: CI result
-    needs: [changes, build]
+    needs: [changes, build, mono]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
