@@ -18,7 +18,7 @@ This file is the OpenCode (and other agent) counterpart to [CLAUDE.md](CLAUDE.md
 - Every framework uses the `System.Data.SQLite.Core` 1.0.119 package: a managed assembly plus `x86\SQLite.Interop.dll` and `x64\SQLite.Interop.dll`, which the MSI and the portable zip ship. .NET also uses the `System.Data.OleDb`/`Odbc` and `System.Configuration.ConfigurationManager` packages. Packages come from NuGet; nothing is committed under `packages/`.
 - `PlaneDisaster.NET Setup` is a WiX 5 SDK project, built after the solution with `dotnet build "PlaneDisaster.NET Setup" -c Release -p:Platform=<x86|x64>`. CI builds the MSIs on the Release legs. WiX 6 and later need the OSMF EULA accepted, so stay on 5 unless the user decides otherwise.
 - Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
-- On a host without Visual Studio, push a branch and let CI build it.
+- On a host without Visual Studio, push a branch and let CI build the Windows legs. Linux work (the Mono build, a .NET SDK container, the experiments) can run on a Linux Docker engine, such as a WSL distro's: follow the `host-capabilities` skill, and clean up with `safe-docker-cleanup`. The `host-doctor` playbook diagnoses a host that can't.
 
 ## Markdown
 
