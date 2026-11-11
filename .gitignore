@@ -21,3 +21,6 @@ desktop.ini
 #NUnit stuff
 TestResult.xml
 *.VisualState.xml
+
+# Host probes cached by scripts/Get-HostCapabilities.ps1 and per-host overrides
+.claude/*.local.json

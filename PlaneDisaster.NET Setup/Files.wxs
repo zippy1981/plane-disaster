@@ -1,74 +1,65 @@
-<?xml version="1.0"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
-	<Fragment>
-		<DirectoryRef Id="TARGETDIR">
-			<Directory Id="ProgramFilesFolder" Name="PFiles">
-				<Directory Id="INSTALLDIR" Name="PlnDis" LongName="PlaneDisaster.NET">
-					<Component Id="PlaneDisasterExe" Guid="cb0d6ac3-94fc-4063-b4b1-ded21d15867c" DiskId="1">
-						<File Id="MainExecutable" Name="PlnDisNT.exe" LongName="PlaneDisaster.exe" Source="..\bin\Release\PlaneDisaster.exe" />
-						<Shortcut 
-							Id="startmenuPDShortcut" 
-							Directory="PlaneDisasterStartMenuFolder" 
-							Name="PlnDisNT" 
-							LongName="PlaneDisaster.NET" 
-							Target="[#MainExecutable]" />
-						
-						<!-- Begin File associations -->
-						<ProgId Id="PlaneDisaster.mdbfile" Description="JetSQL Database" Icon="&quot;[#MainExecutable]&quot;">
-							<Extension Id="accdb">
-								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
-							</Extension>
-							<Extension Id="mdb">
-								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
-							</Extension>
-						</ProgId>
-						<!-- We dont want to associate with MDE files. Let MS Access or the Access runtime handle that.
-						TODO: Figure out how to add an application to "Open With" without making it the default association.
-						<ProgId Id="PlaneDisaster.mdefile" Description="MS Access Application" Icon="&quot;[#MainExecutable]&quot;">
-							<Extension Id="mde">
-								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
-							</Extension>
-						</ProgId>
-						-->
-						<!-- End File associations -->
-						
-						<ProgId Id="PlaneDisaster.sqlitefile" Description="SQLite Database" Icon="&quot;[#MainExecutable]&quot;">
-							<Extension Id="sqlite">
-								<Verb Id="open" Target="&quot;[#MainExecutable]&quot;" Argument="&quot;%1&quot;" />
-							</Extension>
-						</ProgId>
-						<!-- End File associations -->
-					</Component>
-					<Component Id="PlaneDisasterDll" Guid="41d255e7-6d36-45d7-aee6-16f34c7474ce" DiskId="1">
-						<File Id="PlaneDisaster.Dba" Name="PlnDba.dll" LongName="PlaneDisaster.Dba.dll" Source="..\bin\Release\PlaneDisaster.Dba.dll" />
-						<!-- 
-							In version 0.92 This file was called PlaneDisaster.LIB.dll I also had 
-							all the files in one component. When I upgraded. both files would be in the 
-							install directory. They would both be removed on uninstall. So we attempt to
-							delete the old file here.
-						-->
-						<RemoveFile Id="PlaneDisasterLib" Name="PlnDisNT.dll" LongName="PlaneDisaster.LIB.dll" On="install" />
-					</Component>
-					<Component Id="PlaneDisasterDocs" Guid="4173884a-b5ab-4891-8bd2-81295188d519" DiskId="1">
-						<File Id="LicenseFile" Name="License.rtf" Source="License.rtf" />
-					</Component>
-					<Component Id="Jet2SQLite" Guid="ff9343c0-2507-4408-98d1-bb260716da6c" DiskId="1">
-						<File Id="Jet2SQLiteExecutable" Name="J2SQLite.exe" LongName="Jet2SQLite.exe" Source="..\Jet2SQLite\bin\Release\Jet2SQLite.exe" />
-						<Shortcut 
-							Id="startmenuJet2SQLiteShortcut" 
-							Directory="PlaneDisasterStartMenuFolder" 
-							Name="J2SQLite.exe"
-							LongName="Jet2SQLite.exe"
-							Target="[#Jet2SQLiteExecutable]" />
-					</Component>
-					<Component Id="SQLite.NET" Guid="D8F44097-EF6B-4342-8322-A10D28040DF1" DiskId="1">
-						<File Id="SQLiteNet" Name="SQLitNET.DLL" LongName="System.Data.SQLite.DLL" Source="..\bin\Release\System.Data.SQLite.DLL" />
-					</Component>
-				</Directory>
-				<Directory Id="ProgramMenuFolder" Name="PMenu" LongName="Programs">
-					<Directory Id="PlaneDisasterStartMenuFolder" Name="PlnDisNT" LongName="PlaneDisaster.NET" />
-				</Directory>
-			</Directory>
-		</DirectoryRef>
-	</Fragment>
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- Program Files on x86, Program Files (not x86) on x64. -->
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLDIR" Name="PlaneDisaster.NET" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="PlaneDisasterStartMenuFolder" Name="PlaneDisaster.NET" />
+    </StandardDirectory>
+
+    <ComponentGroup Id="PlaneDisasterComponents" Directory="INSTALLDIR">
+      <Component Id="PlaneDisasterExe">
+        <File Id="MainExecutable" Source="$(var.AppBin)PlaneDisaster.exe" KeyPath="yes" />
+        <File Id="MainExecutableConfig" Source="$(var.AppBin)PlaneDisaster.exe.config" />
+
+        <!-- File associations. MDE files are left to Access or the Access runtime. -->
+        <ProgId Id="PlaneDisaster.mdbfile" Description="JetSQL Database" Icon="MainExecutable" IconIndex="0">
+          <!-- The open verb is registered on the ProgId, so one extension carries it for both. -->
+          <Extension Id="accdb">
+            <Verb Id="open" TargetFile="MainExecutable" Argument="&quot;%1&quot;" />
+          </Extension>
+          <Extension Id="mdb" />
+        </ProgId>
+        <ProgId Id="PlaneDisaster.sqlitefile" Description="SQLite Database" Icon="MainExecutable" IconIndex="0">
+          <Extension Id="sqlite">
+            <Verb Id="open" TargetFile="MainExecutable" Argument="&quot;%1&quot;" />
+          </Extension>
+        </ProgId>
+      </Component>
+
+      <Component Id="PlaneDisasterDll">
+        <File Id="PlaneDisaster.Dba" Source="$(var.AppBin)PlaneDisaster.Dba.dll" KeyPath="yes" />
+        <!-- Version 0.92 called this PlaneDisaster.LIB.dll; remove it if an old install left it behind. -->
+        <RemoveFile Id="PlaneDisasterLib" Name="PlaneDisaster.LIB.dll" On="install" />
+      </Component>
+
+      <Component Id="SQLite.NET">
+        <File Id="SQLiteNet" Source="$(var.AppBin)System.Data.SQLite.dll" KeyPath="yes" />
+      </Component>
+
+      <!-- System.Data.SQLite loads the native library from the subfolder named for the process architecture. -->
+      <Component Id="SQLiteInterop" Subdirectory="$(sys.BUILDARCH)">
+        <File Id="SQLiteInterop" Source="$(var.AppBin)$(sys.BUILDARCH)\SQLite.Interop.dll" KeyPath="yes" />
+      </Component>
+
+      <Component Id="Jet2SQLite">
+        <File Id="Jet2SQLiteExecutable" Source="$(var.Jet2SQLiteBin)Jet2SQLite.exe" KeyPath="yes" />
+        <File Id="Jet2SQLiteConfig" Source="$(var.Jet2SQLiteBin)Jet2SQLite.exe.config" />
+      </Component>
+
+      <Component Id="PlaneDisasterDocs">
+        <File Id="LicenseFile" Source="license.rtf" KeyPath="yes" />
+      </Component>
+
+      <!-- Shortcuts live in the user's profile as far as ICE checks go, so they key off HKCU. -->
+      <Component Id="StartMenuShortcuts" Directory="PlaneDisasterStartMenuFolder">
+        <Shortcut Id="PlaneDisasterShortcut" Name="PlaneDisaster.NET" Target="[INSTALLDIR]PlaneDisaster.exe" WorkingDirectory="INSTALLDIR" />
+        <Shortcut Id="Jet2SQLiteShortcut" Name="Jet2SQLite" Target="[INSTALLDIR]Jet2SQLite.exe" WorkingDirectory="INSTALLDIR" />
+        <RemoveFolder Id="RemovePlaneDisasterStartMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\ZippySoft\PlaneDisaster.NET" Name="StartMenuShortcuts" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
 </Wix>
