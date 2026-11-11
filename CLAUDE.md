@@ -21,6 +21,7 @@ PlaneDisaster.NET is a Windows Forms front end for Access (Jet) and SQLite datab
 
 - Prefer an extension method to a static helper that takes the object as its first argument: `type.ToSQLiteColumnType()`, not `SQLiteColumnType(type)`. Put it in a static `<Type>Extensions` class. .NET Framework 2.0 has no `ExtensionAttribute`, so `PlaneDisaster.Dba/TypeExtensions.cs` declares an internal one under `#if NET20`; an assembly that defines its own extension methods needs the same.
 - Prefer parameterized tests. When a test checks the same behavior for several inputs, give each input its own case with `[TestCase]`, or `[TestCaseSource]` when the values aren't compile-time constants, instead of asserting on all of them in one test. Both work in NUnit 2.6 and NUnit 3.
+- `UnitTests/TestData/` holds Access databases from public sources for the smoke tests in `TestAccessSampleFiles.cs`; the project copies them to the output directory. Add a file only if it is public domain or freely redistributable, and record its source, licence and SHA-256 in that folder's `README.md`.
 
 ## Markdown
 
