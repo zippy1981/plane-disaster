@@ -137,7 +137,7 @@
     <None Include="app.config" />
     <None Include="Changelog.txt" />
     <None Include="packages.config" />
-    <None Include="README.txt" />
+    <None Include="README.md" />
     <Compile Include="ConnectionStringDialog.cs">
       <SubType>Form</SubType>
     </Compile>
