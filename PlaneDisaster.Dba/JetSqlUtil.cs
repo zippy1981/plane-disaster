@@ -175,39 +175,41 @@ namespace PlaneDisaster.Dba
         }
 
         /// <summary>
-        /// Gets the name of the best Microsoft Access OleDb provider to use.
+        /// The OleDb ProgIDs for Access, in order of preference. The ACE providers read accdb files;
+        /// Jet 4.0 ships with Windows but only as a 32 bit provider.
         /// </summary>
-        /// <returns>
-        /// One of the following Access providers (in order of preference):
-        /// <list type="value">
-        /// <value>Microsoft Access Driver (*.mdb, *.accdb)</value>
-        /// <value>Microsoft Access Driver (*.mdb)</value>
-        /// </list>
-        /// </returns>
+        private static readonly string[] OleDbProgIds = {
+            "Microsoft.ACE.OLEDB.16.0",
+            "Microsoft.ACE.OLEDB.15.0",
+            "Microsoft.ACE.OLEDB.14.0",
+            "Microsoft.ACE.OLEDB.12.0",
+            "Microsoft.Jet.OLEDB.4.0",
+        };
+
+        /// <summary>
+        /// Gets the ProgID of the best Microsoft Access OleDb provider to use.
+        /// </summary>
+        /// <remarks>
+        /// HKEY_CLASSES_ROOT shows the providers registered for the bitness of this process, so a 64 bit
+        /// process only finds a 64 bit ACE provider.
+        /// </remarks>
+        /// <returns>The first of <see cref="OleDbProgIds"/> that is registered.</returns>
         internal static string GetOleDbProviderName()
         {
             if (string.IsNullOrEmpty(OleDbProviderName))
             {
-                var clsidRegKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\CLSID", false);
-                var oleDbProviderNames = new List<string>();
-                foreach (var subKeyName in clsidRegKey.GetSubKeyNames())
+                foreach (string progId in OleDbProgIds)
                 {
-                    var subKey = clsidRegKey.OpenSubKey(subKeyName);
-                    var oleDbSubKey = subKey.OpenSubKey("OLE DB Provider");
-                    if (subKey.GetValue("OLEDB_SERVICES") != null && oleDbSubKey != null)
+                    using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(progId + "\\CLSID", false))
                     {
-                        oleDbProviderNames.Add((string) oleDbSubKey.GetValue(""));
+                        if (key != null)
+                        {
+                            OleDbProviderName = progId;
+                            break;
+                        }
                     }
                 }
-                if (oleDbProviderNames.Contains("Microsoft Office 12.0 Access Database Engine OLE DB Provider"))
-                {
-                    OleDbProviderName = "Microsoft Office 12.0 Access Database Engine OLE DB Provider";
-                }
-                else if (oleDbProviderNames.Contains("Microsoft Jet 4.0 OLE DB Provider"))
-                {
-                    OleDbProviderName = "Microsoft Jet 4.0 OLE DB Provider";
-                }
-                else
+                if (OleDbProviderName == null)
                 {
                     //TODO: Condider checking for 32 versus 64 bit.
                     //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-OleDb-driver-cannot-be-found

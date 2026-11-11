@@ -100,7 +100,7 @@ namespace PlaneDisaster.Configuration
         private static extern void SHAddToRecentDocs(ShellAddToRecentDocsFlags flag, string path);
 
         /// <summary>Adds the document to the recent file list</summary>
-        /// <seealso cref="http://blogs.sas.com/content/sasdummy/2011/09/28/jumping-into-windows-7-jump-lists/">Jumping into Windows 7 Jump Lists - The SAS Dummy</seealso>
+        /// <seealso href="http://blogs.sas.com/content/sasdummy/2011/09/28/jumping-into-windows-7-jump-lists/">Jumping into Windows 7 Jump Lists - The SAS Dummy</seealso>
         private static void AddToRecentDocs(string path)
         {
             SHAddToRecentDocs(ShellAddToRecentDocsFlags.Path, path);

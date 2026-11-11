@@ -59,10 +59,7 @@ namespace UnitTests
 		private static readonly string _sqlCreateTable = "CREATE TABLE tblTest (id INTEGER PRIMARY KEY, description varchar(255))";
 		private static readonly string _sqlDropTable = "DROP TABLE tblTest";
 		private static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@id, @description)";
-		//v_test SQL
-		//TODO: Create a test where views are created selected, dropped etc.
-		private static readonly string _sqlCreateView = "CREATE VIEW v_test SELECT id, description FROM tblTest";
-		private static readonly string _sqlDropView = "DROP VIEW v_test";
+		//TODO: Create a test where views are created selected, dropped etc. TestDbaBase has the v_test SQL.
 
         #endregion SQL Strings
 
