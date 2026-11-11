@@ -20,8 +20,37 @@ env:
   NET20_REF_VERSION: 1.0.3
 
 jobs:
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - id: diff
+        name: Skip the Windows build when only docs and agent config changed
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ] || [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(git diff --name-only "$BASE" "$HEAD" \
+            | grep -v -E '\.md$|^\.claude/|^\.opencode/|^\.markdownlint|^opencode\.json$|^\.github/workflows/markdown-lint\.yml$|^\.github/dependabot\.yml$' \
+            | head -1)
+          if [ -n "$code" ]; then echo "code=true"; else echo "code=false"; fi >> "$GITHUB_OUTPUT"
+
   build:
     name: Build (${{ matrix.configuration }} ${{ matrix.platform }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: windows-latest
     timeout-minutes: 20
     strategy:
@@ -30,9 +59,9 @@ jobs:
         configuration: [Debug, Release]
         platform: [x86, x64]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: microsoft/setup-msbuild@v3
+      - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
       - name: Fetch .NET Framework 2.0 reference assemblies
         shell: pwsh
@@ -54,10 +83,25 @@ jobs:
           "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT"
           "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: PlaneDisaster-${{ matrix.configuration }}-${{ matrix.platform }}
           path: |
             bin/${{ matrix.platform }}/${{ matrix.configuration }}/
             */bin/${{ matrix.platform }}/${{ matrix.configuration }}/
           if-no-files-found: error
+
+  # The one required check: it passes when the build passed or was skipped for a docs-only change.
+  result:
+    name: CI result
+    needs: [changes, build]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail if any job failed or was cancelled
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          case " $RESULTS " in *" failure "*|*" cancelled "*) exit 1;; esac

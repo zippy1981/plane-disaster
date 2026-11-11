@@ -7,9 +7,8 @@ description: Run this repo's markdown lint locally (markdownlint-cli with .markd
 
 This repo lints every Markdown file with
 [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli). CI runs
-it in `.github/workflows/markdown-lint.yml` on pushes and pull requests to
-`master` that touch `**/*.md`, `.markdownlint.json`, `.markdownlintignore`, or
-the workflow itself.
+it in `.github/workflows/markdown-lint.yml` on every push and pull request to
+`master`. It is a required check, so it runs even when no Markdown changed.
 
 ## Configuration
 
