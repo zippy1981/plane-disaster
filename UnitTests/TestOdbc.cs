@@ -38,7 +38,8 @@ namespace UnitTests
 	[TestFixture]
 	public class TestOdbc : TestDbaBase
 	{
-		protected new static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (@idParam, @descriptionParam)";
+		// ODBC binds parameters by position, so the SQL uses ? markers rather than names.
+		protected new static readonly string _sqlInsertRow = "INSERT INTO tblTest (id, description) VALUES (?, ?)";
 		
 		[Test]
 		public override void TestDbOperations()

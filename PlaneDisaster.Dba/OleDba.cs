@@ -71,6 +71,17 @@ namespace PlaneDisaster.Dba
 		
 		
 		/// <summary>
+		/// True for the Jet and Access Database Engine (ACE) providers, by ProgID or description.
+		/// </summary>
+		private static bool IsAccessProvider(string provider) {
+			return provider.StartsWith("Microsoft.Jet.OLEDB")
+				|| provider.StartsWith("Microsoft.ACE.OLEDB")
+				|| provider.StartsWith("Microsoft Jet")
+				|| Regex.IsMatch(provider, "Microsoft Office [0-9]+\\.[0-9] Access Database Engine OLE DB Provider");
+		}
+
+
+		/// <summary>
 		/// Returns true if the connected database provider supports procedures.
 		/// </summary>
 		/// <exception cref="NotImplementedException">
@@ -80,7 +91,7 @@ namespace PlaneDisaster.Dba
 		public override bool SupportsProcedures {
 			get {
 				if (Connected) {
-                    if (!_Cn.Provider.StartsWith("Microsoft.Jet.OLEDB") && !_Cn.Provider.StartsWith("Microsoft Jet") && !Regex.IsMatch(_Cn.Provider, "Microsoft Office [0-9]+\\.[0-9] Access Database Engine OLE DB Provider"))
+                    if (!IsAccessProvider(_Cn.Provider))
                     {
 						string msg = string.Format ("Currently the OleDba.SupportsProcedures property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
 						throw new NotImplementedException(msg);
@@ -103,7 +114,7 @@ namespace PlaneDisaster.Dba
 		public override bool SupportsViews {
 			get {
 				if (Connected) {
-					if (_Cn.Provider != "Microsoft.Jet.OLEDB") {
+					if (!IsAccessProvider(_Cn.Provider)) {
 						string msg = string.Format ("Currently the OleDba.SupportsViews property may only be called when a Microsft Access database is being connected. You are connected with the {0} driver", _Cn.Provider);
 						throw new NotImplementedException(msg);
 					}

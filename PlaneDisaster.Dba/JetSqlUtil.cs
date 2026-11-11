@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -79,13 +80,33 @@ namespace PlaneDisaster.Dba
 		/// <summary>
 		/// Compacts an access database
 		/// </summary>
-		/// 
-		/// 
-		/// 
+		/// <remarks>
+		/// The Access Database Engine (ACE) driver can't compact a file onto itself, so this compacts
+		/// into a temporary file next to the database and then replaces the database with it.
+		/// </remarks>
 		/// <param name="fileName">The name of the databse to compact.</param>
 		public static void CompactMDB (string fileName) {
-			string attributes = 
-				String.Format("COMPACT_DB=\"{0}\" \"{0}\" General\0", Path.GetFullPath(fileName));
+			string fullName = Path.GetFullPath(fileName);
+			string tempName = fullName + ".compacting" + Path.GetExtension(fullName);
+			if (File.Exists(tempName)) {
+				File.Delete(tempName);
+			}
+			// The ACE ODBC driver fails COMPACT_DB, so compact through ACE's DAO engine when it is there.
+			Type daoEngineType = IsAceOdbcDriver() ? Type.GetTypeFromProgID("DAO.DBEngine.120") : null;
+			if (daoEngineType != null) {
+				object dbEngine = Activator.CreateInstance(daoEngineType);
+				try {
+					daoEngineType.InvokeMember("CompactDatabase", BindingFlags.InvokeMethod, null, dbEngine,
+						new object[] { fullName, tempName });
+				} finally {
+					Marshal.ReleaseComObject(dbEngine);
+				}
+				File.Delete(fullName);
+				File.Move(tempName, fullName);
+				return;
+			}
+			string attributes =
+				String.Format("COMPACT_DB=\"{0}\" \"{1}\" General\0", fullName, tempName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN,
                 GetOdbcProviderName(), attributes);
@@ -96,7 +117,18 @@ namespace PlaneDisaster.Dba
                 SQLInstallerError(1, ref errorCode, sbError, sbError.MaxCapacity, ref resizeErrorMesg);
                 throw new ApplicationException(string.Format("Can not compact database:: {0}. Error: {1}", fileName, sbError));
 			}
+			File.Delete(fullName);
+			File.Move(tempName, fullName);
 		}
+
+
+        /// <summary>
+        /// True when the ODBC driver is the Access Database Engine (ACE) one rather than Jet 4.0.
+        /// </summary>
+        private static bool IsAceOdbcDriver()
+        {
+            return GetOdbcProviderName() == "Microsoft Access Driver (*.mdb, *.accdb)";
+        }
 
 
         /// <summary>
@@ -175,39 +207,41 @@ namespace PlaneDisaster.Dba
         }
 
         /// <summary>
-        /// Gets the name of the best Microsoft Access OleDb provider to use.
+        /// The OleDb ProgIDs for Access, in order of preference. The ACE providers read accdb files;
+        /// Jet 4.0 ships with Windows but only as a 32 bit provider.
         /// </summary>
-        /// <returns>
-        /// One of the following Access providers (in order of preference):
-        /// <list type="value">
-        /// <value>Microsoft Access Driver (*.mdb, *.accdb)</value>
-        /// <value>Microsoft Access Driver (*.mdb)</value>
-        /// </list>
-        /// </returns>
+        private static readonly string[] OleDbProgIds = {
+            "Microsoft.ACE.OLEDB.16.0",
+            "Microsoft.ACE.OLEDB.15.0",
+            "Microsoft.ACE.OLEDB.14.0",
+            "Microsoft.ACE.OLEDB.12.0",
+            "Microsoft.Jet.OLEDB.4.0",
+        };
+
+        /// <summary>
+        /// Gets the ProgID of the best Microsoft Access OleDb provider to use.
+        /// </summary>
+        /// <remarks>
+        /// HKEY_CLASSES_ROOT shows the providers registered for the bitness of this process, so a 64 bit
+        /// process only finds a 64 bit ACE provider.
+        /// </remarks>
+        /// <returns>The first of <see cref="OleDbProgIds"/> that is registered.</returns>
         internal static string GetOleDbProviderName()
         {
             if (string.IsNullOrEmpty(OleDbProviderName))
             {
-                var clsidRegKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Classes\\CLSID", false);
-                var oleDbProviderNames = new List<string>();
-                foreach (var subKeyName in clsidRegKey.GetSubKeyNames())
+                foreach (string progId in OleDbProgIds)
                 {
-                    var subKey = clsidRegKey.OpenSubKey(subKeyName);
-                    var oleDbSubKey = subKey.OpenSubKey("OLE DB Provider");
-                    if (subKey.GetValue("OLEDB_SERVICES") != null && oleDbSubKey != null)
+                    using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(progId + "\\CLSID", false))
                     {
-                        oleDbProviderNames.Add((string) oleDbSubKey.GetValue(""));
+                        if (key != null)
+                        {
+                            OleDbProviderName = progId;
+                            break;
+                        }
                     }
                 }
-                if (oleDbProviderNames.Contains("Microsoft Office 12.0 Access Database Engine OLE DB Provider"))
-                {
-                    OleDbProviderName = "Microsoft Office 12.0 Access Database Engine OLE DB Provider";
-                }
-                else if (oleDbProviderNames.Contains("Microsoft Jet 4.0 OLE DB Provider"))
-                {
-                    OleDbProviderName = "Microsoft Jet 4.0 OLE DB Provider";
-                }
-                else
+                if (OleDbProviderName == null)
                 {
                     //TODO: Condider checking for 32 versus 64 bit.
                     //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-OleDb-driver-cannot-be-found
@@ -221,9 +255,17 @@ namespace PlaneDisaster.Dba
 		/// <summary>
 		/// Repairs an access database
 		/// </summary>
+		/// <remarks>
+		/// The Access Database Engine (ACE) driver has no REPAIR_DB command because compacting repairs
+		/// the database, so with that driver this compacts it.
+		/// </remarks>
 		/// <param name="fileName">The name of the databse to repair.</param>
 		public static void RepairMDB (string fileName) {
-			string attributes = 
+			if (IsAceOdbcDriver()) {
+				CompactMDB(fileName);
+				return;
+			}
+			string attributes =
 				String.Format("REPAIR_DB=\"{0}\"\0", fileName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN, 
