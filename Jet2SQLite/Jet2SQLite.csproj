@@ -4,7 +4,8 @@
     <RootNamespace>PlaneDisaster.Jet2SQLite</RootNamespace>
     <AssemblyName>Jet2SQLite</AssemblyName>
     <ApplicationIcon>Jet2SQLite.ico</ApplicationIcon>
-    <UseWindowsForms Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">true</UseWindowsForms>
+    <!-- TargetFrameworkIdentifier isn't set yet while the project body evaluates, so derive it. -->
+    <UseWindowsForms Condition=" $([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp' ">true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">

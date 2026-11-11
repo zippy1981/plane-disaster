@@ -5,7 +5,8 @@
     <AssemblyName>PlaneDisaster</AssemblyName>
     <ApplicationIcon>PlaneDisaster.NET.ico</ApplicationIcon>
     <AssemblyOriginatorKeyFile>PlaneDisaster.snk</AssemblyOriginatorKeyFile>
-    <UseWindowsForms Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">true</UseWindowsForms>
+    <!-- TargetFrameworkIdentifier isn't set yet while the project body evaluates, so derive it. -->
+    <UseWindowsForms Condition=" $([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp' ">true</UseWindowsForms>
   </PropertyGroup>
 
   <!-- This project sits at the repo root, so keep the other projects and the installer out of its globs. -->
