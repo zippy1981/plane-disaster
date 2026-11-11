@@ -229,8 +229,9 @@ namespace PlaneDisaster.Dba
 			           || type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong)) {
 				return "INTEGER";
 			} else if (type == typeof(float) || type == typeof(double) || type == typeof(decimal)) {
-				// Not NUMERIC for decimal: SQLite stores it as REAL anyway, and System.Data.SQLite on .NET
-				// reads a NUMERIC column back as the double's exact expansion (19.99 is 19.98999...).
+				// Not NUMERIC for decimal: SQLite stores it as a double either way, and reading it back
+				// as decimal shows 19.989999999999998436805981328 on .NET 11, whose double-to-decimal
+				// conversion became exact. As REAL it reads back as the double 19.99.
 				return "REAL";
 			} else if (type == typeof(byte[])) {
 				return "BLOB";

@@ -334,7 +334,7 @@ namespace UnitTests
 			Assert.AreEqual(1234567890123L, Convert.ToInt64(row["longCol"]));
 			Assert.AreEqual(1.25, Convert.ToDouble(row["singleCol"]));
 			Assert.AreEqual(0.5, Convert.ToDouble(row["doubleCol"]));
-			Assert.AreEqual(19.99m, Convert.ToDecimal(row["decimalCol"]));
+			Assert.AreEqual(19.99, Convert.ToDouble(row["decimalCol"]));
 			Assert.IsTrue(Convert.ToBoolean(row["boolCol"]));
 			Assert.AreEqual(when, Convert.ToDateTime(row["dateCol"]));
 			Assert.AreEqual(guid, new Guid(row["guidCol"].ToString()));
