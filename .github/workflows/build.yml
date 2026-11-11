@@ -63,7 +63,7 @@ jobs:
           if [ -n "$code" ]; then echo "code=true"; else echo "code=false"; fi >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build (${{ matrix.configuration }} ${{ matrix.platform }})
+    name: Build (${{ matrix.framework }} ${{ matrix.configuration }} ${{ matrix.platform }})
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: windows-latest
@@ -71,14 +71,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # net20 is what ships. net481 retargets the same projects to the latest .NET Framework to
+        # catch API and warning breaks; Release is enough for that.
+        framework: [net20, net481]
         configuration: [Debug, Release]
         platform: [x86, x64]
+        exclude:
+          - framework: net481
+            configuration: Debug
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
       - name: Fetch .NET Framework 2.0 reference assemblies
+        if: matrix.framework == 'net20'
         shell: pwsh
         run: |
           $dir = Join-Path $env:RUNNER_TEMP 'net20-ref'
@@ -90,14 +97,19 @@ jobs:
       - name: Build solution
         shell: pwsh
         # Packages are committed under packages/, so the legacy NuGet.targets restore is skipped.
-        run: >-
-          msbuild PlaneDisaster.NET.sln -m -nologo -v:minimal
-          "-p:Configuration=${{ matrix.configuration }}"
-          "-p:Platform=${{ matrix.platform }}"
-          -p:RestorePackages=false
-          -warnaserror -p:TreatWarningsAsErrors=true
-          "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT"
-          "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
+        run: |
+          if ('${{ matrix.framework }}' -eq 'net20') {
+            $framework = "-p:TargetFrameworkRootPath=$env:NET20_REF_ROOT", "-p:FrameworkPathOverride=$($env:NET20_REF_ROOT).NETFramework\v2.0"
+          } else {
+            $framework = @('-p:TargetFrameworkVersion=v4.8.1')
+          }
+          msbuild PlaneDisaster.NET.sln -m -nologo -v:minimal `
+            "-p:Configuration=${{ matrix.configuration }}" `
+            "-p:Platform=${{ matrix.platform }}" `
+            -p:RestorePackages=false `
+            -warnaserror -p:TreatWarningsAsErrors=true `
+            @framework
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Jet 4.0 is 32 bit only, so the x64 tests need the 64 bit Access Database Engine.
       - name: Install Access Database Engine 2016 (x64)
@@ -119,7 +131,7 @@ jobs:
 
       - name: Run unit tests
         shell: pwsh
-        # The test assembly targets CLR 2, which the runner doesn't have, so NUnit runs it on CLR 4.
+        # NUnit runs every build on CLR 4; the net20 test assembly targets CLR 2, which the runner doesn't have.
         run: |
           $console = if ('${{ matrix.platform }}' -eq 'x86') { 'nunit-console-x86.exe' } else { 'nunit-console.exe' }
           $dll = "UnitTests\bin\${{ matrix.platform }}\${{ matrix.configuration }}\UnitTests.dll"
@@ -129,25 +141,26 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: TestResult-${{ matrix.configuration }}-${{ matrix.platform }}
+          name: TestResult-${{ matrix.framework }}-${{ matrix.configuration }}-${{ matrix.platform }}
           path: TestResult.xml
           if-no-files-found: ignore
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: PlaneDisaster-${{ matrix.configuration }}-${{ matrix.platform }}
+          name: PlaneDisaster-${{ matrix.framework }}-${{ matrix.configuration }}-${{ matrix.platform }}
           path: |
             bin/${{ matrix.platform }}/${{ matrix.configuration }}/
             */bin/${{ matrix.platform }}/${{ matrix.configuration }}/
           if-no-files-found: error
 
+      # The MSI and portable zip ship the net20 build.
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-        if: matrix.configuration == 'Release'
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
         with:
           dotnet-version: 10.0.x
 
       - name: Build the MSI
-        if: matrix.configuration == 'Release'
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
         shell: pwsh
         run: >-
           dotnet build "PlaneDisaster.NET Setup" -c Release -nologo -warnaserror
@@ -155,7 +168,7 @@ jobs:
           "-p:PlaneDisasterVersion=${{ needs.changes.outputs.version }}"
 
       - name: Stage the portable zip contents
-        if: matrix.configuration == 'Release'
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
         shell: pwsh
         run: |
           $dir = New-Item -ItemType Directory -Force portable
@@ -164,14 +177,14 @@ jobs:
           Copy-Item gpl.txt, README.md $dir
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: matrix.configuration == 'Release'
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
         with:
           name: msi-${{ matrix.platform }}
           path: PlaneDisaster.NET Setup/bin/${{ matrix.platform }}/Release/*.msi
           if-no-files-found: error
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: matrix.configuration == 'Release'
+        if: matrix.configuration == 'Release' && matrix.framework == 'net20'
         with:
           name: portable-${{ matrix.platform }}
           path: portable/
