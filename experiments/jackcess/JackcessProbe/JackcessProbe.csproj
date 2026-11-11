@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Jackcess (a pure Java library for Access files) and UCanAccess (a JDBC driver built on Jackcess and
+    HSQLDB), compiled to .NET assemblies by IKVM from their Maven Central jars at build time.
+    IKVM implements Java SE 8, so these are the last releases that target Java 8:
+    UCanAccess 5.0.1 pulls in Jackcess and HSQLDB at the versions it was built with.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net10.0: IKVM.Maven.Sdk 1.12.2's resolve task crashes under the .NET 11 SDK's MSBuild (MSB4217). -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <Nullable>disable</Nullable>
+    <!-- IKVM-generated assemblies carry no nullability or platform annotations. -->
+    <NoWarn>$(NoWarn);CA1416;IKVMSDK0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IKVM" Version="8.16.3" />
+    <PackageReference Include="IKVM.Maven.Sdk" Version="1.12.2" />
+    <MavenReference Include="net.sf.ucanaccess:ucanaccess" Version="5.0.1" />
+  </ItemGroup>
+</Project>
