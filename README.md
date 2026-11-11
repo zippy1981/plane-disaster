@@ -1,8 +1,19 @@
 # PlaneDisaster.NET
 
+[![Build](https://github.com/zippy1981/plane-disaster/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/zippy1981/plane-disaster/actions/workflows/build.yml?query=branch%3Amaster)
+[![Lint Markdown](https://github.com/zippy1981/plane-disaster/actions/workflows/markdown-lint.yml/badge.svg?branch=master)](https://github.com/zippy1981/plane-disaster/actions/workflows/markdown-lint.yml?query=branch%3Amaster)
+[![Release](https://github.com/zippy1981/plane-disaster/actions/workflows/release.yml/badge.svg)](https://github.com/zippy1981/plane-disaster/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/zippy1981/plane-disaster)](https://github.com/zippy1981/plane-disaster/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/zippy1981/plane-disaster/total)](https://github.com/zippy1981/plane-disaster/releases)
+[![License: GPL v2](https://img.shields.io/badge/license-GPL--2.0-blue)](gpl.txt)
+
 PlaneDisaster.NET is a .NET database front end for JetSQL (the Microsoft Access file format) and SQLite. Besides browsing and querying, it can create new Access and SQLite files, and compact and repair Access databases.
 
 ![A table with pictures](WebSite/screenshots/table_with_pictures.png)
+
+## Download
+
+Get the MSI installer or a portable zip, for x86 or x64, from the [latest release](https://github.com/zippy1981/plane-disaster/releases/latest). The x64 build needs the Access Database Engine to open Access files (see [Building](#building)).
 
 ## What's in the solution
 
