@@ -161,11 +161,11 @@ namespace PlaneDisaster.Dba
 			using (DbCommand cmd = Cn.CreateCommand()) {
 				if (ReplaceQuery) {
 					try {
-						cmd.CommandText = String.Format("DROP VIEW {0}", Name);
+						cmd.CommandText = String.Format("DROP VIEW [{0}]", Name);
 						cmd.ExecuteNonQuery();
 					} catch (DbException) {}
 				}
-				cmd.CommandText = String.Format("CREATE VIEW {0} AS {1}", Name, SQL);
+				cmd.CommandText = String.Format("CREATE VIEW [{0}] AS {1}", Name, SQL);
 				cmd.ExecuteNonQuery();
 			}
 		}
@@ -185,7 +185,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="Name">The name of the Table.</param>
 		public void DropTable(string Name) {
-			ExecuteSqlCommand(String.Format("DROP TABLE {0}", Name));
+			ExecuteSqlCommand(String.Format("DROP TABLE [{0}]", Name));
 		}
 		
 		
@@ -194,7 +194,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="Name">The name of the View.</param>
 		public void DropView(string Name) {
-			ExecuteSqlCommand(String.Format("DROP VIEW {0}", Name));
+			ExecuteSqlCommand(String.Format("DROP VIEW [{0}]", Name));
 		}
 
 		

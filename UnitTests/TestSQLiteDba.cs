@@ -54,14 +54,14 @@ namespace UnitTests
 			_db = new SQLiteDba();
 			_db.Connect(_fileName);
 
+			string [] descriptions = new string[] {"Number one.", "Number two.", "Number three."};
 			foreach (var name in tableNames) {
 				_db.ExecuteSqlCommand($"CREATE TABLE [{name}] (id INTEGER PRIMARY KEY, description varchar(255))");
-			}
-			string [] descriptions = new string[] {"Number one.", "Number two.", "Number three."};
-			for (int i = 0; i < descriptions.Length; i++) {
-				_db.ExecuteSqlCommand(
-					$"INSERT INTO [{tableNames[0]}] (id, description) VALUES (@id, @description)",
-					new DbParameter[] {new SQLiteParameter("@id", i + 1), new SQLiteParameter("@description", descriptions[i])});
+				for (int i = 0; i < descriptions.Length; i++) {
+					_db.ExecuteSqlCommand(
+						$"INSERT INTO [{name}] (id, description) VALUES (@id, @description)",
+						new DbParameter[] {new SQLiteParameter("@id", i + 1), new SQLiteParameter("@description", descriptions[i])});
+				}
 			}
 		}
 
@@ -118,10 +118,10 @@ namespace UnitTests
 			CollectionAssert.Contains(_db.GetTables(), tableName);
 			Assert.AreEqual(new string[] {"id", "description"}, _db.GetColumnNames(tableName));
 			Assert.AreEqual(2, _db.GetColumnSchema(tableName).Rows.Count);
-			StringAssert.StartsWith($"CREATE TABLE {tableName}", _db.GetTableSQL(tableName));
+			StringAssert.StartsWith($"CREATE TABLE [{tableName}]", _db.GetTableSQL(tableName));
 			Assert.IsNull(_db.GetTableSQL("noSuchTable"));
-			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetTableRowCount(tableName));
-			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetTableAsDataTable(tableName).Rows.Count);
+			Assert.AreEqual(3, _db.GetTableRowCount(tableName));
+			Assert.AreEqual(3, _db.GetTableAsDataTable(tableName).Rows.Count);
 			Assert.Greater(_db.GetSchema().Rows.Count, 0);
 			Assert.Greater(_db.GetSchema("Tables").Rows.Count, 0);
 		}
@@ -131,8 +131,8 @@ namespace UnitTests
 		[TestCaseSource(nameof(tableNames))]
 		public void ColumnAsStringArray(string tableName) {
 			_db.ExecuteSqlCommand($"INSERT INTO [{tableName}] (id, description) VALUES (4, 'Number one.')");
-			Assert.AreEqual(tableName == tableNames[0] ? 4 : 1, _db.GetColumnAsStringArray(tableName, "description").Length);
-			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetColumnAsStringArray(tableName, "description", true).Length);
+			Assert.AreEqual(4, _db.GetColumnAsStringArray(tableName, "description").Length);
+			Assert.AreEqual(3, _db.GetColumnAsStringArray(tableName, "description", true).Length);
 		}
 
 
@@ -167,19 +167,20 @@ namespace UnitTests
 					Assert.AreEqual(rows, Convert.ToInt32(rdr[0]));
 				}
 			}
-			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, rows);
+			Assert.AreEqual(3, rows);
 		}
 
 
 		[Test]
-		public void Views() {
-			_db.CreateView("v_test", "SELECT id FROM tblTest WHERE id > 1");
+		[TestCaseSource(nameof(tableNames))]
+		public void Views(string tableName) {
+			_db.CreateView("v_test", $"SELECT id FROM [{tableName}] WHERE id > 1");
 			CollectionAssert.Contains(_db.GetViews(), "v_test");
-			StringAssert.Contains("SELECT id FROM tblTest", _db.GetViewSQL("v_test"));
+			StringAssert.Contains($"SELECT id FROM [{tableName}]", _db.GetViewSQL("v_test"));
 			Assert.AreEqual(2, _db.GetTableRowCount("v_test"));
 
 			// Creating it again replaces it.
-			_db.CreateView("v_test", "SELECT id FROM tblTest");
+			_db.CreateView("v_test", $"SELECT id FROM [{tableName}]");
 			Assert.AreEqual(3, _db.GetTableRowCount("v_test"));
 
 			_db.DropView("v_test");
@@ -188,9 +189,10 @@ namespace UnitTests
 
 
 		[Test]
-		public void DropTable() {
-			_db.DropTable("tblTest");
-			CollectionAssert.DoesNotContain(_db.GetTables(), "tblTest");
+		[TestCaseSource(nameof(tableNames))]
+		public void DropTable(string tableName) {
+			_db.DropTable(tableName);
+			CollectionAssert.DoesNotContain(_db.GetTables(), tableName);
 		}
 
 
@@ -214,25 +216,28 @@ namespace UnitTests
 
 
 		[Test]
-		public void ExecuteScriptIgnoresSemicolonsInComments() {
+		[TestCaseSource(nameof(tableNames))]
+		public void ExecuteScriptIgnoresSemicolonsInComments(string tableName) {
 			DataTable dt = _db.ExecuteScript(
 				"-- count the rows; all of them" + NL +
-				"/* a block; comment */ SELECT COUNT(*) AS n FROM tblTest");
+				$"/* a block; comment */ SELECT COUNT(*) AS n FROM [{tableName}]");
 			Assert.AreEqual(3, Convert.ToInt32(dt.Rows[0]["n"]));
 		}
 
 
 		[Test]
-		public void ExecuteScriptEndingInAStatementWithNoResults() {
-			Assert.IsNull(_db.ExecuteScript("DELETE FROM tblTest WHERE id = 1; DELETE FROM tblTest WHERE id = 2;"));
-			Assert.AreEqual(1, _db.GetTableRowCount("tblTest"));
+		[TestCaseSource(nameof(tableNames))]
+		public void ExecuteScriptEndingInAStatementWithNoResults(string tableName) {
+			Assert.IsNull(_db.ExecuteScript($"DELETE FROM [{tableName}] WHERE id = 1; DELETE FROM [{tableName}] WHERE id = 2;"));
+			Assert.AreEqual(1, _db.GetTableRowCount(tableName));
 		}
 
 
 		[Test]
-		public void ExecuteSqlFile() {
+		[TestCaseSource(nameof(tableNames))]
+		public void ExecuteSqlFile(string tableName) {
 			string script = _fileName + ".sql";
-			File.WriteAllText(script, "UPDATE tblTest SET description = 'changed' WHERE id = 3;\nSELECT description FROM tblTest WHERE id = 3;");
+			File.WriteAllText(script, $"UPDATE [{tableName}] SET description = 'changed' WHERE id = 3;" + NL + $"SELECT description FROM [{tableName}] WHERE id = 3;");
 			try {
 				Assert.AreEqual("changed", _db.ExecuteSqlFile(script).Rows[0][0]);
 			} finally {
@@ -242,15 +247,16 @@ namespace UnitTests
 
 
 		[Test]
-		public void SqlAsCsv() {
-			_db.ExecuteSqlCommand("INSERT INTO tblTest (id, description) VALUES (4, 'Four, or \"4\"')");
+		[TestCaseSource(nameof(tableNames))]
+		public void SqlAsCsv(string tableName) {
+			_db.ExecuteSqlCommand($"INSERT INTO [{tableName}] (id, description) VALUES (4, 'Four, or \"4\"')");
 			Assert.AreEqual(
 				"id,description" + NL + "1,Number one." + NL,
-				_db.GetSQLAsCSV("SELECT id, description FROM tblTest WHERE id = 1"));
+				_db.GetSQLAsCSV($"SELECT id, description FROM [{tableName}] WHERE id = 1"));
 			Assert.AreEqual(
 				"id;description" + NL + "4;\"Four, or \"\"4\"\"\"" + NL,
-				_db.GetSQLAsCSV("SELECT id, description FROM tblTest WHERE id = 4", ";"));
-			StringAssert.StartsWith("id,description" + NL + "1,Number one." + NL, _db.GetTableAsCSV("tblTest"));
+				_db.GetSQLAsCSV($"SELECT id, description FROM [{tableName}] WHERE id = 4", ";"));
+			StringAssert.StartsWith("id,description" + NL + "1,Number one." + NL, _db.GetTableAsCSV(tableName));
 		}
 
 
@@ -265,7 +271,7 @@ namespace UnitTests
 				_db.SerializeTable(tableName, xml);
 				DataSet ds = new DataSet();
 				ds.ReadXml(xml);
-				Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, ds.Tables[0].Rows.Count);
+				Assert.AreEqual(3, ds.Tables[0].Rows.Count);
 			} finally {
 				File.Delete(xml);
 			}
