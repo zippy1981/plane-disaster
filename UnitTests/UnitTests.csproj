@@ -18,6 +18,11 @@
     <PackageReference Include="NUnit3TestAdapter" Version="5.2.0" />
   </ItemGroup>
 
+  <!-- Access databases from public sources for TestAccessSampleFiles; TestData\README.md lists them. -->
+  <ItemGroup>
+    <None Update="TestData\*.mdb;TestData\*.accdb" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\PlaneDisaster.Dba\PlaneDisaster.Dba.csproj" />
   </ItemGroup>

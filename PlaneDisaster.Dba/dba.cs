@@ -124,15 +124,16 @@ namespace PlaneDisaster.Dba
 		/// Set this to true to replace the current procedure.
 		/// </param>
 		public void CreateProcedure(string Name, string SQL, bool ReplaceQuery) {
-			DbCommand cmd = Cn.CreateCommand();
-			if (ReplaceQuery) {
-				try {
-					cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
-					cmd.ExecuteNonQuery();
-				} catch (DbException) {}
+			using (DbCommand cmd = Cn.CreateCommand()) {
+				if (ReplaceQuery) {
+					try {
+						cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
+						cmd.ExecuteNonQuery();
+					} catch (DbException) {}
+				}
+				cmd.CommandText = String.Format("CREATE PROCEDURE {0} AS {1}", Name, SQL);
+				cmd.ExecuteNonQuery();
 			}
-			cmd.CommandText = String.Format("CREATE PROCEDURE {0} AS {1}", Name, SQL);
-			cmd.ExecuteNonQuery();
 		}
 		
 		
@@ -157,15 +158,16 @@ namespace PlaneDisaster.Dba
 		/// Set this to true to replace the current view.
 		/// </param>
 		public void CreateView(string Name, string SQL, bool ReplaceQuery) {
-			DbCommand cmd = Cn.CreateCommand();
-			if (ReplaceQuery) {
-				try {
-					cmd.CommandText = String.Format("DROP VIEW {0}", Name);
-					cmd.ExecuteNonQuery();
-				} catch (DbException) {}
+			using (DbCommand cmd = Cn.CreateCommand()) {
+				if (ReplaceQuery) {
+					try {
+						cmd.CommandText = String.Format("DROP VIEW [{0}]", Name);
+						cmd.ExecuteNonQuery();
+					} catch (DbException) {}
+				}
+				cmd.CommandText = String.Format("CREATE VIEW [{0}] AS {1}", Name, SQL);
+				cmd.ExecuteNonQuery();
 			}
-			cmd.CommandText = String.Format("CREATE VIEW {0} AS {1}", Name, SQL);
-			cmd.ExecuteNonQuery();
 		}
 		
 		
@@ -174,9 +176,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="Name">The name of the View.</param>
 		public void DropProcedure(string Name) {
-			DbCommand cmd = Cn.CreateCommand();
-			cmd.CommandText = String.Format("DROP PROCEDURE {0}", Name);
-			cmd.ExecuteNonQuery();
+			ExecuteSqlCommand(String.Format("DROP PROCEDURE {0}", Name));
 		}
 		
 		
@@ -185,9 +185,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="Name">The name of the Table.</param>
 		public void DropTable(string Name) {
-			DbCommand cmd = Cn.CreateCommand();
-			cmd.CommandText = String.Format("DROP TABLE {0}", Name);
-			cmd.ExecuteNonQuery();
+			ExecuteSqlCommand(String.Format("DROP TABLE [{0}]", Name));
 		}
 		
 		
@@ -196,9 +194,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		/// <param name="Name">The name of the View.</param>
 		public void DropView(string Name) {
-			DbCommand cmd = Cn.CreateCommand();
-			cmd.CommandText = String.Format("DROP VIEW {0}", Name);
-			cmd.ExecuteNonQuery();
+			ExecuteSqlCommand(String.Format("DROP VIEW [{0}]", Name));
 		}
 
 		
@@ -212,30 +208,35 @@ namespace PlaneDisaster.Dba
 		/// Performs disposal.
 		/// </summary>
 		public void Dispose() {
-			Cn.Dispose();
+			if (Cn != null) {
+				Cn.Dispose();
+			}
 		}
-		
+
 		/// <summary>
 		/// Executes the SQL command(s) passed as a string.
 		/// </summary>
-		/// <param name="SQL">One or more SQL commands semicolon delimited.</param>
-		/// <returns>A dataset generated from the last SQL command in the script.</returns>
+		/// <param name="SQL">
+		/// One or more SQL commands semicolon delimited. Semicolons inside quotes, brackets and
+		/// comments don't split statements, and comments are removed.
+		/// </param>
+		/// <returns>
+		/// A dataset generated from the last SQL command in the script, or null if that command
+		/// returns no result set.
+		/// </returns>
 		public DataTable ExecuteScript(string SQL) {
-			DataTable ret;
-			DbCommand cmd = Cn.CreateCommand();
-			SQL = SQL.Trim();
-			SQL = SQL.TrimEnd(new char [] {';'});
 			string [] Statements = SqlScript2Statements(SQL);
-			
-			for (int i = 0; i < Statements.Length - 1; i++) {
-				if (Statements[i] != "") {
+			if (Statements.Length == 0) {
+				return null;
+			}
+
+			using (DbCommand cmd = Cn.CreateCommand()) {
+				for (int i = 0; i < Statements.Length - 1; i++) {
 					cmd.CommandText = Statements[i];
 					cmd.ExecuteNonQuery();
 				}
 			}
-			cmd.Dispose();
-			ret = this.GetSqlAsDataTable(Statements[Statements.Length - 1]);
-			return ret;
+			return this.GetSqlAsDataTable(Statements[Statements.Length - 1]);
 		}
 		
 		
@@ -432,24 +433,23 @@ namespace PlaneDisaster.Dba
 			int numFields;
 			string [] Fields;
 			StringBuilder  CSV = new StringBuilder();
-			
+
 			rdr = cmd.ExecuteReader();
-			
+
 			numFields = rdr.FieldCount;
 			Fields = new string[numFields];
 			for (int i = 0; i < numFields; i++) {
 				Fields[i] = rdr.GetName(i);
-				CSV.AppendFormat("{0}{1}", Fields[i], Seperator);
 			}
-			CSV.AppendLine();
+			AppendCsvLine(CSV, Fields, Seperator);
+			object [] Values = new object[numFields];
 			while (rdr.Read()) {
-				foreach (string Field in Fields) {
-					CSV.AppendFormat("{0}{1}", rdr[Field], Seperator);
-				}
-				CSV.AppendLine();
+				rdr.GetValues(Values);
+				AppendCsvLine(CSV, Values, Seperator);
 			}
 			rdr.Close();
-						
+			cmd.Dispose();
+
 			return CSV.ToString();
 		}
 		
@@ -504,7 +504,9 @@ namespace PlaneDisaster.Dba
 		/// <returns>A DaTatable containing the result set.</returns>
 		public DataTable GetSqlAsDataTable(string SQL, string TableName) {
 			DataTable ret = this.GetSqlAsDataTable(SQL);
-			ret.TableName = TableName;
+			if (ret != null) {
+				ret.TableName = TableName;
+			}
 			return ret;
 		}
 		
@@ -707,7 +709,7 @@ namespace PlaneDisaster.Dba
 		/// The table as an XML serialized datatable.
 		/// </returns>
 		public string SerializeTable (string Table) {
-		 	string SQL = "SELECT * FROM " + Table;
+		 	string SQL = String.Format("SELECT * FROM [{0}]", Table);
 		 	return this.SerializeQuery(SQL);
 		}
 
@@ -721,16 +723,87 @@ namespace PlaneDisaster.Dba
 		/// </param>
 		/// <param name="File"></param>
 		public void SerializeTable (string Table, string File) {
-			string SQL = "SELECT * FROM " + Table;
+			string SQL = String.Format("SELECT * FROM [{0}]", Table);
 		 	this.SerializeQuery(SQL, File);
 		}
 		
 		#region Private Members
 		
-		private string [] SqlScript2Statements (string Script) {
-			//TODO: write a parser that can handle semi colons inside of quotes.
-			Script = Script.TrimEnd(';');
-			return Script.Split(';');
+		/// <summary>
+		/// Splits a script on the semicolons that end statements. Semicolons inside '...', "...",
+		/// [...] and comments don't count. Comments are dropped, since Jet SQL has none, and so
+		/// are empty statements.
+		/// </summary>
+		internal static string [] SqlScript2Statements (string Script) {
+			List<string> Statements = new List<string>();
+			StringBuilder Statement = new StringBuilder();
+			int i = 0;
+			while (i < Script.Length) {
+				char c = Script[i];
+				char next = i + 1 < Script.Length ? Script[i + 1] : '\0';
+				if (c == '\'' || c == '"' || c == '[') {
+					// A quoted string or identifier; '' inside '...' (and "" inside "...") is an escaped quote.
+					char close = c == '[' ? ']' : c;
+					int end = i + 1;
+					while (end < Script.Length) {
+						if (Script[end] == close) {
+							if (close != ']' && end + 1 < Script.Length && Script[end + 1] == close) {
+								end += 2;
+								continue;
+							}
+							break;
+						}
+						end++;
+					}
+					end = Math.Min(end, Script.Length - 1);
+					Statement.Append(Script, i, end - i + 1);
+					i = end + 1;
+				} else if (c == '-' && next == '-') {
+					while (i < Script.Length && Script[i] != '\n') {
+						i++;
+					}
+				} else if (c == '/' && next == '*') {
+					int end = Script.IndexOf("*/", i + 2, StringComparison.Ordinal);
+					i = end < 0 ? Script.Length : end + 2;
+					Statement.Append(' ');
+				} else if (c == ';') {
+					AddStatement(Statements, Statement);
+					i++;
+				} else {
+					Statement.Append(c);
+					i++;
+				}
+			}
+			AddStatement(Statements, Statement);
+			return Statements.ToArray();
+		}
+
+
+		private static void AddStatement (List<string> Statements, StringBuilder Statement) {
+			string sql = Statement.ToString().Trim();
+			if (sql.Length > 0) {
+				Statements.Add(sql);
+			}
+			Statement.Length = 0;
+		}
+
+
+		/// <summary>
+		/// Writes one CSV line: the values joined by <paramref name="Seperator"/>, each quoted
+		/// (RFC 4180) when it holds the separator, a quote or a line break. Nulls are empty.
+		/// </summary>
+		private static void AppendCsvLine (StringBuilder CSV, object [] Values, string Seperator) {
+			for (int i = 0; i < Values.Length; i++) {
+				if (i > 0) {
+					CSV.Append(Seperator);
+				}
+				string Value = Values[i] == null ? "" : Values[i].ToString();
+				if (Value.IndexOf(Seperator, StringComparison.Ordinal) >= 0 || Value.IndexOfAny(new char[] {'"', '\r', '\n'}) >= 0) {
+					Value = "\"" + Value.Replace("\"", "\"\"") + "\"";
+				}
+				CSV.Append(Value);
+			}
+			CSV.AppendLine();
 		}
 		
 		#endregion
@@ -785,14 +858,10 @@ namespace PlaneDisaster.Dba
 			Fields = new string[numFields];
 			for (int i = 0; i < numFields; i++) {
 				Fields[i] = dt.Columns[i].ColumnName;
-				CSV.AppendFormat("{0}{1}", Fields[i], Seperator);
 			}
-			CSV.AppendLine();
+			AppendCsvLine(CSV, Fields, Seperator);
 			foreach(DataRow row in dt.Rows) {
-				foreach (string Field in Fields) {
-					CSV.AppendFormat("{0}{1}", row[Field], Seperator);
-				}
-				CSV.AppendLine();
+				AppendCsvLine(CSV, row.ItemArray, Seperator);
 			}
 
 			return CSV.ToString();
@@ -816,31 +885,28 @@ namespace PlaneDisaster.Dba
 			string [] Fields;
 			string [] FieldValues;
 			StringBuilder DML = new StringBuilder();
-			StringBuilder InsertFormatter = new StringBuilder();
-			
+
 			numFields = dt.Columns.Count;
 			Fields = new string[numFields];
 			FieldValues = new string[numFields];
-			//TODO: I need to scrub output here.
 			for (int i = 0; i < numFields; i++) {
 				Fields[i] = dt.Columns[i].ColumnName;
 			}
-			
-			InsertFormatter.AppendFormat
-				("INSERT INTO [{0}] ([{1}]) VALUES(", 
-				 dt.TableName,
-				 String.Join("], [", Fields));
-			for (int i = 0; i < numFields - 1; i++) {
-				InsertFormatter.AppendFormat(@"'{{{0}}}', ", i);
-			}
-			InsertFormatter.AppendFormat(@"'{{{0}}}');", numFields - 1);
-			
+
+			// Names go in as text, not into a format string, so braces in them are fine.
+			string Insert = String.Concat(
+				"INSERT INTO [", dt.TableName, "] ([", String.Join("], [", Fields), "]) VALUES(");
+
 			foreach(DataRow row in dt.Rows) {
 				for (int i = 0; i < numFields; i++) {
-					FieldValues[i] = row[Fields[i]].ToString();
+					object Value = row[i];
+					FieldValues[i] = (Value == DBNull.Value)
+						? "NULL"
+						: String.Concat("'", Value.ToString().Replace("'", "''"), "'");
 				}
-				DML.AppendFormat
-					(InsertFormatter.ToString(), FieldValues);
+				DML.Append(Insert);
+				DML.Append(String.Join(", ", FieldValues));
+				DML.Append(");");
 				DML.AppendLine();
 			}
 
@@ -877,7 +943,7 @@ namespace PlaneDisaster.Dba
 				List<string> ColumnValues = new List<string>();
 				string Val;
 				foreach(DataRow Row in Table.Rows) {
-					Val = (string)Row[Column];
+					Val = Row[Column].ToString();
 					if (!ColumnValues.Contains(Val)) {
 						ColumnValues.Add(Val);
 					}

@@ -62,10 +62,10 @@ namespace PlaneDisaster.Dba
 		}
 
 
-        /// <summary>Returns true if the database is a Mirosoft Access database.</summary>
+        /// <summary>Returns false: SQLite is not a Microsoft Access database.</summary>
         public override bool IsAccessDatabase
         {
-            get { return true; }
+            get { return false; }
         }
 		
 		
@@ -129,12 +129,11 @@ namespace PlaneDisaster.Dba
 		/// data types. I simple kept feeding it the data I needed to feed it until
 		/// it worked. If it encounters a datatype it doesn't know how to deal with it
 		/// panics and throws an exception.</para>
-		/// <para>In terms of datatype considerations, dates are mapped as strings
-		/// because I read somewhere that there are date manipulation functions
-		/// in SQLite that operate on strings and assigning a DateTime to a string
-		/// produced a sensible value. If storing dates in integers as unix
-		/// timestamps makes more sense in the future I might do that. Be warned.
-		/// I never told you to depend on this function.</para>
+		/// <para>Columns get a declared type System.Data.SQLite reads back as the same
+		/// .NET type: whole numbers are INTEGER, float, double and decimal are REAL (decimal
+		/// comes back as double), and bool, DateTime and Guid are BOOLEAN, DATETIME and GUID. Dates are
+		/// stored as ISO 8601 text, which SQLite's date functions read. Any other type
+		/// throws a <see cref="DataException"/>.</para>
 		/// <para>All INSERT statements are done as one transaction. The reason for this
 		/// is that no writes are performed to the database until a transaction is
 		/// committed and therefore the difference in execution time between 
@@ -161,28 +160,12 @@ namespace PlaneDisaster.Dba
 			using (SQLiteCommand cmd = (SQLiteCommand) Cn.CreateCommand()) {
 				StringBuilder DDL = new StringBuilder();
 				
-				//TODO: I wonder if I can pass parameters to CREATE TABLE statements.
-				DDL.AppendFormat("CREATE TABLE [{0}] (", dt);
+				DDL.Append("CREATE TABLE [").Append(dt.TableName).Append("] (");
 				List<string> Cols = new List<string>();
-				
+
 				/* Figure out what datatypes to assign to the columns */
 				foreach (DataColumn col in dt.Columns) {
-					if (col.DataType == typeof(string) || col.DataType == typeof(DateTime))
-					{
-						Cols.Add(String.Format("[{0}] TEXT", col.ColumnName));
-					}
-					else if (col.DataType == typeof(long) || col.DataType == typeof(ulong) || col.DataType == typeof(Single) || col.DataType == typeof(Int32) || col.DataType == typeof(bool) || col.DataType == typeof(Guid))
-					{
-						Cols.Add(String.Format("[{0}] INTEGER", col.ColumnName));
-					}
-					else if (col.DataType == typeof(byte[]))
-					{
-						Cols.Add(String.Format("[{0}] BLOB", col.ColumnName));
-					}
-					else {
-						throw new DataException
-							(String.Concat("DataTable2SQLiteTable() doesn't know how to map columns of type ", col.DataType.ToString()));
-					}
+					Cols.Add(String.Concat("[", col.ColumnName, "] ", col.DataType.ToSQLiteColumnType()));
 				}
 				DDL.Append(String.Join(", ", Cols.ToArray()));
 				DDL.Append(")");
@@ -194,42 +177,41 @@ namespace PlaneDisaster.Dba
 				/* Create the INSERT INTO statement. */
 				StringBuilder DML = new StringBuilder();
 				
-				DML.AppendFormat("INSERT INTO [{0}] ([", dt.TableName);
+				DML.Append("INSERT INTO [").Append(dt.TableName).Append("] ([");
 				List<string> ColumnName = new List<string>();
 				List<string> ParameterName = new List<string>();
 				foreach (DataColumn col in dt.Columns) {
 					ColumnName.Add(col.ColumnName);
-					ParameterName.Add(col.ColumnName.Replace(' ', '_'));
+					// Positional names, so a column name needn't be a valid parameter name.
+					ParameterName.Add("@p" + ParameterName.Count);
 				}
 				DML.Append(String.Join("], [", ColumnName.ToArray()));
-				DML.Append("]) VALUES (@");
-				DML.Append(String.Join(", @", ParameterName.ToArray()));
+				DML.Append("]) VALUES (");
+				DML.Append(String.Join(", ", ParameterName.ToArray()));
 				DML.Append(")");
 				cmd.CommandText = DML.ToString();
-								
-				/* Populate the parameters for the INSERT INTO statement and execute. */
-				foreach (DataRow Row in dt.Rows) {
-					foreach (DataColumn col in dt.Columns) {
-						cmd.Parameters.Add(new SQLiteParameter(String.Concat("@", col.ColumnName.Replace(' ', '_')), Row[col.ColumnName]));
-					}
+
+				/* One parameter per column; each row sets their values. */
+				foreach (string Name in ParameterName) {
+					cmd.Parameters.Add(new SQLiteParameter(Name));
 				}
-				
+
 				/* It is much faster if this is done as one transaction. */
-				cmd.Transaction = (SQLiteTransaction) Cn.BeginTransaction();
-				DataTableReader rdr = dt.CreateDataReader();
-				/* Populate the parameters for the INSERT INTO statement and execute. */
-				while(rdr.Read()) {
-					for (int i = 0; i < rdr.FieldCount; i++) {
-						cmd.Parameters[i].Value = rdr[i];
+				using (SQLiteTransaction Transaction = (SQLiteTransaction) Cn.BeginTransaction()) {
+					cmd.Transaction = Transaction;
+					DataTableReader rdr = dt.CreateDataReader();
+					while(rdr.Read()) {
+						for (int i = 0; i < rdr.FieldCount; i++) {
+							cmd.Parameters[i].Value = rdr[i];
+						}
+						cmd.ExecuteNonQuery();
 					}
-					cmd.ExecuteNonQuery();
+					Transaction.Commit();
 				}
-				cmd.Transaction.Commit();
-				cmd.Transaction.Dispose();
 			}
 		}
 
-		
+
 		/// <summary>
 		/// Gets the names of the columns in a table
 		/// </summary>

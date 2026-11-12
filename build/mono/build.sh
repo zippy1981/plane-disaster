@@ -98,4 +98,4 @@ compile UnitTests -target:library -out:"$out/UnitTests.dll" \
 echo "nunit: SQLite and tokenizer tests on Mono $(mono --version | head -1 | awk '{print $5}')" >&2
 cd "$out"
 mono "$work/nunit/tools/nunit-console.exe" UnitTests.dll -nologo -noshadow -labels \
-  -run:UnitTests.Tests.TestSQLite,UnitTests.TestSqlTokenizer -result:"$out/TestResult.xml"
+  -run:UnitTests.Tests.TestSQLite,UnitTests.TestSQLiteDba,UnitTests.TestDbaStatic,UnitTests.TestSqlTokenizer -result:"$out/TestResult.xml"
