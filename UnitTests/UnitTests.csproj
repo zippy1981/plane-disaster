@@ -6,7 +6,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- .NET Framework builds use NUnit 2.6, the last version for .NET 2.0, run by nunit-console in CI. -->
+  <!-- .NET Framework builds use NUnit 2.6, the last version for .NET 2.0; CI compiles these targets, the .NET 11 leg runs the tests. -->
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
     <PackageReference Include="NUnit" Version="2.6.2" />
   </ItemGroup>
