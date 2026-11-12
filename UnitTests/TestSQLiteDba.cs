@@ -39,6 +39,12 @@ namespace UnitTests
 		private static readonly string NL = Environment.NewLine;
 		private string _fileName;
 		private SQLiteDba _db;
+		private static readonly string[] tableNames = new string[] {
+			"tblTest",
+			"tblAnotherTest",
+			"Table name with spaces in it",
+			"Table a test with 💩 in it",
+		};
 
 
 		[SetUp]
@@ -47,11 +53,14 @@ namespace UnitTests
 			SQLiteConnection.CreateFile(_fileName);
 			_db = new SQLiteDba();
 			_db.Connect(_fileName);
-			_db.ExecuteSqlCommand("CREATE TABLE tblTest (id INTEGER PRIMARY KEY, description varchar(255))");
+
+			foreach (var name in tableNames) {
+				_db.ExecuteSqlCommand($"CREATE TABLE [{name}] (id INTEGER PRIMARY KEY, description varchar(255))");
+			}
 			string [] descriptions = new string[] {"Number one.", "Number two.", "Number three."};
 			for (int i = 0; i < descriptions.Length; i++) {
 				_db.ExecuteSqlCommand(
-					"INSERT INTO tblTest (id, description) VALUES (@id, @description)",
+					$"INSERT INTO [{tableNames[0]}] (id, description) VALUES (@id, @description)",
 					new DbParameter[] {new SQLiteParameter("@id", i + 1), new SQLiteParameter("@description", descriptions[i])});
 			}
 		}
@@ -104,56 +113,61 @@ namespace UnitTests
 
 
 		[Test]
-		public void TablesAndColumns() {
-			CollectionAssert.Contains(_db.GetTables(), "tblTest");
-			Assert.AreEqual(new string[] {"id", "description"}, _db.GetColumnNames("tblTest"));
-			Assert.AreEqual(2, _db.GetColumnSchema("tblTest").Rows.Count);
-			StringAssert.StartsWith("CREATE TABLE tblTest", _db.GetTableSQL("tblTest"));
+		[TestCaseSource(nameof(tableNames))]
+		public void TablesAndColumns(string tableName) {
+			CollectionAssert.Contains(_db.GetTables(), tableName);
+			Assert.AreEqual(new string[] {"id", "description"}, _db.GetColumnNames(tableName));
+			Assert.AreEqual(2, _db.GetColumnSchema(tableName).Rows.Count);
+			StringAssert.StartsWith($"CREATE TABLE {tableName}", _db.GetTableSQL(tableName));
 			Assert.IsNull(_db.GetTableSQL("noSuchTable"));
-			Assert.AreEqual(3, _db.GetTableRowCount("tblTest"));
-			Assert.AreEqual(3, _db.GetTableAsDataTable("tblTest").Rows.Count);
+			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetTableRowCount(tableName));
+			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetTableAsDataTable(tableName).Rows.Count);
 			Assert.Greater(_db.GetSchema().Rows.Count, 0);
 			Assert.Greater(_db.GetSchema("Tables").Rows.Count, 0);
 		}
 
 
 		[Test]
-		public void ColumnAsStringArray() {
-			_db.ExecuteSqlCommand("INSERT INTO tblTest (id, description) VALUES (4, 'Number one.')");
-			Assert.AreEqual(4, _db.GetColumnAsStringArray("tblTest", "description").Length);
-			Assert.AreEqual(3, _db.GetColumnAsStringArray("tblTest", "description", true).Length);
+		[TestCaseSource(nameof(tableNames))]
+		public void ColumnAsStringArray(string tableName) {
+			_db.ExecuteSqlCommand($"INSERT INTO [{tableName}] (id, description) VALUES (4, 'Number one.')");
+			Assert.AreEqual(tableName == tableNames[0] ? 4 : 1, _db.GetColumnAsStringArray(tableName, "description").Length);
+			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, _db.GetColumnAsStringArray(tableName, "description", true).Length);
 		}
 
 
 		[Test]
-		public void SqlAsDataTable() {
+		[TestCaseSource(nameof(tableNames))]
+		public void SqlAsDataTable(string tableName) {
 			DataTable dt = _db.GetSqlAsDataTable(
-				"SELECT description FROM tblTest WHERE id = @id",
+				$"SELECT description FROM [{tableName}] WHERE id = @id",
 				new DbParameter[] {new SQLiteParameter("@id", 2)});
 			Assert.AreEqual(1, dt.Rows.Count);
 			Assert.AreEqual("Number two.", dt.Rows[0]["description"]);
 
-			Assert.AreEqual("named", _db.GetSqlAsDataTable("SELECT * FROM tblTest", "named").TableName);
+			Assert.AreEqual("named", _db.GetSqlAsDataTable($"SELECT * FROM [{tableName}]", "named").TableName);
 		}
 
 
 		[Test]
-		public void SqlAsDataTableReturnsNullForAStatementWithNoResults() {
-			Assert.IsNull(_db.GetSqlAsDataTable("UPDATE tblTest SET description = 'x' WHERE id = 1"));
-			Assert.IsNull(_db.GetSqlAsDataTable("UPDATE tblTest SET description = 'y' WHERE id = 1", "named"));
+		[TestCaseSource(nameof(tableNames))]
+		public void SqlAsDataTableReturnsNullForAStatementWithNoResults(string tableName) {
+			Assert.IsNull(_db.GetSqlAsDataTable($"UPDATE [{tableName}] SET description = 'x' WHERE id = 1"));
+			Assert.IsNull(_db.GetSqlAsDataTable($"UPDATE [{tableName}] SET description = 'y' WHERE id = 1", "named"));
 		}
 
 
 		[Test]
-		public void SqlAsDataReader() {
+		[TestCaseSource(nameof(tableNames))]
+		public void SqlAsDataReader(string tableName) {
 			int rows = 0;
-			using (DbDataReader rdr = _db.GetSqlAsDataReader("SELECT id FROM tblTest ORDER BY id")) {
+			using (DbDataReader rdr = _db.GetSqlAsDataReader($"SELECT id FROM [{tableName}] ORDER BY id")) {
 				while (rdr.Read()) {
 					rows++;
 					Assert.AreEqual(rows, Convert.ToInt32(rdr[0]));
 				}
 			}
-			Assert.AreEqual(3, rows);
+			Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, rows);
 		}
 
 
@@ -241,16 +255,17 @@ namespace UnitTests
 
 
 		[Test]
-		public void SerializeQueryAndTable() {
-			StringAssert.Contains("Number two.", _db.SerializeQuery("SELECT * FROM tblTest"));
-			StringAssert.Contains("Number three.", _db.SerializeTable("tblTest"));
+		[TestCaseSource(nameof(tableNames))]
+		public void SerializeQueryAndTable(string tableName) {
+			StringAssert.Contains("Number two.", _db.SerializeQuery($"SELECT * FROM [{tableName}]"));
+			StringAssert.Contains("Number three.", _db.SerializeTable(tableName));
 
 			string xml = _fileName + ".xml";
 			try {
-				_db.SerializeTable("tblTest", xml);
+				_db.SerializeTable(tableName, xml);
 				DataSet ds = new DataSet();
 				ds.ReadXml(xml);
-				Assert.AreEqual(3, ds.Tables[0].Rows.Count);
+				Assert.AreEqual(tableName == tableNames[0] ? 3 : 0, ds.Tables[0].Rows.Count);
 			} finally {
 				File.Delete(xml);
 			}
