@@ -177,7 +177,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File, string Password) {
 			MDB = File;
 			_ConnectionString = String.Format
-					("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Jet OLEDB:Database Password={1};", MDB, Password);
+					("Provider={0};Data Source={1};Jet OLEDB:Database Password={2};", JetSqlUtil.GetOleDbProviderName(), MDB, Password);
 			this.Connect();
 		}
 		

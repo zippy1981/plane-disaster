@@ -20,6 +20,12 @@ This file is the OpenCode (and other agent) counterpart to [CLAUDE.md](CLAUDE.md
 - Releases: bump `AssemblyVersion` in every `AssemblyInfo.cs`, merge, then push a `v<version>` tag. `release.yml` builds and publishes the MSIs and portable zips, and fails if the tag and `AssemblyInfo.cs` disagree.
 - On a host without Visual Studio, push a branch and let CI build the Windows legs. Linux work (the Mono build, a .NET SDK container, the experiments) can run on a Linux Docker engine, such as a WSL distro's: follow the `host-capabilities` skill, and clean up with `safe-docker-cleanup`. The `host-doctor` playbook diagnoses a host that can't.
 
+## Code style
+
+- Prefer an extension method to a static helper that takes the object as its first argument: `type.ToSQLiteColumnType()`, not `SQLiteColumnType(type)`. Put it in a static `<Type>Extensions` class. .NET Framework 2.0 has no `ExtensionAttribute`, so `PlaneDisaster.Dba/TypeExtensions.cs` declares an internal one under `#if NET20`; an assembly that defines its own extension methods needs the same.
+- Prefer parameterized tests. When a test checks the same behavior for several inputs, give each input its own case with `[TestCase]`, or `[TestCaseSource]` when the values aren't compile-time constants, instead of asserting on all of them in one test. Both work in NUnit 2.6 and NUnit 3.
+- `UnitTests/TestData/` holds Access databases from public sources for the smoke tests in `TestAccessSampleFiles.cs`; the project copies them to the output directory. Add a file only if it is public domain or freely redistributable, and record its source, licence and SHA-256 in that folder's `README.md`.
+
 ## Markdown
 
 Every `.md` file must pass markdownlint (`.github/workflows/markdown-lint.yml`). Follow the `markdown-lint` skill, or the `markdown-reviewer` and `markdown-fixer` playbooks. Markdown, YAML and JSON are LF (`.gitattributes`).

@@ -142,7 +142,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File, string Password) {
 			Cn = new OdbcConnection();
 			Cn.ConnectionString = String.Format
-					("Driver={{Microsoft Access Driver (*.mdb)}};Dbq={0};Uid=Admin;Pwd={1};", File, Password);
+					("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd={2};", JetSqlUtil.GetOdbcProviderName(), File, Password);
 			Cn.Open();
 		}
 		
