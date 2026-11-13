@@ -48,10 +48,15 @@ namespace PlaneDisaster.Dba
 		}
 
 
-		/// <summary>Sets a property to a value.</summary>
+		/// <summary>Sets a property to a value (VB's Let).</summary>
+		/// <remarks>
+		/// Not BindingFlags.SetProperty: for a COM object that asks for a put and a putref at once, and a
+		/// property that has both, such as ADOX's Catalog.ActiveConnection, then takes the putref and
+		/// rejects a string with DISP_E_TYPEMISMATCH.
+		/// </remarks>
 		public static void Set(object target, string name, object value)
 		{
-			Invoke(target, name, BindingFlags.SetProperty, new object[] { value });
+			Invoke(target, name, BindingFlags.PutDispProperty, new object[] { value });
 		}
 
 

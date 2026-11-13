@@ -48,6 +48,10 @@ namespace UnitTests
 			_source.ExecuteSqlCommand("INSERT INTO tblSource (id, description) VALUES (1, 'one')");
 			_source.ExecuteSqlCommand("INSERT INTO tblSource (id, description) VALUES (2, 'two')");
 			_source.ExecuteSqlCommand("INSERT INTO tblSource (id, description) VALUES (3, 'three')");
+			// Jet writes these to the file up to half a second later, and a link reads the file through
+			// another connection. Closing the connection flushes them.
+			_source.Disconnect();
+			_source.ConnectMDB(_sourceFile);
 
 			_target = new OleDba();
 			_target.ConnectMDB(_targetFile);

@@ -196,6 +196,19 @@ namespace PlaneDisaster.Dba
 			} finally {
 				LateBound.Release(tables, table, catalog);
 			}
+			Reopen();
+		}
+
+
+		/// <summary>Closes and reopens the connection, so it sees what ADOX wrote through its own.</summary>
+		/// <remarks>
+		/// Jet caches what a connection has read and refreshes the cache every page timeout, 5 seconds by
+		/// default. Until then this connection lists no new link and cannot select from it.
+		/// </remarks>
+		private void Reopen()
+		{
+			Cn.Close();
+			Cn.Open();
 		}
 
 
