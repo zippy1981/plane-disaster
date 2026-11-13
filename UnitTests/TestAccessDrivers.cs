@@ -155,7 +155,8 @@ namespace UnitTests
 			StringAssert.Contains("no 32 bit ODBC driver", message);
 			StringAssert.Contains("The 64 bit PlaneDisaster.NET can open it with ace16.", message);
 			StringAssert.Contains("x64 build", message);
-			StringAssert.Contains("Or install the 32 bit Microsoft Access Database Engine 2016 Redistributable from " + AccessDrivers.RedistributableUrl, message);
+			StringAssert.Contains("Or install a 32 bit Access driver: the Microsoft Access Database Engine 2016 Redistributable from " + AccessDrivers.RedistributableUrl, message);
+			StringAssert.Contains("the Microsoft 365 Access Runtime from " + AccessDrivers.AccessRuntimeUrl, message);
 		}
 
 
@@ -165,7 +166,7 @@ namespace UnitTests
 			string message = AccessDrivers.Guidance(AccessDriverKind.OleDb, AccessFileFormat.Jet4, is64BitProcess,
 				Drivers("", is64BitProcess), Drivers("", !is64BitProcess));
 
-			StringAssert.Contains(string.Format("Install the {0} bit Microsoft Access Database Engine 2016 Redistributable", bits), message);
+			StringAssert.Contains(string.Format("Install a {0} bit Access driver: the Microsoft Access Database Engine 2016 Redistributable", bits), message);
 			StringAssert.DoesNotContain("can open it with", message);
 			StringAssert.DoesNotContain("Installed:", message);
 		}

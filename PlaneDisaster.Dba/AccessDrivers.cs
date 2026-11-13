@@ -59,6 +59,12 @@ namespace PlaneDisaster.Dba
 		/// <summary>The Microsoft Access Database Engine 2016 Redistributable, which has a 32 and a 64 bit installer.</summary>
 		public const string RedistributableUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=54920";
 
+		/// <summary>
+		/// The Microsoft 365 Access Runtime. The redistributable's installer refuses to run beside a
+		/// Click-to-Run Office, where this is the driver to add.
+		/// </summary>
+		public const string AccessRuntimeUrl = "https://support.microsoft.com/office/185c5a32-8ba9-491e-ac76-91cbe3ea09c9";
+
 		/// <summary>The OLE DB ProgIDs for Access.</summary>
 		private static readonly string[] OleDbProgIds = {
 			"Microsoft.ACE.OLEDB.16.0",
@@ -323,8 +329,9 @@ namespace PlaneDisaster.Dba
 			}
 			message.AppendLine().AppendLine();
 			if (format != AccessFileFormat.Jet3) {
-				message.AppendFormat("{0}nstall the {1} bit Microsoft Access Database Engine 2016 Redistributable from {2}",
+				message.AppendFormat("{0}nstall a {1} bit Access driver: the Microsoft Access Database Engine 2016 Redistributable from {2}",
 					other != null ? "Or i" : "I", bits, RedistributableUrl);
+				message.AppendFormat(" or, beside a Microsoft 365 Office, the Microsoft 365 Access Runtime from {0}", AccessRuntimeUrl);
 			} else if (is64BitProcess) {
 				message.Append("Access 97 files need Jet 4.0, which is 32 bit only. The 64 bit drivers Microsoft still offers, the Access Database Engine 2013 and later, don't open them.");
 			} else {
