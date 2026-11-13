@@ -25,13 +25,10 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-
-using Microsoft.Win32;
 
 namespace PlaneDisaster.Dba
 {
@@ -71,12 +68,6 @@ namespace PlaneDisaster.Dba
         private static extern SQL_RETURN_CODE SQLInstallerError(int iError, ref int pfErrorCode, StringBuilder lpszErrorMsg, int cbErrorMsgMax, ref int pcbErrorMsg);
         #endregion
 
-        private static string OdbcProviderName = null;
-        private static string OleDbProviderName = null;
-
-        /// <summary>The url for downloading the MS Access Redistributable.</summary>
-        /// <remarks>This has changed on me in the past.</remarks>
-        private const string ACCESS_REDISTRIBUTABLE_URL = "http://www.microsoft.com/en-us/download/details.aspx?id=13255";
 		/// <summary>
 		/// Compacts an access database
 		/// </summary>
@@ -92,7 +83,8 @@ namespace PlaneDisaster.Dba
 				File.Delete(tempName);
 			}
 			// The ACE ODBC driver fails COMPACT_DB, so compact through ACE's DAO engine when it is there.
-			Type daoEngineType = IsAceOdbcDriver() ? Type.GetTypeFromProgID("DAO.DBEngine.120") : null;
+			AccessDriver driver = AccessDrivers.Find(AccessDriverKind.Odbc, fullName);
+			Type daoEngineType = driver.IsJet ? null : Type.GetTypeFromProgID("DAO.DBEngine.120");
 			if (daoEngineType != null) {
 				object dbEngine = Activator.CreateInstance(daoEngineType);
 				try {
@@ -109,7 +101,7 @@ namespace PlaneDisaster.Dba
 				String.Format("COMPACT_DB=\"{0}\" \"{1}\" General\0", fullName, tempName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN,
-                GetOdbcProviderName(), attributes);
+                driver.Name, attributes);
 			if (retCode == 0) {
                 int errorCode = 0;
                 int resizeErrorMesg = 0;
@@ -120,15 +112,6 @@ namespace PlaneDisaster.Dba
 			File.Delete(fullName);
 			File.Move(tempName, fullName);
 		}
-
-
-        /// <summary>
-        /// True when the ODBC driver is the Access Database Engine (ACE) one rather than Jet 4.0.
-        /// </summary>
-        private static bool IsAceOdbcDriver()
-        {
-            return GetOdbcProviderName() == "Microsoft Access Driver (*.mdb, *.accdb)";
-        }
 
 
         /// <summary>
@@ -143,6 +126,9 @@ namespace PlaneDisaster.Dba
 				File.Delete(fileName);
 			}
 
+            // The driver has to write the format, and Access 95 files are Jet 3, which newer drivers dropped.
+            AccessFileFormat format = version == AccessDbVersion.Access95 ? AccessFileFormat.Jet3 : AccessFileFormat.Jet4;
+            AccessDriver driver = AccessDrivers.Find(AccessDriverKind.Odbc, format);
             string command = "";
             switch (version)
             {
@@ -160,7 +146,7 @@ namespace PlaneDisaster.Dba
 			string attributes = String.Format("{0}=\"{1}\" General\0", command, fileName);
             int retCode = SQLConfigDataSource 
                 (0, ODBC_Constants.ODBC_ADD_DSN,
-                 GetOdbcProviderName(), attributes);
+                 driver.Name, attributes);
 			if (retCode == 0)
 			{
 			    int errorCode = 0 ;
@@ -171,87 +157,6 @@ namespace PlaneDisaster.Dba
 			}
 		}
 
-        /// <summary>
-        /// Gets the name of the best Microsoft Access Odbc provider to use.
-        /// </summary>
-        /// <returns>
-        /// One of the following Access providers (in order of preference):
-        /// <list type="value">
-        /// <value>Microsoft Access Driver (*.mdb, *.accdb)</value>
-        /// <value>Microsoft Access Driver (*.mdb)</value>
-        /// </list>
-        /// </returns>
-        internal static string GetOdbcProviderName()
-        {
-            if (string.IsNullOrEmpty(OdbcProviderName))
-            {
-                var odbcRegKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\ODBC\\ODBCINST.INI\\ODBC Drivers", false);
-                var drivers = new List<string>(odbcRegKey.GetValueNames());
-                if (drivers.Contains("Microsoft Access Driver (*.mdb, *.accdb)"))
-                {
-                    OdbcProviderName = "Microsoft Access Driver (*.mdb, *.accdb)";
-                }
-                else if (drivers.Contains("Microsoft Access Driver (*.mdb)"))
-                {
-                    OdbcProviderName = "Microsoft Access Driver (*.mdb)";
-                }
-                else
-                {
-                    //TODO: Condider checking for 32 versus 64 bit.
-                    //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-odbc-driver-cannot-be-found
-                    string msg = string.Format("Cannot find an ODBC driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. {0}", ACCESS_REDISTRIBUTABLE_URL);
-                    throw new InvalidOperationException(msg);
-                }
-            }
-            return OdbcProviderName;
-        }
-
-        /// <summary>
-        /// The OleDb ProgIDs for Access, in order of preference. The ACE providers read accdb files;
-        /// Jet 4.0 ships with Windows but only as a 32 bit provider.
-        /// </summary>
-        private static readonly string[] OleDbProgIds = {
-            "Microsoft.ACE.OLEDB.16.0",
-            "Microsoft.ACE.OLEDB.15.0",
-            "Microsoft.ACE.OLEDB.14.0",
-            "Microsoft.ACE.OLEDB.12.0",
-            "Microsoft.Jet.OLEDB.4.0",
-        };
-
-        /// <summary>
-        /// Gets the ProgID of the best Microsoft Access OleDb provider to use.
-        /// </summary>
-        /// <remarks>
-        /// HKEY_CLASSES_ROOT shows the providers registered for the bitness of this process, so a 64 bit
-        /// process only finds a 64 bit ACE provider.
-        /// </remarks>
-        /// <returns>The first of <see cref="OleDbProgIds"/> that is registered.</returns>
-        internal static string GetOleDbProviderName()
-        {
-            if (string.IsNullOrEmpty(OleDbProviderName))
-            {
-                foreach (string progId in OleDbProgIds)
-                {
-                    using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(progId + "\\CLSID", false))
-                    {
-                        if (key != null)
-                        {
-                            OleDbProviderName = progId;
-                            break;
-                        }
-                    }
-                }
-                if (OleDbProviderName == null)
-                {
-                    //TODO: Condider checking for 32 versus 64 bit.
-                    //TODO: Find a better exception type. http://stackoverflow.com/questions/7221703/what-is-the-proper-exception-to-throw-if-an-OleDb-driver-cannot-be-found
-                    string msg = string.Format("Cannot find an OleDb driver for Microsoft Access. Please download the Microsoft Access Database Engine 2010 Redistributable. {0}", ACCESS_REDISTRIBUTABLE_URL);
-                    throw new InvalidOperationException(msg);
-                }
-            }
-            return OleDbProviderName;
-        }
-		
 		/// <summary>
 		/// Repairs an access database
 		/// </summary>
@@ -261,7 +166,8 @@ namespace PlaneDisaster.Dba
 		/// </remarks>
 		/// <param name="fileName">The name of the databse to repair.</param>
 		public static void RepairMDB (string fileName) {
-			if (IsAceOdbcDriver()) {
+			AccessDriver driver = AccessDrivers.Find(AccessDriverKind.Odbc, fileName);
+			if (!driver.IsJet) {
 				CompactMDB(fileName);
 				return;
 			}
@@ -269,7 +175,7 @@ namespace PlaneDisaster.Dba
 				String.Format("REPAIR_DB=\"{0}\"\0", fileName);
 			int retCode = SQLConfigDataSource
 				(0, ODBC_Constants.ODBC_ADD_DSN, 
-				GetOdbcProviderName(), attributes);
+				driver.Name, attributes);
 			if (retCode == 0) {
                 int errorCode = 0;
                 int resizeErrorMesg = 0;

@@ -26,6 +26,9 @@ env:
   NUNIT_RUNNERS_VERSION: 2.6.4
   REPORTGENERATOR_VERSION: 5.6.0
   ACE_X64_URL: https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/accessdatabaseengine_X64.exe
+  ACE_X86_URL: https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/accessdatabaseengine.exe
+  # The Office Deployment Tool's setup.exe, which installs Click-to-Run products such as the Access Runtime.
+  ODT_URL: https://officecdn.microsoft.com/pr/wsus/setup.exe
 
 jobs:
   changes:
@@ -86,6 +89,9 @@ jobs:
       FRAMEWORK: ${{ matrix.framework }}
       CONFIGURATION: ${{ matrix.configuration }}
       PLATFORM: ${{ matrix.platform }}
+      # What the tests must find: Jet 4.0 on x86, the Access Database Engine 2016 MSI on x64.
+      PLANEDISASTER_EXPECT_ACCESS_FORMATS: ${{ matrix.platform == 'x86' && 'Jet3,Jet4' || 'Jet4,Ace' }}
+      PLANEDISASTER_EXPECT_ACCESS_ENGINE: ${{ matrix.platform == 'x64' && 'msi' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -229,6 +235,119 @@ jobs:
           path: portable/
           if-no-files-found: error
 
+  # The build job tests Jet 4.0 (x86) and the 64 bit Access Database Engine 2016 MSI (x64). These legs
+  # run the same tests against the other drivers people have: the 32 bit engine, which sits beside
+  # Jet 4.0 so each file format has to go to the driver that opens it, and the Click-to-Run engine
+  # that Microsoft 365 installs. Each leg names the formats its drivers must open, so it can't pass
+  # by skipping them.
+  access-drivers:
+    name: Access drivers (${{ matrix.driver }} ${{ matrix.platform }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - driver: ace2016
+            platform: x86
+            formats: Jet3,Jet4,Ace
+            engine: msi
+          - driver: m365
+            platform: x64
+            formats: Jet4,Ace
+            engine: clicktorun
+          - driver: m365
+            platform: x86
+            formats: Jet3,Jet4,Ace
+            engine: clicktorun
+    env:
+      FRAMEWORK: net481
+      CONFIGURATION: Release
+      PLATFORM: ${{ matrix.platform }}
+      PLANEDISASTER_EXPECT_ACCESS_FORMATS: ${{ matrix.formats }}
+      PLANEDISASTER_EXPECT_ACCESS_ENGINE: ${{ matrix.engine }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore PlaneDisaster.NET.sln -nologo "-p:Platform=$env:PLATFORM"
+
+      - name: Build the unit tests
+        shell: pwsh
+        run: |
+          msbuild UnitTests\UnitTests.csproj -nologo -warnaserror -p:TreatWarningsAsErrors=true `
+            "-p:Configuration=$env:CONFIGURATION" "-p:Platform=$env:PLATFORM" "-p:TargetFramework=$env:FRAMEWORK" -m -v:minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Install Access Database Engine 2016 (x86)
+        if: matrix.driver == 'ace2016'
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:RUNNER_TEMP 'accessdatabaseengine.exe'
+          Invoke-WebRequest $env:ACE_X86_URL -OutFile $exe
+          $p = Start-Process $exe -ArgumentList '/quiet', '/norestart' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Access Database Engine install exited with $($p.ExitCode)" }
+
+      # The Office Deployment Tool installs Click-to-Run products. The free Access Runtime carries the
+      # same Access Database Engine as Microsoft 365 Apps.
+      - name: Install Microsoft 365 Access Runtime
+        if: matrix.driver == 'm365'
+        shell: pwsh
+        run: |
+          $dir = New-Item -ItemType Directory -Force (Join-Path $env:RUNNER_TEMP 'odt')
+          Invoke-WebRequest $env:ODT_URL -OutFile "$dir\setup.exe"
+          $bits = if ($env:PLATFORM -eq 'x86') { 32 } else { 64 }
+          $xml = '<Configuration>',
+            "  <Add OfficeClientEdition=`"$bits`" Channel=`"Current`">",
+            '    <Product ID="AccessRuntimeRetail"><Language ID="en-us" /></Product>',
+            '  </Add>',
+            '  <Display Level="None" AcceptEULA="TRUE" />',
+            '  <Updates Enabled="FALSE" />',
+            '</Configuration>'
+          Set-Content "$dir\configuration.xml" $xml
+          $p = Start-Process "$dir\setup.exe" -ArgumentList '/configure', "$dir\configuration.xml" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Office Deployment Tool exited with $($p.ExitCode)" }
+          Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration' |
+            Format-List Platform, ProductReleaseIds, VersionToReport
+
+      - name: Fetch NUnit 2.6 console runner
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'nunit'
+          Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/nunit.runners/$env:NUNIT_RUNNERS_VERSION/nunit.runners.$env:NUNIT_RUNNERS_VERSION.nupkg" -OutFile "$dir.zip"
+          Expand-Archive "$dir.zip" $dir
+          "NUNIT_TOOLS=$dir\tools" >> $env:GITHUB_ENV
+
+      - name: Run unit tests (NUnit 2.6)
+        shell: pwsh
+        run: |
+          $console = if ($env:PLATFORM -eq 'x86') { 'nunit-console-x86.exe' } else { 'nunit-console.exe' }
+          $dll = "UnitTests\bin\$env:PLATFORM\$env:CONFIGURATION\$env:FRAMEWORK\UnitTests.dll"
+          & "$env:NUNIT_TOOLS\$console" $dll /framework:net-4.0 /noshadow /nologo /result:TestResult.xml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: TestResult-${{ matrix.driver }}-${{ matrix.platform }}
+          path: TestResult.xml
+          if-no-files-found: ignore
+
   # build/mono/build.sh lists its sources by hand; fail when they drift from the projects' Compile items.
   mono-sources:
     name: Mono source list
@@ -279,7 +398,7 @@ jobs:
   # The one required check: it passes when the build passed or was skipped for a docs-only change.
   result:
     name: CI result
-    needs: [changes, build, mono-sources, mono]
+    needs: [changes, build, access-drivers, mono-sources, mono]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -31,9 +31,9 @@ namespace UnitTests
 	/// <summary>
 	/// Smoke tests against Access databases that other people published: the files in TestData,
 	/// whose README lists where each came from. Needs Windows with Jet (x86) or the Access
-	/// Database Engine (x64). A test is ignored when the installed provider can't read the file's
-	/// format: Jet 4.0 doesn't read accdb, and the Access Database Engine 2013 and later don't
-	/// read Access 97.
+	/// Database Engine. A test is ignored when no installed provider of this bitness reads the
+	/// file's format: Jet 4.0 doesn't read accdb, and the Access Database Engine 2013 and later
+	/// don't read Access 97.
 	/// </summary>
 	[TestFixture]
 	public sealed class TestAccessSampleFiles
@@ -83,13 +83,12 @@ namespace UnitTests
 			_db = new OleDba();
 			try {
 				_db.ConnectMDB(_fileName);
-			} catch (OleDbException ex) {
-				string provider = new OleDbConnectionStringBuilder(_db.ConnectionString).Provider;
-				bool jet = provider.StartsWith("Microsoft.Jet", StringComparison.OrdinalIgnoreCase);
-				if ((jet && extension == ".accdb") || (!jet && sample == Census97)) {
-					Assert.Ignore(string.Format("{0} can't read {1}: {2}", provider, sample, ex.Message));
+			} catch (AccessDriverNotFoundException ex) {
+				// A CI leg that says its drivers open this format must not skip the test.
+				if (TestAccessDriversInstalled.ExpectedFormats.Contains(ex.Format)) {
+					throw;
 				}
-				throw;
+				Assert.Ignore(string.Format("{0}: {1}", sample, ex.Message));
 			}
 		}
 

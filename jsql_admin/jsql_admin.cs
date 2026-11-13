@@ -67,6 +67,17 @@ namespace jsql_admin
 				}
 			} catch (ArgumentNullException) { }
 			
+			try {
+				Run(oGetOpt, MdbFile);
+			} catch (AccessDriverNotFoundException ex) {
+				Console.Error.WriteLine(ex.Message);
+				System.Environment.Exit(1);
+			}
+		}
+
+
+		private static void Run(GetOpt oGetOpt, string MdbFile)
+		{
 			if (oGetOpt.IsDefined("c")) {
 				if (File.Exists(MdbFile)) {
 					Console.Error.WriteLine("JetSQL file \"{0}\" already exists!", MdbFile);

@@ -343,6 +343,8 @@ namespace PlaneDisaster
 					("Perhaps the file is opened by another process.");
 				MessageBox.Show(ErrorMessage.ToString(),
 					 "PlaneDisaster.NET");
+			} catch (AccessDriverNotFoundException ex) {
+				MessageBox.Show(ex.Message, "PlaneDisaster.NET");
 			}
 			dlg.Dispose();
 		}
@@ -391,24 +393,31 @@ namespace PlaneDisaster
 			dlg.Filter = FileFilter.ToString();
 			
 			if (dlg.ShowDialog() == DialogResult.OK) {
-				switch (dlg.FilterIndex) {
-					case 1:
-						JetSqlUtil.CreateMDB(dlg.FileName);
-						OpenMDB(dlg.FileName);
-						break;
-					case 2:
-						JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access95);
-						OpenMDB(dlg.FileName);
-						break;
-					case 3:
-						JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access2000);
-						OpenMDB(dlg.FileName);
-						break;
-					case 4:
-						System.Data.SQLite.SQLiteConnection.CreateFile
-							(dlg.FileName);
-						OpenSQLite(dlg.FileName);
-						break;
+				try {
+					switch (dlg.FilterIndex) {
+						case 1:
+							JetSqlUtil.CreateMDB(dlg.FileName);
+							OpenMDB(dlg.FileName);
+							break;
+						case 2:
+							JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access95);
+							OpenMDB(dlg.FileName);
+							break;
+						case 3:
+							JetSqlUtil.CreateMDB(dlg.FileName, AccessDbVersion.Access2000);
+							OpenMDB(dlg.FileName);
+							break;
+						case 4:
+							System.Data.SQLite.SQLiteConnection.CreateFile
+								(dlg.FileName);
+							OpenSQLite(dlg.FileName);
+							break;
+					}
+				} catch (AccessDriverNotFoundException ex) {
+					// For example Access 95 from the 64 bit build: only the 32 bit Jet driver writes that format.
+					MessageBox.Show(ex.Message, "PlaneDisaster.NET");
+					dlg.Dispose();
+					return;
 				}
 				AddRecentFile(dlg.FileName);
 				_oPlaneDisasterSettings.RecentFiles.GenerateOpenRecentMenu
@@ -491,6 +500,8 @@ namespace PlaneDisaster
 				MessageBox.Show
 					(ErrorMessage.ToString(),
 					 "PlaneDisaster.NET");
+			} catch (AccessDriverNotFoundException ex) {
+				MessageBox.Show(ex.Message, "PlaneDisaster.NET");
 			}
 			dlg.Dispose();
 		}

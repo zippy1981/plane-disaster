@@ -152,7 +152,7 @@ namespace PlaneDisaster.Dba
 		/// </summary>
 		public void ConnectMDB() {
 			_ConnectionString = String.Format
-				("Provider={0};Data Source={1};User Id=admin;Password=;", JetSqlUtil.GetOleDbProviderName(), MDB);
+				("Provider={0};Data Source={1};User Id=admin;Password=;", AccessDrivers.Find(AccessDriverKind.OleDb, MDB).Name, MDB);
 			this.Connect();
 		}
 		
@@ -177,7 +177,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File, string Password) {
 			MDB = File;
 			_ConnectionString = String.Format
-					("Provider={0};Data Source={1};Jet OLEDB:Database Password={2};", JetSqlUtil.GetOleDbProviderName(), MDB, Password);
+					("Provider={0};Data Source={1};Jet OLEDB:Database Password={2};", AccessDrivers.Find(AccessDriverKind.OleDb, MDB).Name, MDB, Password);
 			this.Connect();
 		}
 		
