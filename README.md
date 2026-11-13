@@ -13,7 +13,23 @@ PlaneDisaster.NET is a .NET database front end for JetSQL (the Microsoft Access 
 
 ## Download
 
-Get the MSI installer or a portable zip, for x86 or x64, from the [latest release](https://github.com/zippy1981/plane-disaster/releases/latest). The x64 build needs the Access Database Engine to open Access files (see [Building](#building)).
+Get the MSI installer or a portable zip, for x86 or x64, from the [latest release](https://github.com/zippy1981/plane-disaster/releases/latest). Which one opens your Access files depends on the drivers you have: see [Access drivers](#access-drivers).
+
+## Access drivers
+
+An Access driver only loads into a program of its own bitness, and no driver opens every format. PlaneDisaster.NET reads the format from the file, picks an installed driver that opens it, and tells you what to do when there is none.
+
+| Driver | Bitness | Access 97 | Access 2000 to 2003 (`.mdb`) | Access 2007 and later (`.accdb`) |
+| --- | --- | --- | --- | --- |
+| Jet 4.0, which ships with Windows | 32 bit only | Yes | Yes | No |
+| Access Database Engine 2016, or Microsoft 365 | 32 or 64 bit | No | Yes | Yes |
+
+So:
+
+- The x86 build opens Access 97 and `.mdb` files on any Windows, Windows 11 included, with nothing to install. Add a 32 bit Access Database Engine and it opens `.accdb` too.
+- The x64 build needs a 64 bit Access Database Engine, and can't open Access 97 files: Microsoft dropped that format from the engine in Office 2013. Use the x86 build for those.
+
+A Microsoft 365 or Office 2016 and later install usually brings the engine with it, in Office's own bitness. Otherwise install the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920), or, beside a Microsoft 365 Office, the [Microsoft 365 Access Runtime](https://support.microsoft.com/office/185c5a32-8ba9-491e-ac76-91cbe3ea09c9).
 
 ## What's in the solution
 
@@ -40,7 +56,7 @@ No .NET Framework 3.5 install is needed: the SDK downloads the 2.0 reference ass
 
 On x64 Linux, `build/mono/build.sh` builds with Mono and runs the tests that don't need Access.
 
-Opening Access files needs an Access driver. 32 bit builds use Jet 4.0, which ships with Windows. 64 bit builds need the [Microsoft Access Database Engine 2016 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
+The Access tests need an Access driver: see [Access drivers](#access-drivers). A test is ignored when no installed driver opens its file.
 
 ## License
 

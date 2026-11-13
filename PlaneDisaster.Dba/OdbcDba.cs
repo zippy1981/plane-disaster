@@ -127,7 +127,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File) {
 			Cn = new OdbcConnection();
 			Cn.ConnectionString = String.Format
-				("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd=;", JetSqlUtil.GetOdbcProviderName(), File);
+				("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd=;", AccessDrivers.Find(AccessDriverKind.Odbc, File).Name, File);
 			Cn.Open();
 		}
 		
@@ -142,7 +142,7 @@ namespace PlaneDisaster.Dba
 		public void ConnectMDB(string File, string Password) {
 			Cn = new OdbcConnection();
 			Cn.ConnectionString = String.Format
-					("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd={2};", JetSqlUtil.GetOdbcProviderName(), File, Password);
+					("Driver={{{0}}};Dbq={1};Uid=Admin;Pwd={2};", AccessDrivers.Find(AccessDriverKind.Odbc, File).Name, File, Password);
 			Cn.Open();
 		}
 		

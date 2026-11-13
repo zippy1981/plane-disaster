@@ -120,6 +120,9 @@ namespace PlaneDisaster.Jet2SQLite
 			}
 			try {
 				JetDb.ConnectMDB(this.JetSqlFile);
+			} catch (AccessDriverNotFoundException ex) {
+				MessageBox.Show(ex.Message, "Error Opening File");
+				return;
 			} catch (OdbcException ex) {
 				//TODO: this is the error code for incorrect access password. Make this a constant.
 				if (ex.ErrorCode == -2147217843 || ex.ErrorCode == -2146232009) {

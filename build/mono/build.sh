@@ -95,7 +95,8 @@ compile UnitTests -target:library -out:"$out/UnitTests.dll" \
   "${tests[@]}"
 
 # Only the tests that don't need Windows' Access drivers. A name with no matching test runs nothing.
-echo "nunit: SQLite and tokenizer tests on Mono $(mono --version | head -1 | awk '{print $5}')" >&2
+# TestAccessDrivers is the logic that chooses a driver; it needs none installed.
+echo "nunit: SQLite, tokenizer and driver choice tests on Mono $(mono --version | head -1 | awk '{print $5}')" >&2
 cd "$out"
 mono "$work/nunit/tools/nunit-console.exe" UnitTests.dll -nologo -noshadow -labels \
-  -run:UnitTests.Tests.TestSQLite,UnitTests.TestSQLiteDba,UnitTests.TestDbaStatic,UnitTests.TestSqlTokenizer -result:"$out/TestResult.xml"
+  -run:UnitTests.Tests.TestSQLite,UnitTests.TestSQLiteDba,UnitTests.TestDbaStatic,UnitTests.TestSqlTokenizer,UnitTests.TestAccessDrivers -result:"$out/TestResult.xml"
